@@ -999,6 +999,14 @@ body.df-pomo-hide-label .df-session-label { display: none !important; }
     <div class="df-custom-body">
       <div id="dfClockSettings">
         <div class="df-toggle-row">
+          <span>Saat Tipi</span>
+          <select id="dfClockTypeSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+            <option value="24h">24 Saat (14:25:08)</option>
+            <option value="12h">12 Saat (02:25:08 PM)</option>
+            <option value="minimal">Minimal (14:25)</option>
+          </select>
+        </div>
+        <div class="df-toggle-row">
           <span>İkonu Göster</span>
           <label class="switch">
             <input type="checkbox" id="dfShowIconToggle" checked>
@@ -1053,6 +1061,16 @@ body.df-pomo-hide-label .df-session-label { display: none !important; }
         </div>
       </div>
 
+
+      <div class="df-section-title">Ses ve Bildirim</div>
+      <div class="df-toggle-row">
+        <span>Zil Sesi Testi</span>
+        <button id="dfAlarmTestBtn" style="padding:4px 10px; border-radius:var(--radius-s); border:1px solid var(--hairline-strong); background:rgba(255,255,255,0.08); font-size:0.75rem;">🔔 Dinle</button>
+      </div>
+      <div class="df-toggle-row">
+        <span>Ses Seviyesi</span>
+        <input type="range" id="dfVolumeSlider" min="0" max="1" step="0.01" value="0.55" style="width:110px;">
+      </div>
 
       <div class="df-section-title">Hızlı Renk Paleti</div>
       <div class="df-swatches" id="dfSwatches">
@@ -1246,8 +1264,8 @@ const ASSETS = {
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PROFILE_META = { neon2:{ name:'NEON PULSE', theme:'cyberpunkBlue' }, y2026:{ name:'SOLAR FLARE', theme:'volcanicOrange' } };
-const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true };
-const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:25, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:25*60*1000, intervalId:null };
+const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true };
+const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:25, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:25*60*1000, intervalId:null, lastTickTs:0 };
 const SEC_R=78, SEC_C=2*Math.PI*SEC_R;
 const PRING_R=76, PRING_C=2*Math.PI*PRING_R;
 const DONUT_R=40, DONUT_C=2*Math.PI*DONUT_R;
@@ -1271,7 +1289,7 @@ function cacheDom(){
    'timerTypeSubtext','modeCountdownBtn','modeStopwatchBtn','breakEnableToggle','focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'longBreakRange','longBreakValue','sessionsBeforeLongRange','sessionsBeforeLongValue',
    'mode3dToggle','mode3dValue','focusDonutProgress','focusDonutLabel','todayMinutesLabel',
-   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount'
+   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -1315,6 +1333,7 @@ function refreshColorCache(){
 
 
 
+let totalWorkMs = 0;
 let totalWorkSeconds = 0;
 let pomodoroTimeline = [];
 let focusIndex = 1;
@@ -1414,13 +1433,18 @@ function renderPomodoroTimeline(){
 
 
 function applyDFCustomizations(){
-  document.body.classList.toggle('df-hide-icon', !state.dfShowIcon);
-  document.body.classList.toggle('df-only-time', !!state.dfOnlyTime);
-  document.body.classList.toggle('df-digital-only', !!state.dfDigitalOnly);
+  if(state.mode === 'pomodoro'){
+    document.body.classList.remove('df-hide-icon', 'df-only-time', 'df-digital-only');
+    document.body.classList.toggle('df-pomo-hide-icon', !state.dfPomoShowIcon);
+    document.body.classList.toggle('df-pomo-hide-label', !state.dfPomoShowLabel);
+  } else {
+    document.body.classList.remove('df-pomo-hide-icon', 'df-pomo-hide-label');
+    document.body.classList.toggle('df-hide-icon', !state.dfShowIcon);
+    document.body.classList.toggle('df-only-time', !!state.dfOnlyTime);
+    document.body.classList.toggle('df-digital-only', !!state.dfDigitalOnly);
+  }
 
-  document.body.classList.toggle('df-pomo-hide-icon', !state.dfPomoShowIcon);
-  document.body.classList.toggle('df-pomo-hide-label', !state.dfPomoShowLabel);
-
+  if(dom.dfClockTypeSelect) dom.dfClockTypeSelect.value = state.dfClockType || '24h';
   if(dom.dfShowIconToggle) dom.dfShowIconToggle.checked = !!state.dfShowIcon;
   if(dom.dfOnlyTimeToggle) dom.dfOnlyTimeToggle.checked = !!state.dfOnlyTime;
   if(dom.dfDigitalOnlyToggle) dom.dfDigitalOnlyToggle.checked = !!state.dfDigitalOnly;
@@ -1428,6 +1452,7 @@ function applyDFCustomizations(){
   if(dom.dfPomoShowIconToggle) dom.dfPomoShowIconToggle.checked = !!state.dfPomoShowIcon;
   if(dom.dfPomoShowLabelToggle) dom.dfPomoShowLabelToggle.checked = !!state.dfPomoShowLabel;
   if(dom.dfPomoViewModeSelect) dom.dfPomoViewModeSelect.value = state.dfPomoViewMode || 'both';
+  if(dom.dfVolumeSlider && dom.volumeSlider) dom.dfVolumeSlider.value = dom.volumeSlider.value;
 
   // Toggle visible settings block in DF Customize panel based on mode
   if(dom.dfClockSettings) dom.dfClockSettings.style.display = (state.mode === 'pomodoro' ? 'none' : 'block');
@@ -1951,12 +1976,13 @@ function pomodoroStart(){
   if(pomodoro.running) return;
   ensureAudio();
   pomodoro.running=true;
+  pomodoro.lastTickTs = Date.now();
   if(pomodoro.timerMode==='stopwatch'){
     pomodoro.startTime = Date.now() - pomodoro.elapsedTimeMs;
   } else {
     pomodoro.endTime = Date.now() + pomodoro.remainingMs;
   }
-  pomodoro.intervalId=setInterval(pomodoroTick, 250);
+  pomodoro.intervalId=setInterval(pomodoroTick, 100);
   renderPomodoro();
 }
 function pomodoroPause(){
@@ -1984,13 +2010,21 @@ function pomodoroReset(){
   renderPomodoro();
 }
 function pomodoroTick(){
+  const now = Date.now();
+  const delta = now - (pomodoro.lastTickTs || now);
+  pomodoro.lastTickTs = now;
+
+  if(pomodoro.running && pomodoro.sessionType==='focus'){
+    totalWorkMs += delta;
+    totalWorkSeconds = Math.floor(totalWorkMs / 1000);
+  }
+
   if(pomodoro.timerMode==='stopwatch'){
     pomodoro.elapsedTimeMs = Date.now() - pomodoro.startTime;
     renderPomodoro();
     return;
   }
-  pomodoro.remainingMs=Math.max(0, pomodoro.endTime-Date.now());
-  if(pomodoro.running && pomodoro.sessionType==='focus'){ totalWorkSeconds++; }
+  pomodoro.remainingMs=Math.max(0, pomodoro.endTime - now);
   renderPomodoro();
   if(pomodoro.remainingMs<=0){
     clearInterval(pomodoro.intervalId);
@@ -2084,17 +2118,23 @@ function renderDeepFocus(){
     }
   } else {
     if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
-    if(pomodoro.timerMode==='stopwatch' && pomodoro.running){
-      dom.dfTime.textContent=formatMs(pomodoro.elapsedTimeMs);
-      dom.dfSessionLabel.textContent='KRONOMETRE';
-    } else if(pomodoro.running){
-      dom.dfTime.textContent=formatMs(pomodoro.remainingMs);
-      dom.dfSessionLabel.textContent=sessionTypeLabel(pomodoro.sessionType);
+    const now = new Date();
+    let clockStr = '';
+    const h24 = now.getHours();
+    const h12 = h24 % 12 || 12;
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    const ampm = h24 >= 12 ? 'PM' : 'AM';
+
+    if(state.dfClockType === '12h'){
+      clockStr = String(h12).padStart(2, '0') + ':' + m + ':' + s + ' ' + ampm;
+    } else if(state.dfClockType === 'minimal'){
+      clockStr = String(h24).padStart(2, '0') + ':' + m;
     } else {
-      const totalSec=Math.floor((Date.now()-deepFocusStart)/1000);
-      dom.dfTime.textContent=String(Math.floor(totalSec/60)).padStart(2,'0')+':'+String(totalSec%60).padStart(2,'0');
-      dom.dfSessionLabel.textContent='SERBEST ODAK';
+      clockStr = String(h24).padStart(2, '0') + ':' + m + ':' + s;
     }
+    dom.dfTime.textContent = clockStr;
+    if(dom.dfSessionLabel) dom.dfSessionLabel.textContent = 'CANLI SAAT';
   }
 }
 
@@ -2232,6 +2272,7 @@ function wireEvents(){
       dom.dfCustomizeBtn.classList.remove('active');
     });
   }
+  if(dom.dfClockTypeSelect) dom.dfClockTypeSelect.addEventListener('change', ()=>{ state.dfClockType = dom.dfClockTypeSelect.value; renderDeepFocus(); });
   if(dom.dfShowIconToggle) dom.dfShowIconToggle.addEventListener('change', ()=>{ state.dfShowIcon = dom.dfShowIconToggle.checked; applyDFCustomizations(); });
   if(dom.dfOnlyTimeToggle) dom.dfOnlyTimeToggle.addEventListener('change', ()=>{ state.dfOnlyTime = dom.dfOnlyTimeToggle.checked; applyDFCustomizations(); });
   if(dom.dfDigitalOnlyToggle) dom.dfDigitalOnlyToggle.addEventListener('change', ()=>{ state.dfDigitalOnly = dom.dfDigitalOnlyToggle.checked; applyDFCustomizations(); });
@@ -2333,6 +2374,17 @@ function wireEvents(){
   if(dom.pomoAlarmTestBtn){
     dom.pomoAlarmTestBtn.addEventListener('click', ()=>{
       playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
+    });
+  }
+  if(dom.dfAlarmTestBtn){
+    dom.dfAlarmTestBtn.addEventListener('click', ()=>{
+      playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
+    });
+  }
+  if(dom.dfVolumeSlider){
+    dom.dfVolumeSlider.addEventListener('input', ()=>{
+      if(dom.volumeSlider) dom.volumeSlider.value = dom.dfVolumeSlider.value;
+      if(masterGain) masterGain.gain.value = parseFloat(dom.dfVolumeSlider.value);
     });
   }
 
