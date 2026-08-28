@@ -441,10 +441,9 @@ body.clock-only-mode .ekg-strip { opacity: 0 !important; pointer-events: none !i
 .df-swatch { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid transparent; cursor: pointer; transition: transform 0.2s; }
 .df-swatch:hover { transform: scale(1.15); border-color: var(--text-0); }
 
-body.df-hide-icon .df-mount .avatar-circle { opacity: 0 !important; }
+body.df-hide-icon .df-mount, body.df-pomo-hide-icon .df-mount, body.df-digital-only .df-mount { display: none !important; }
+body.df-hide-icon .df-time, body.df-pomo-hide-icon .df-time, body.df-digital-only .df-time { font-size: clamp(5rem, 16vw, 10rem) !important; margin-top: 0 !important; }
 body.df-only-time .df-session-label, body.df-only-time .df-focus { display: none !important; }
-body.df-digital-only .df-mount { display: none !important; }
-body.df-digital-only .df-time { font-size: clamp(5rem, 16vw, 10rem) !important; margin-top: 0 !important; }
 
 
 /* Pomodoro Workspace Redesign CSS */
@@ -776,7 +775,6 @@ body.mode-pomodoro #soundPanel {
 }
 
 
-body.df-pomo-hide-icon .df-mount .avatar-circle { opacity: 0 !important; }
 body.df-pomo-hide-label .df-session-label { display: none !important; }
 
 </style>
@@ -1004,6 +1002,16 @@ body.df-pomo-hide-label .df-session-label { display: none !important; }
             <option value="24h">24 Saat (14:25:08)</option>
             <option value="12h">12 Saat (02:25:08 PM)</option>
             <option value="minimal">Minimal (14:25)</option>
+          </select>
+        </div>
+        <div class="df-toggle-row">
+          <span>Saat Yazı Tipi (Font)</span>
+          <select id="dfFontSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+            <option value="'Orbitron', sans-serif">Orbitron (Modern Futuristic)</option>
+            <option value="'JetBrains Mono', monospace">JetBrains Mono (Digital Mono)</option>
+            <option value="'Rajdhani', sans-serif">Rajdhani (Tech Clean)</option>
+            <option value="'Inter', sans-serif">Inter (Minimal Sans)</option>
+            <option value="system-ui, sans-serif">Sistem (System Standard)</option>
           </select>
         </div>
         <div class="df-toggle-row">
@@ -1264,7 +1272,7 @@ const ASSETS = {
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PROFILE_META = { neon2:{ name:'NEON PULSE', theme:'cyberpunkBlue' }, y2026:{ name:'SOLAR FLARE', theme:'volcanicOrange' } };
-const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true };
+const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true };
 const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:25, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:25*60*1000, intervalId:null, lastTickTs:0 };
 const SEC_R=78, SEC_C=2*Math.PI*SEC_R;
 const PRING_R=76, PRING_C=2*Math.PI*PRING_R;
@@ -1289,7 +1297,7 @@ function cacheDom(){
    'timerTypeSubtext','modeCountdownBtn','modeStopwatchBtn','breakEnableToggle','focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'longBreakRange','longBreakValue','sessionsBeforeLongRange','sessionsBeforeLongValue',
    'mode3dToggle','mode3dValue','focusDonutProgress','focusDonutLabel','todayMinutesLabel',
-   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount'
+   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -1445,6 +1453,9 @@ function applyDFCustomizations(){
   }
 
   if(dom.dfClockTypeSelect) dom.dfClockTypeSelect.value = state.dfClockType || '24h';
+  if(dom.dfFontSelect) dom.dfFontSelect.value = state.dfFont || "'Orbitron', sans-serif";
+  if(dom.dfTime) dom.dfTime.style.fontFamily = state.dfFont || "'Orbitron', sans-serif";
+  if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.style.fontFamily = state.dfFont || "'Orbitron', sans-serif";
   if(dom.dfShowIconToggle) dom.dfShowIconToggle.checked = !!state.dfShowIcon;
   if(dom.dfOnlyTimeToggle) dom.dfOnlyTimeToggle.checked = !!state.dfOnlyTime;
   if(dom.dfDigitalOnlyToggle) dom.dfDigitalOnlyToggle.checked = !!state.dfDigitalOnly;
@@ -2273,6 +2284,7 @@ function wireEvents(){
     });
   }
   if(dom.dfClockTypeSelect) dom.dfClockTypeSelect.addEventListener('change', ()=>{ state.dfClockType = dom.dfClockTypeSelect.value; renderDeepFocus(); });
+  if(dom.dfFontSelect) dom.dfFontSelect.addEventListener('change', ()=>{ state.dfFont = dom.dfFontSelect.value; applyDFCustomizations(); });
   if(dom.dfShowIconToggle) dom.dfShowIconToggle.addEventListener('change', ()=>{ state.dfShowIcon = dom.dfShowIconToggle.checked; applyDFCustomizations(); });
   if(dom.dfOnlyTimeToggle) dom.dfOnlyTimeToggle.addEventListener('change', ()=>{ state.dfOnlyTime = dom.dfOnlyTimeToggle.checked; applyDFCustomizations(); });
   if(dom.dfDigitalOnlyToggle) dom.dfDigitalOnlyToggle.addEventListener('change', ()=>{ state.dfDigitalOnly = dom.dfDigitalOnlyToggle.checked; applyDFCustomizations(); });
@@ -2458,6 +2470,7 @@ function frame(ts){
   const dt=Math.min(0.05, (ts-(lastFrameTs||ts))/1000);
   lastFrameTs=ts;
   renderClock();
+  if(state.deepFocus) renderDeepFocus();
   updateParallax();
   stepEkg(dt);
   drawEkg();
