@@ -789,7 +789,6 @@ body.df-pomo-hide-label .df-session-label { display: none !important; }
   <header class="topbar">
     <div class="brand-block">
       <h1 class="brand">SELMER<span>·</span>SHOW</h1>
-      <div class="brand-eyebrow">BİYOMETRİK ODAKLAMA ARAYÜZÜ</div>
     </div>
     <div class="date-cluster">
       <div id="dateLocaleText">—</div>
@@ -1094,7 +1093,6 @@ body.df-pomo-hide-label .df-session-label { display: none !important; }
   <div class="df-time" id="dfTime">00:00</div>
     <div class="df-session-label" id="dfSessionLabel">SERBEST ODAK</div>
   <div class="df-session-label" id="dfTotalWorkSub" style="color:var(--c1); margin-top:4px;">TOPLAM ÇALIŞMA: 00s 00dk 00sn</div>
-  <div class="df-focus" id="dfFocus">ODAK %0</div>
 </div>
 
 <div class="drawer-backdrop" id="drawerBackdrop"></div>
@@ -1582,9 +1580,10 @@ function updateDateCluster(){
   dom.dateLocaleText.style.opacity=0;
   setTimeout(()=>{ dom.dateLocaleText.textContent=text.toUpperCase(); dom.dateLocaleText.style.opacity=1; },260);
   localeIdx=(localeIdx+1)%LOCALE_CYCLE.length;
-  const startOfYear=new Date(now.getFullYear(),0,0);
-  const dayOfYear=Math.floor((now-startOfYear)/86400000);
-  dom.dateCycleText.textContent='CYCLE '+now.getFullYear()+' · GÜN '+String(dayOfYear).padStart(3,'0')+' · HAFTA '+String(getISOWeek(now)).padStart(2,'0');
+  const yks2027Target = new Date('2027-06-19T00:00:00');
+  const diffMs = yks2027Target - now;
+  const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+  dom.dateCycleText.textContent = 'YKS 2027 · ' + daysLeft + ' GÜN KALDI';
 }
 
 let ekgCtx, ekgBuffer=[], ekgPhase=0, ekgWidth=0, ekgHeight=0;
