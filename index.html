@@ -869,7 +869,33 @@ body.mode-pomodoro #soundPanel {
   display: none !important;
 }
 
-body.df-pomo-hide-label .df-session-label { display: none !important; }
+body.df-pomo-hide-label .df-session-label,
+body.df-pomo-hide-label .pomo-status-sub { display: none !important; }
+body.df-pomo-hide-icon .pomo-badge { display: none !important; }
+body.df-pomo-hide-ring .pomo-big-ring-wrap svg,
+body.df-pomo-hide-ring .pomo-wave-canvas,
+body.df-pomo-hide-ring .pomo-particles-canvas,
+body.df-pomo-hide-ring .radial-fill-overlay,
+body.df-pomo-hide-ring .pomo-linear-bar-wrap,
+body.df-pomo-hide-ring .border-glow-box { display: none !important; }
+
+.deep-focus-active.mode-pomodoro .df-mount {
+  width: min(65vw, 65vh, 460px);
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.deep-focus-active.mode-pomodoro .df-mount #pomoBigRingWrap {
+  width: 100%;
+  height: 100%;
+}
+.deep-focus-active.mode-pomodoro #dfTime {
+  display: none !important;
+}
+.deep-focus-active.mode-pomodoro #dfSessionLabel {
+  display: none !important;
+}
 
 /* Enlarged UI & Accordion Menu CSS */
 .pomodoro-workspace {
@@ -1225,6 +1251,14 @@ body.df-pomo-hide-label .df-session-label { display: none !important; }
           </select>
         </div>
         <div class="df-toggle-row">
+          <span>Halka / Efekt Animasyonunu Göster</span>
+          <label class="switch">
+            <input type="checkbox" id="dfPomoShowRingToggle" checked>
+            <span class="switch-track"></span>
+            <span class="switch-thumb"></span>
+          </label>
+        </div>
+        <div class="df-toggle-row">
           <span>İkonu Göster</span>
           <label class="switch">
             <input type="checkbox" id="dfShowIconToggle" checked>
@@ -1539,7 +1573,7 @@ function cacheDom(){
    'timerTypeSubtext','modeCountdownBtn','modeStopwatchBtn','breakEnableToggle','focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'longBreakRange','longBreakValue','sessionsBeforeLongRange','sessionsBeforeLongValue',
    'mode3dToggle','mode3dValue','focusDonutProgress','focusDonutLabel','todayMinutesLabel',
-   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
+   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
    'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoConfigCard','pomoConfigHeader','pomoConfigBody','accordionIcon'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
@@ -1744,8 +1778,9 @@ function applyDFCustomizations(){
     document.body.classList.remove('df-hide-icon', 'df-only-time', 'df-digital-only');
     document.body.classList.toggle('df-pomo-hide-icon', !state.dfPomoShowIcon);
     document.body.classList.toggle('df-pomo-hide-label', !state.dfPomoShowLabel);
+    document.body.classList.toggle('df-pomo-hide-ring', !state.dfPomoShowRing);
   } else {
-    document.body.classList.remove('df-pomo-hide-icon', 'df-pomo-hide-label');
+    document.body.classList.remove('df-pomo-hide-icon', 'df-pomo-hide-label', 'df-pomo-hide-ring');
     document.body.classList.toggle('df-hide-icon', !state.dfShowIcon);
     document.body.classList.toggle('df-only-time', !!state.dfOnlyTime);
     document.body.classList.toggle('df-digital-only', !!state.dfDigitalOnly);
@@ -1759,6 +1794,7 @@ function applyDFCustomizations(){
   if(dom.dfOnlyTimeToggle) dom.dfOnlyTimeToggle.checked = !!state.dfOnlyTime;
   if(dom.dfDigitalOnlyToggle) dom.dfDigitalOnlyToggle.checked = !!state.dfDigitalOnly;
 
+  if(dom.dfPomoShowRingToggle) dom.dfPomoShowRingToggle.checked = !!state.dfPomoShowRing;
   if(dom.dfPomoShowIconToggle) dom.dfPomoShowIconToggle.checked = !!state.dfPomoShowIcon;
   if(dom.dfPomoShowLabelToggle) dom.dfPomoShowLabelToggle.checked = !!state.dfPomoShowLabel;
   if(dom.dfPomoViewModeSelect) dom.dfPomoViewModeSelect.value = state.dfPomoViewMode || 'both';
@@ -2570,7 +2606,14 @@ function enterDeepFocus(){
   state.deepFocus=true;
   document.body.classList.add('deep-focus-active');
   dom.deepFocusBtn.classList.add('is-on');
-  dom.dfMount.appendChild(dom.avatarRing);
+  if(state.mode === 'pomodoro'){
+    if(dom.pomoBigRingWrap && dom.dfMount){
+      if(dom.pomoBorderGlowBox) dom.dfMount.appendChild(dom.pomoBorderGlowBox);
+      dom.dfMount.appendChild(dom.pomoBigRingWrap);
+    }
+  } else {
+    if(dom.dfMount && dom.avatarRing) dom.dfMount.appendChild(dom.avatarRing);
+  }
   deepFocusStart=Date.now();
   closeSettingsDrawer();
   renderDeepFocus();
@@ -2580,7 +2623,12 @@ function exitDeepFocus(){
   state.deepFocus=false;
   document.body.classList.remove('deep-focus-active');
   dom.deepFocusBtn.classList.remove('is-on');
-  dom.layerFront.appendChild(dom.avatarRing);
+  const pomoRingCard = document.querySelector('.pomo-ring-card');
+  if(pomoRingCard && dom.pomoBigRingWrap){
+    if(dom.pomoBorderGlowBox) pomoRingCard.appendChild(dom.pomoBorderGlowBox);
+    pomoRingCard.appendChild(dom.pomoBigRingWrap);
+  }
+  if(dom.layerFront && dom.avatarRing) dom.layerFront.appendChild(dom.avatarRing);
 }
 
 function renderDeepFocus(){
@@ -2740,6 +2788,9 @@ function setMode(mode){
   if(dom.pomodoroWorkspace) dom.pomodoroWorkspace.style.display = (mode==='pomodoro' ? 'flex' : 'none');
   if(mode==='pomodoro') renderPomodoroTimeline();
 
+  if(state.deepFocus){
+    enterDeepFocus();
+  }
 }
 function openSettingsDrawer(){ dom.settingsDrawer.classList.add('open'); dom.drawerBackdrop.classList.add('open'); }
 function closeSettingsDrawer(){ dom.settingsDrawer.classList.remove('open'); dom.drawerBackdrop.classList.remove('open'); }
@@ -2792,6 +2843,12 @@ function wireEvents(){
   if(dom.dfPomoShowIconToggle){
     dom.dfPomoShowIconToggle.addEventListener('change', ()=>{
       state.dfPomoShowIcon = dom.dfPomoShowIconToggle.checked;
+      applyDFCustomizations();
+    });
+  }
+  if(dom.dfPomoShowRingToggle){
+    dom.dfPomoShowRingToggle.addEventListener('change', ()=>{
+      state.dfPomoShowRing = dom.dfPomoShowRingToggle.checked;
       applyDFCustomizations();
     });
   }
