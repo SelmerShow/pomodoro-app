@@ -767,15 +767,215 @@ body.mode-pomodoro #soundPanel {
 .pomo-node.pending .pomo-node-status { background: rgba(255,255,255,0.06); color: var(--text-dimmer); }
 
 .pomo-line-connector {
-  width: 24px;
-  height: 2px;
-  background: linear-gradient(90deg, var(--c1), rgba(var(--c1-rgb), 0.2));
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 54px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--c1), rgba(var(--c1-rgb), 0.25));
   flex-shrink: 0;
   border-radius: 2px;
+  animation: linePulse 2s ease-in-out infinite;
+}
+@keyframes linePulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+.pomo-line-connector .break-badge {
+  position: absolute;
+  top: -13px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--c1);
+  background: rgba(10, 14, 28, 0.95);
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--c1-rgb), 0.4);
+  white-space: nowrap;
+  box-shadow: 0 0 8px rgba(var(--c1-rgb), 0.3);
 }
 
+/* Timer Progress Styles (6+ Varieties) */
+.pomo-linear-bar-wrap {
+  width: 82%; height: 8px; background: rgba(255,255,255,0.08); border-radius: 999px;
+  overflow: hidden; margin-top: 10px; display: none; box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
+  border: 1px solid rgba(var(--c1-rgb), 0.25);
+}
+.pomo-linear-bar-fill {
+  height: 100%; width: 0%; background: linear-gradient(90deg, var(--c2), var(--c1)); border-radius: 999px;
+  box-shadow: 0 0 14px var(--c1), 0 0 6px var(--c1); transition: width 0.3s var(--ease);
+}
+.progress-style-linear .pomo-linear-bar-wrap { display: block !important; }
+.progress-style-linear .pring-progress,
+.progress-style-linear .radial-fill-overlay,
+.progress-style-linear .pring-dotted { display: none !important; }
+
+.pomo-wave-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%;
+  pointer-events: none; z-index: 1; display: none; opacity: 0.85;
+}
+.progress-style-wave .pomo-wave-canvas { display: block !important; }
+.progress-style-wave .pring-progress { opacity: 0.2 !important; }
+
+.pomo-particles-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%;
+  pointer-events: none; z-index: 1; display: none;
+}
+.progress-style-particles .pomo-particles-canvas { display: block !important; }
+.progress-style-particles .pring-progress { opacity: 0.25 !important; }
+
+.pring-dotted {
+  fill: none; stroke: var(--c1); stroke-width: 6; stroke-dasharray: 6 10; stroke-linecap: round;
+  filter: drop-shadow(0 0 10px rgba(var(--c1-rgb),0.9)); transition: stroke-dashoffset 0.4s var(--ease);
+  display: none; transform-origin: 110px 110px;
+}
+.progress-style-dotted .pring-dotted { display: block !important; }
+.progress-style-dotted .pring-progress { display: none !important; }
+
+.border-glow-box {
+  position: absolute; inset: -12px; border-radius: var(--radius-l); pointer-events: none;
+  border: 1px solid rgba(255,255,255,0.08); overflow: hidden; display: none; z-index: 0;
+}
+.border-glow-line {
+  position: absolute; inset: 0; border-radius: var(--radius-l);
+  padding: 3px; background: conic-gradient(from 0deg, var(--c1), transparent 35%, transparent 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0.95;
+  filter: drop-shadow(0 0 12px var(--c1));
+}
+.progress-style-border .border-glow-box { display: block !important; }
+.progress-style-border .pring-progress { opacity: 0.2 !important; }
+
+.radial-fill-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(rgba(var(--c1-rgb), 0.25) 0deg, transparent 0deg);
+  mask-image: radial-gradient(circle, transparent 58%, black 60%);
+  -webkit-mask-image: radial-gradient(circle, transparent 58%, black 60%);
+  transition: background 0.3s var(--ease);
+  display: none;
+}
+.progress-style-fill .radial-fill-overlay { display: block !important; }
+.progress-style-fill .pring-track, .progress-style-fill .pring-progress { opacity: 0.25 !important; }
+
+.progress-style-minimal .pring-track,
+.progress-style-minimal .pring-progress,
+.progress-style-minimal .pomo-big-ring-wrap svg,
+.progress-style-minimal #dfMount svg {
+  display: none !important;
+}
 
 body.df-pomo-hide-label .df-session-label { display: none !important; }
+
+/* Enlarged UI & Accordion Menu CSS */
+.pomodoro-workspace {
+  width: 100%;
+  max-width: 1040px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+  margin-bottom: 40px;
+}
+.pomo-ring-card {
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-l);
+  background: linear-gradient(160deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+  padding: 32px 26px;
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.pomo-big-ring-wrap {
+  position: relative;
+  width: clamp(240px, 28vw, 290px);
+  aspect-ratio: 1/1;
+}
+.pomo-big-time {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.8rem, 5.5vw, 3.8rem);
+  color: var(--text-0);
+  text-shadow: 0 0 28px rgba(var(--c1-rgb), 0.55);
+  font-variant-numeric: tabular-nums;
+}
+.pomo-timeline-card {
+  width: 100%;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-l);
+  background: linear-gradient(160deg, rgba(255,255,255,.03), rgba(255,255,255,.008));
+  padding: 26px 28px;
+  backdrop-filter: blur(14px);
+}
+.pomo-node {
+  min-width: 190px;
+  padding: 14px 16px;
+}
+
+.pomo-config-card {
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-l);
+  background: linear-gradient(160deg, rgba(255,255,255,.03), rgba(255,255,255,.008));
+  padding: 22px 24px;
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.4s var(--ease);
+  overflow: hidden;
+}
+.pomo-config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--hairline);
+  transition: color 0.2s;
+}
+.pomo-config-header:hover .pomo-card-title {
+  color: var(--c1);
+}
+.pomo-card-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: var(--text-dimmer);
+  text-transform: uppercase;
+}
+.accordion-icon {
+  font-size: 0.75rem;
+  color: var(--c1);
+  transition: transform 0.35s var(--ease);
+}
+.pomo-config-card.collapsed .accordion-icon {
+  transform: rotate(180deg);
+}
+.pomo-config-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 600px;
+  opacity: 1;
+  transition: max-height 0.4s var(--ease), opacity 0.3s var(--ease);
+}
+.pomo-config-card.collapsed .pomo-config-body {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
 
 </style>
 </head>
@@ -859,61 +1059,72 @@ body.df-pomo-hide-label .df-session-label { display: none !important; }
       <!-- Middle Grid: Left Big Ring, Right Config -->
       <div class="pomo-mid-grid">
         <div class="pomo-ring-card">
-          <div class="pomo-big-ring-wrap">
+          <div class="border-glow-box" id="pomoBorderGlowBox"><div class="border-glow-line" id="pomoBorderGlowLine"></div></div>
+          <div class="pomo-big-ring-wrap" id="pomoBigRingWrap">
+            <div class="radial-fill-overlay" id="pomoRadialFill"></div>
+            <canvas class="pomo-wave-canvas" id="pomoWaveCanvas"></canvas>
+            <canvas class="pomo-particles-canvas" id="pomoParticlesCanvas"></canvas>
             <svg viewBox="0 0 220 220">
               <circle class="pring-track" cx="110" cy="110" r="98"></circle>
               <circle class="pring-progress" id="pomoBigProgress" cx="110" cy="110" r="98" transform="rotate(-90 110 110)"></circle>
+              <circle class="pring-dotted" id="pomoDottedProgress" cx="110" cy="110" r="98" transform="rotate(-90 110 110)"></circle>
             </svg>
             <div class="pomo-big-center">
               <span class="pomo-badge" id="pomoSessionBadge">1. ETÜT</span>
               <span class="pomo-big-time" id="pomoBigTimeLabel">25:00</span>
               <span class="pomo-status-sub" id="pomoStatusSub">HAZIR</span>
+              <div class="pomo-linear-bar-wrap" id="pomoLinearBarWrap"><div class="pomo-linear-bar-fill" id="pomoLinearBarFill"></div></div>
             </div>
           </div>
         </div>
 
-        <div class="pomo-config-card">
-          <div class="pomo-card-title">DERS & MOLA AYARLARI</div>
+        <div class="pomo-config-card" id="pomoConfigCard">
+          <div class="pomo-config-header" id="pomoConfigHeader">
+            <div class="pomo-card-title">DERS & MOLA AYARLARI</div>
+            <span class="accordion-icon" id="accordionIcon">▲</span>
+          </div>
 
-          <div class="pomo-input-group">
-            <div class="pomo-input-row">
-              <label for="pomoFocusInput">Ders Süresi (dk):</label>
-              <div class="num-step-input">
-                <button class="step-btn" id="pomoFocusMinus">-</button>
-                <input type="number" id="pomoFocusInput" min="1" max="180" value="25">
-                <button class="step-btn" id="pomoFocusPlus">+</button>
+          <div class="pomo-config-body" id="pomoConfigBody">
+            <div class="pomo-input-group">
+              <div class="pomo-input-row">
+                <label for="pomoFocusInput">Ders Süresi (dk):</label>
+                <div class="num-step-input">
+                  <button class="step-btn" id="pomoFocusMinus">-</button>
+                  <input type="number" id="pomoFocusInput" min="1" max="180" value="25">
+                  <button class="step-btn" id="pomoFocusPlus">+</button>
+                </div>
+              </div>
+              <div class="pomo-input-row">
+                <label for="pomoBreakInput">Mola Süresi (dk):</label>
+                <div class="num-step-input">
+                  <button class="step-btn" id="pomoBreakMinus">-</button>
+                  <input type="number" id="pomoBreakInput" min="1" max="60" value="5">
+                  <button class="step-btn" id="pomoBreakPlus">+</button>
+                </div>
               </div>
             </div>
-            <div class="pomo-input-row">
-              <label for="pomoBreakInput">Mola Süresi (dk):</label>
-              <div class="num-step-input">
-                <button class="step-btn" id="pomoBreakMinus">-</button>
-                <input type="number" id="pomoBreakInput" min="1" max="60" value="5">
-                <button class="step-btn" id="pomoBreakPlus">+</button>
-              </div>
+
+            <div class="pomo-type-selector">
+              <button class="pomo-type-btn active" id="pomoTypeDers">DERS (ETÜT)</button>
+              <button class="pomo-type-btn" id="pomoTypeMola">MOLA</button>
             </div>
-          </div>
 
-          <div class="pomo-type-selector">
-            <button class="pomo-type-btn active" id="pomoTypeDers">DERS (ETÜT)</button>
-            <button class="pomo-type-btn" id="pomoTypeMola">MOLA</button>
-          </div>
+            <div class="pomo-action-row">
+              <button class="pbtn pbtn-primary pomo-start-btn" id="pomoMainStartPause">BAŞLAT</button>
+              <button class="pbtn pbtn-ghost" id="pomoMainReset">SIFIRLA</button>
+            </div>
 
-          <div class="pomo-action-row">
-            <button class="pbtn pbtn-primary pomo-start-btn" id="pomoMainStartPause">BAŞLAT</button>
-            <button class="pbtn pbtn-ghost" id="pomoMainReset">SIFIRLA</button>
-          </div>
-
-          <div class="pomo-alarm-select-row">
-            <span>Zil Sesi:</span>
-            <select id="pomoAlarmSelect">
-              <option value="chime">Siber Melodi</option>
-              <option value="beep">Dijital Bip</option>
-              <option value="gong">Zen Gong</option>
-              <option value="bell">Klasik Zil</option>
-              <option value="synth">Bio Sentetik</option>
-            </select>
-            <button class="pomo-alarm-test-btn" id="pomoAlarmTestBtn" title="Zil sesini dinle">🔊</button>
+            <div class="pomo-alarm-select-row">
+              <span>Zil Sesi:</span>
+              <select id="pomoAlarmSelect">
+                <option value="chime">Siber Melodi</option>
+                <option value="beep">Dijital Bip</option>
+                <option value="gong">Zen Gong</option>
+                <option value="bell">Klasik Zil</option>
+                <option value="synth">Bio Sentetik</option>
+              </select>
+              <button class="pomo-alarm-test-btn" id="pomoAlarmTestBtn" title="Zil sesini dinle">🔊</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1042,6 +1253,19 @@ body.df-pomo-hide-label .df-session-label { display: none !important; }
 
       <div id="dfPomoSettings" style="display:none;">
         <div class="df-section-title">Pomodoro Görünümü</div>
+        <div class="df-toggle-row">
+          <span>Sayaç İlerleme Görseli</span>
+          <select id="dfPomoProgressStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+            <option value="ring">Dairesel Çizgi (Circular Ring)</option>
+            <option value="linear">Yatay İlerleme Çubuğu (Linear Bar)</option>
+            <option value="wave">Arka Plan Dalga (Wave Liquid)</option>
+            <option value="border">Köşe Çerçeve Dolumu (Border Glow)</option>
+            <option value="particles">Kum Saati / Noktasal (Particles)</option>
+            <option value="dotted">Yıldız Halka / Kesikli (Dotted Neon)</option>
+            <option value="fill">Dolum Efekti (Radial Fill)</option>
+            <option value="minimal">Klasik / Gizli (Minimal)</option>
+          </select>
+        </div>
         <div class="df-toggle-row">
           <span>Gösterim Modu</span>
           <select id="dfPomoViewModeSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
@@ -1203,6 +1427,26 @@ body.df-pomo-hide-label .df-session-label { display: none !important; }
 
 
     <div class="settings-section">
+      <div class="settings-section-title">Sayaç İlerleme (Progress) Görseli</div>
+      <div class="toggle-row" style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+        <div class="toggle-label" style="display:flex; flex-direction:column;">
+          <span style="font-size:0.8rem; font-weight:600;">İlerleme Görsel Stili</span>
+          <small style="font-size:0.65rem; color:var(--text-dimmer);">Pomodoro & Odak sayaç halkası efekti</small>
+        </div>
+        <select id="mainProgressStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+          <option value="ring">Dairesel Çizgi (Circular Ring)</option>
+          <option value="linear">Yatay İlerleme Çubuğu (Linear Bar)</option>
+          <option value="wave">Arka Plan Dalga (Wave Liquid)</option>
+          <option value="border">Köşe Çerçeve Dolumu (Border Glow)</option>
+          <option value="particles">Kum Saati / Noktasal (Particles)</option>
+          <option value="dotted">Yıldız Halka / Kesikli (Dotted Neon)</option>
+          <option value="fill">Dolum Efekti (Radial Fill)</option>
+          <option value="minimal">Klasik / Gizli (Minimal)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <div class="settings-section-title">Ana Sayfa Özelleştirme</div>
       <div class="toggle-row" style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
         <div class="toggle-label" style="display:flex; flex-direction:column;">
@@ -1270,7 +1514,7 @@ const ASSETS = {
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PROFILE_META = { neon2:{ name:'NEON PULSE', theme:'cyberpunkBlue' }, y2026:{ name:'SOLAR FLARE', theme:'volcanicOrange' } };
-const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true };
+const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring' };
 const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:25, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:25*60*1000, intervalId:null, lastTickTs:0 };
 const SEC_R=78, SEC_C=2*Math.PI*SEC_R;
 const PRING_R=76, PRING_C=2*Math.PI*PRING_R;
@@ -1295,7 +1539,8 @@ function cacheDom(){
    'timerTypeSubtext','modeCountdownBtn','modeStopwatchBtn','breakEnableToggle','focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'longBreakRange','longBreakValue','sessionsBeforeLongRange','sessionsBeforeLongValue',
    'mode3dToggle','mode3dValue','focusDonutProgress','focusDonutLabel','todayMinutesLabel',
-   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount'
+   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
+   'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoConfigCard','pomoConfigHeader','pomoConfigBody','accordionIcon'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -1343,7 +1588,39 @@ let totalWorkMs = 0;
 let totalWorkSeconds = 0;
 let pomodoroTimeline = [];
 let focusIndex = 1;
-let breakIndex = 1;
+
+function checkDailyReset(){
+  const todayKey = getTodayStorageKey() + '_timeline';
+  const savedDate = localStorage.getItem('selmer_last_active_date');
+  const todayStr = new Date().toDateString();
+
+  if(savedDate !== todayStr){
+    // Midnight reset
+    totalWorkMs = 0;
+    totalWorkSeconds = 0;
+    pomodoroTimeline = [];
+    focusIndex = 1;
+    localStorage.setItem('selmer_last_active_date', todayStr);
+    localStorage.setItem(todayKey, JSON.stringify([]));
+  } else {
+    try {
+      const savedTimeline = localStorage.getItem(todayKey);
+      if(savedTimeline){
+        pomodoroTimeline = JSON.parse(savedTimeline);
+        const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
+        focusIndex = completed.length + 1;
+      }
+    } catch(e){}
+  }
+}
+
+function saveTimelineToStorage(){
+  try {
+    const todayKey = getTodayStorageKey() + '_timeline';
+    localStorage.setItem(todayKey, JSON.stringify(pomodoroTimeline));
+    localStorage.setItem('selmer_last_active_date', new Date().toDateString());
+  } catch(e){}
+}
 
 function formatHoursMinutesSeconds(sec){
   const h = Math.floor(sec / 3600);
@@ -1390,20 +1667,21 @@ function playAlarmSound(soundType){
 function renderPomodoroTimeline(){
   if(!dom.pomoTimelineTrack) return;
   dom.pomoTimelineTrack.innerHTML = '';
+  checkDailyReset();
 
   if(pomodoroTimeline.length === 0){
-    // Seed initial active item
+    // Seed initial upcoming etüt
     const now = new Date();
     const end = new Date(now.getTime() + pomodoro.focusMin * 60000);
     const startStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
     const endStr = String(end.getHours()).padStart(2,'0') + ':' + String(end.getMinutes()).padStart(2,'0');
     pomodoroTimeline.push({
       type: 'focus',
-      idx: focusIndex,
-      name: focusIndex + '. Etüt',
+      idx: 1,
+      name: '1. Etüt',
       mins: pomodoro.focusMin,
       timeSpan: startStr + ' - ' + endStr,
-      status: 'active'
+      status: 'pending'
     });
   }
 
@@ -1414,7 +1692,7 @@ function renderPomodoroTimeline(){
     node.className = 'pomo-node ' + item.status;
 
     let iconStr = item.status === 'completed' ? '✓' : (item.status === 'active' ? '⚡' : '⏱');
-    let statusText = item.status === 'completed' ? 'Tamamlandı' : (item.status === 'active' ? 'Aktif' : 'Bekliyor');
+    let statusText = item.status === 'completed' ? (item.name + ' Tamamlandı') : (item.status === 'active' ? 'Çalışıyor' : 'Hazır');
 
     node.innerHTML = `
       <div class="pomo-node-title">
@@ -1428,15 +1706,38 @@ function renderPomodoroTimeline(){
     dom.pomoTimelineTrack.appendChild(node);
 
     if(index < pomodoroTimeline.length - 1){
+      const nextItem = pomodoroTimeline[index + 1];
       const line = document.createElement('div');
       line.className = 'pomo-line-connector';
+
+      let breakMins = 0;
+      if(nextItem.breakBeforeMins !== undefined){
+        breakMins = nextItem.breakBeforeMins;
+      } else if(item.endTimeMs && nextItem.startTimeMs){
+        breakMins = Math.max(0, Math.round((nextItem.startTimeMs - item.endTimeMs)/60000));
+      }
+
+      if(breakMins > 0){
+        line.innerHTML = `<span class="break-badge">${breakMins} dk Mola</span>`;
+      }
       dom.pomoTimelineTrack.appendChild(line);
     }
   });
 
-  if(dom.pomoCompletedCount) dom.pomoCompletedCount.textContent = completedCnt + ' Seans Tamamlandı';
+  if(dom.pomoCompletedCount) dom.pomoCompletedCount.textContent = completedCnt + ' Etüt Tamamlandı';
 }
 
+
+function applyProgressStyle(styleName){
+  state.progressStyle = styleName;
+  const styles = ['ring', 'linear', 'wave', 'border', 'particles', 'dotted', 'fill', 'minimal'];
+  styles.forEach(s => document.body.classList.remove('progress-style-' + s));
+  document.body.classList.add('progress-style-' + styleName);
+
+  if(dom.mainProgressStyleSelect) dom.mainProgressStyleSelect.value = styleName;
+  if(dom.dfPomoProgressStyleSelect) dom.dfPomoProgressStyleSelect.value = styleName;
+  renderPomodoro();
+}
 
 function applyDFCustomizations(){
   if(state.mode === 'pomodoro'){
@@ -1461,6 +1762,7 @@ function applyDFCustomizations(){
   if(dom.dfPomoShowIconToggle) dom.dfPomoShowIconToggle.checked = !!state.dfPomoShowIcon;
   if(dom.dfPomoShowLabelToggle) dom.dfPomoShowLabelToggle.checked = !!state.dfPomoShowLabel;
   if(dom.dfPomoViewModeSelect) dom.dfPomoViewModeSelect.value = state.dfPomoViewMode || 'both';
+  if(dom.dfPomoProgressStyleSelect) dom.dfPomoProgressStyleSelect.value = state.progressStyle || 'ring';
   if(dom.dfVolumeSlider && dom.volumeSlider) dom.dfVolumeSlider.value = dom.volumeSlider.value;
 
   // Toggle visible settings block in DF Customize panel based on mode
@@ -1883,14 +2185,130 @@ function playChime(kind){
   });
 }
 let waveCtx, waveWidth=0, waveHeight=0;
+let pomoWaveCtx, pomoWaveParticles=[];
+let pomoParticlesCtx, pomoStreamParticles=[];
+
 function setupWave(){
   const canvas=dom.waveCanvas;
-  const rect=canvas.getBoundingClientRect();
-  const dpr=Math.min(window.devicePixelRatio||1,2);
-  waveWidth=Math.max(1,Math.floor(rect.width)); waveHeight=Math.max(1,Math.floor(rect.height||64));
-  canvas.width=waveWidth*dpr; canvas.height=waveHeight*dpr;
-  waveCtx=canvas.getContext('2d');
-  waveCtx.setTransform(dpr,0,0,dpr,0,0);
+  if(canvas){
+    const rect=canvas.getBoundingClientRect();
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    waveWidth=Math.max(1,Math.floor(rect.width)); waveHeight=Math.max(1,Math.floor(rect.height||64));
+    canvas.width=waveWidth*dpr; canvas.height=waveHeight*dpr;
+    waveCtx=canvas.getContext('2d');
+    waveCtx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  // Setup Pomodoro Liquid Wave Canvas
+  if(dom.pomoWaveCanvas){
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    const w=240, h=240;
+    dom.pomoWaveCanvas.width=w*dpr; dom.pomoWaveCanvas.height=h*dpr;
+    pomoWaveCtx=dom.pomoWaveCanvas.getContext('2d');
+    pomoWaveCtx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  // Setup Pomodoro Stream Particles Canvas
+  if(dom.pomoParticlesCanvas){
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    const w=240, h=240;
+    dom.pomoParticlesCanvas.width=w*dpr; dom.pomoParticlesCanvas.height=h*dpr;
+    pomoParticlesCtx=dom.pomoParticlesCanvas.getContext('2d');
+    pomoParticlesCtx.setTransform(dpr,0,0,dpr,0,0);
+
+    pomoStreamParticles=[];
+    for(let i=0; i<35; i++){
+      pomoStreamParticles.push({
+        x: Math.random()*240,
+        y: Math.random()*240,
+        r: Math.random()*2 + 1,
+        speed: Math.random()*0.8 + 0.4,
+        opacity: Math.random()*0.7 + 0.3
+      });
+    }
+  }
+}
+
+function drawPomoVisuals(ts, frac){
+  // 1. Linear Bar Update
+  if(dom.pomoLinearBarFill){
+    dom.pomoLinearBarFill.style.width = (frac * 100).toFixed(1) + '%';
+  }
+
+  // 2. Wave / Liquid Fill Canvas
+  if(pomoWaveCtx && state.progressStyle === 'wave'){
+    pomoWaveCtx.clearRect(0, 0, 240, 240);
+    pomoWaveCtx.save();
+    pomoWaveCtx.beginPath();
+    pomoWaveCtx.arc(120, 120, 118, 0, Math.PI * 2);
+    pomoWaveCtx.clip();
+
+    const waterHeight = 240 * frac;
+    const waterY = 240 - waterHeight;
+
+    pomoWaveCtx.fillStyle = CACHED_C1;
+    pomoWaveCtx.globalAlpha = 0.35;
+    pomoWaveCtx.beginPath();
+    for(let x = 0; x <= 240; x += 5){
+      const y = waterY + Math.sin(x * 0.04 + ts * 0.003) * 6;
+      if(x === 0) pomoWaveCtx.moveTo(x, y);
+      else pomoWaveCtx.lineTo(x, y);
+    }
+    pomoWaveCtx.lineTo(240, 240);
+    pomoWaveCtx.lineTo(0, 240);
+    pomoWaveCtx.closePath();
+    pomoWaveCtx.fill();
+
+    pomoWaveCtx.fillStyle = CACHED_C2;
+    pomoWaveCtx.globalAlpha = 0.25;
+    pomoWaveCtx.beginPath();
+    for(let x = 0; x <= 240; x += 5){
+      const y = waterY + Math.cos(x * 0.05 + ts * 0.0025) * 5;
+      if(x === 0) pomoWaveCtx.moveTo(x, y);
+      else pomoWaveCtx.lineTo(x, y);
+    }
+    pomoWaveCtx.lineTo(240, 240);
+    pomoWaveCtx.lineTo(0, 240);
+    pomoWaveCtx.closePath();
+    pomoWaveCtx.fill();
+
+    pomoWaveCtx.restore();
+  }
+
+  // 3. Matrix / Particle Stream Canvas
+  if(pomoParticlesCtx && state.progressStyle === 'particles'){
+    pomoParticlesCtx.clearRect(0, 0, 240, 240);
+    pomoParticlesCtx.save();
+    pomoParticlesCtx.beginPath();
+    pomoParticlesCtx.arc(120, 120, 118, 0, Math.PI * 2);
+    pomoParticlesCtx.clip();
+
+    pomoStreamParticles.forEach(p => {
+      p.y += p.speed;
+      if(p.y > 240){ p.y = 0; p.x = Math.random()*240; }
+      pomoParticlesCtx.fillStyle = CACHED_C1;
+      pomoParticlesCtx.globalAlpha = p.opacity * (0.3 + frac * 0.7);
+      pomoParticlesCtx.beginPath();
+      pomoParticlesCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      pomoParticlesCtx.fill();
+    });
+
+    pomoParticlesCtx.restore();
+  }
+
+  // 4. Dotted Neon Radial Circle
+  if(dom.pomoDottedProgress){
+    const PRING_BIG_C = 2 * Math.PI * 98;
+    const dashOffset = (PRING_BIG_C * (1 - frac)).toFixed(2);
+    dom.pomoDottedProgress.setAttribute('stroke-dasharray', '8 10');
+    dom.pomoDottedProgress.setAttribute('stroke-dashoffset', dashOffset);
+  }
+
+  // 5. Border Glow Walk Rotation
+  if(dom.pomoBorderGlowLine && state.progressStyle === 'border'){
+    const rot = (ts * 0.08) % 360;
+    dom.pomoBorderGlowLine.style.background = `conic-gradient(from ${rot}deg, var(--c1), transparent 40%, transparent 100%)`;
+  }
 }
 function drawWave(t){
   if(!waveCtx) return;
@@ -1926,25 +2344,33 @@ function formatMs(ms){
   return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
 }
 
-function renderPomodoro(){
+function renderPomodoro(ts){
   const PRING_BIG_C = 2 * Math.PI * 98;
   const currentTotal = pomodoroTotalMs();
   const frac = Math.max(0, Math.min(1, pomodoro.remainingMs / currentTotal));
-  const dashOffset = (PRING_BIG_C * (1 - frac)).toFixed(2);
+  const elapsedFrac = 1 - frac;
+  const dashOffset = (PRING_BIG_C * elapsedFrac).toFixed(2);
 
   if(dom.pomoBigProgress){
     dom.pomoBigProgress.setAttribute('stroke-dasharray', PRING_BIG_C.toFixed(2));
     dom.pomoBigProgress.setAttribute('stroke-dashoffset', dashOffset);
   }
   if(dom.pomodoroProgress){
-    dom.pomodoroProgress.setAttribute('stroke-dashoffset', (PRING_C * (1 - frac)).toFixed(2));
+    dom.pomodoroProgress.setAttribute('stroke-dashoffset', (PRING_C * elapsedFrac).toFixed(2));
   }
+
+  if(dom.pomoRadialFill){
+    const pctDeg = elapsedFrac * 360;
+    dom.pomoRadialFill.style.background = `conic-gradient(rgba(var(--c1-rgb), 0.35) ${pctDeg}deg, transparent ${pctDeg}deg)`;
+  }
+
+  drawPomoVisuals(ts || performance.now(), elapsedFrac);
 
   const timeStr = formatMs(pomodoro.remainingMs);
   if(dom.pomodoroTimeLabel) dom.pomodoroTimeLabel.textContent = timeStr;
   if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.textContent = timeStr;
 
-  const typeName = pomodoro.sessionType === 'focus' ? (focusIndex + '. ETÜT') : (breakIndex + '. MOLA');
+  const typeName = pomodoro.sessionType === 'focus' ? (focusIndex + '. ETÜT') : 'MOLA';
   if(dom.pomoSessionBadge) dom.pomoSessionBadge.textContent = typeName;
   if(dom.pomodoroSessionType) dom.pomodoroSessionType.textContent = sessionTypeLabel(pomodoro.sessionType);
 
@@ -1985,6 +2411,46 @@ function renderSessionDots(){
 function pomodoroStart(){
   if(pomodoro.running) return;
   ensureAudio();
+
+  const now = new Date();
+  const nowMs = now.getTime();
+  const end = new Date(nowMs + pomodoro.focusMin * 60000);
+  const startStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  const endStr = String(end.getHours()).padStart(2,'0') + ':' + String(end.getMinutes()).padStart(2,'0');
+
+  // Find or create current active item in timeline
+  const lastItem = pomodoroTimeline.length > 0 ? pomodoroTimeline[pomodoroTimeline.length - 1] : null;
+  const completedItems = pomodoroTimeline.filter(t => t.status === 'completed');
+  const prevCompleted = completedItems.length > 0 ? completedItems[completedItems.length - 1] : null;
+
+  let breakMins = 0;
+  if(prevCompleted && prevCompleted.endTimeMs){
+    breakMins = Math.max(0, Math.round((nowMs - prevCompleted.endTimeMs) / 60000));
+  }
+
+  if(!lastItem || lastItem.status === 'completed'){
+    const currentEtutIdx = completedItems.length + 1;
+    pomodoroTimeline.push({
+      type: 'focus',
+      idx: currentEtutIdx,
+      name: currentEtutIdx + '. Etüt',
+      mins: pomodoro.focusMin,
+      startTimeMs: nowMs,
+      timeSpan: startStr + ' - ' + endStr,
+      status: 'active',
+      breakBeforeMins: breakMins
+    });
+  } else if(lastItem.status === 'pending'){
+    lastItem.status = 'active';
+    lastItem.startTimeMs = nowMs;
+    lastItem.mins = pomodoro.focusMin;
+    lastItem.timeSpan = startStr + ' - ' + endStr;
+    lastItem.breakBeforeMins = breakMins;
+  }
+
+  saveTimelineToStorage();
+  renderPomodoroTimeline();
+
   pomodoro.running=true;
   pomodoro.lastTickTs = Date.now();
   if(pomodoro.timerMode==='stopwatch'){
@@ -2043,30 +2509,43 @@ function pomodoroTick(){
   }
 }
 function handleSessionComplete(){
-  if(pomodoro.sessionType==='focus'){
-    pomodoro.sessionsCompleted++;
-    recordWorkMinutes(pomodoro.focusMin);
-    const isLong=pomodoro.sessionsCompleted % pomodoro.sessionsBeforeLong===0;
-    pomodoro.sessionType=isLong?'long':'short';
+  pomodoro.running = false;
+  clearInterval(pomodoro.intervalId);
 
   playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
-  // Mark current timeline item completed
+  recordWorkMinutes(pomodoro.focusMin);
+
+  let completedEtutName = 'Etüt';
   if(pomodoroTimeline.length > 0){
-    pomodoroTimeline[pomodoroTimeline.length - 1].status = 'completed';
+    const activeItem = pomodoroTimeline[pomodoroTimeline.length - 1];
+    activeItem.status = 'completed';
+    activeItem.endTimeMs = Date.now();
+    completedEtutName = activeItem.name;
   }
 
-    showToast(isLong?'ODAK TAMAMLANDI · UZUN MOLA':'ODAK TAMAMLANDI · KISA MOLA');
-  } else {
-    pomodoro.sessionType='focus';
-    playChime('focus');
-    showToast('MOLA BİTTİ · ODAKLANMA ZAMANI');
-  }
-  renderSessionDots();
+  const completedCount = pomodoroTimeline.filter(t => t.status === 'completed').length;
+  focusIndex = completedCount + 1;
+
+  // Prepare next etüt node as pending
+  const now = new Date();
+  const end = new Date(now.getTime() + pomodoro.focusMin * 60000);
+  const startStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  const endStr = String(end.getHours()).padStart(2,'0') + ':' + String(end.getMinutes()).padStart(2,'0');
+  pomodoroTimeline.push({
+    type: 'focus',
+    idx: focusIndex,
+    name: focusIndex + '. Etüt',
+    mins: pomodoro.focusMin,
+    timeSpan: startStr + ' - ' + endStr,
+    status: 'pending'
+  });
+
+  saveTimelineToStorage();
+  renderPomodoroTimeline();
+  showToast(completedEtutName + ' Tamamlandı!');
+
   renderDataPanel();
-  pomodoro.remainingMs=pomodoroTotalMs();
-  pomodoro.running=true;
-  pomodoro.endTime=Date.now()+pomodoro.remainingMs;
-  pomodoro.intervalId=setInterval(pomodoroTick,250);
+  pomodoro.remainingMs = pomodoroTotalMs();
   renderPomodoro();
 }
 
@@ -2288,6 +2767,22 @@ function wireEvents(){
   if(dom.dfOnlyTimeToggle) dom.dfOnlyTimeToggle.addEventListener('change', ()=>{ state.dfOnlyTime = dom.dfOnlyTimeToggle.checked; applyDFCustomizations(); });
   if(dom.dfDigitalOnlyToggle) dom.dfDigitalOnlyToggle.addEventListener('change', ()=>{ state.dfDigitalOnly = dom.dfDigitalOnlyToggle.checked; applyDFCustomizations(); });
 
+  if(dom.mainProgressStyleSelect){
+    dom.mainProgressStyleSelect.addEventListener('change', ()=>{
+      applyProgressStyle(dom.mainProgressStyleSelect.value);
+    });
+  }
+  if(dom.dfPomoProgressStyleSelect){
+    dom.dfPomoProgressStyleSelect.addEventListener('change', ()=>{
+      applyProgressStyle(dom.dfPomoProgressStyleSelect.value);
+    });
+  }
+
+  if(dom.pomoConfigHeader){
+    dom.pomoConfigHeader.addEventListener('click', ()=>{
+      dom.pomoConfigCard.classList.toggle('collapsed');
+    });
+  }
   if(dom.dfPomoViewModeSelect){
     dom.dfPomoViewModeSelect.addEventListener('change', ()=>{
       state.dfPomoViewMode = dom.dfPomoViewModeSelect.value;
@@ -2469,6 +2964,7 @@ function frame(ts){
   const dt=Math.min(0.05, (ts-(lastFrameTs||ts))/1000);
   lastFrameTs=ts;
   renderClock();
+  if(state.mode==='pomodoro') renderPomodoro(ts);
   if(state.deepFocus) renderDeepFocus();
   updateParallax();
   stepEkg(dt);
