@@ -3860,7 +3860,7 @@ function loadSettingsFromStorage(){
       if(dom.customColorInput) dom.customColorInput.value = s.customHex;
     }
     if(s.theme) applyTheme(s.theme, {skipSave: true, customHex: s.customHex});
-    if(s.profile) applyProfile(s.profile, {skipSave: true});
+    if(s.profile) applyProfile(s.profile, {skipSave: true, skipTheme: true});
     if(s.mode3D !== undefined) applyMode3D(!!s.mode3D, {skipSave: true});
     if(s.showHeartPulse !== undefined) state.showHeartPulse = !!s.showHeartPulse;
     if(s.clockOnlyMode !== undefined) state.clockOnlyMode = !!s.clockOnlyMode;
@@ -4610,7 +4610,7 @@ function init(){
   buildTicks();
   setupRings();
   loadSettingsFromStorage();
-  applyProfile(state.profile, {skipSave: true});
+  applyProfile(state.profile, {skipSave: true, skipTheme: true});
   applyMode3D(state.mode3D, {skipSave: true});
   wireEvents();
   setupBg();
