@@ -2120,7 +2120,7 @@ const ASSETS = {
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PROFILE_META = { neon2:{ name:'NEON PULSE', theme:'cyberpunkBlue' }, y2026:{ name:'SOLAR FLARE', theme:'volcanicOrange' } };
-const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', enableCelebration:true, celebrationStyle:'all' };
+const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#3fd0ff' };
 const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:25, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, isOvertime:false, overtimeSec:0, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:25*60*1000, intervalId:null, lastTickTs:0 };
 const SEC_R=78, SEC_C=2*Math.PI*SEC_R;
 const PRING_R=76, PRING_C=2*Math.PI*PRING_R;
@@ -2160,15 +2160,56 @@ function initFirebaseSync(){
         }
       });
 
-      // Synchronize today's focus minutes from Cloud
-      const todayKey = getTodayStorageKey();
-      const todayRef = db.ref("study_totals/" + todayKey);
-      todayRef.on("value", (snap) => {
-        const val = snap.val();
-        if(val !== null && val !== undefined){
-          todayFocusMinutes = parseInt(val, 10) || 0;
-          localStorage.setItem(todayKey, todayFocusMinutes);
+      // Synchronize all study totals from Cloud
+      const studyTotalsRef = db.ref("study_totals");
+      studyTotalsRef.on("value", (snap) => {
+        const totals = snap.val();
+        if(totals && typeof totals === 'object'){
+          Object.keys(totals).forEach(key => {
+            if(totals[key] !== null && totals[key] !== undefined){
+              localStorage.setItem(key, totals[key]);
+            } else {
+              localStorage.removeItem(key);
+            }
+          });
+          const todayKey = getTodayStorageKey();
+          if(totals[todayKey] !== undefined){
+            todayFocusMinutes = parseInt(totals[todayKey], 10) || 0;
+          }
           renderDataPanel();
+        }
+      });
+
+      // Synchronize session records from Cloud
+      const sessionRecordsRef = db.ref("session_records");
+      sessionRecordsRef.on("value", (snap) => {
+        const records = snap.val();
+        if(records && typeof records === 'object'){
+          Object.keys(records).forEach(isoKey => {
+            const rec = records[isoKey];
+            if(rec !== null && rec !== undefined){
+              localStorage.setItem('selmer_record_' + isoKey, JSON.stringify(rec));
+            } else {
+              localStorage.removeItem('selmer_record_' + isoKey);
+            }
+          });
+          renderDataPanel();
+        }
+      });
+
+      // Synchronize today's timeline from Cloud
+      const todayIsoKey = getTodayStorageKey().replace('selmer_focus_', '');
+      const timelineRef = db.ref("pomo_timeline/" + todayIsoKey);
+      timelineRef.on("value", (snap) => {
+        const cloudTimeline = snap.val();
+        if(Array.isArray(cloudTimeline)){
+          const todayKey = getTodayStorageKey() + '_timeline';
+          localStorage.setItem(todayKey, JSON.stringify(cloudTimeline));
+          pomodoroTimeline = cloudTimeline;
+          const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
+          focusIndex = completed.length + 1;
+          renderPomodoroTimeline();
+          renderPomodoro();
         }
       });
     }
@@ -2188,7 +2229,11 @@ function pushSettingsToCloud(settings){
 function pushStudyTotalToCloud(isoKey, mins){
   try {
     if(db){
-      db.ref("study_totals/selmer_focus_" + isoKey).set(mins);
+      if(mins === 0 || mins === null){
+        db.ref("study_totals/selmer_focus_" + isoKey).remove();
+      } else {
+        db.ref("study_totals/selmer_focus_" + isoKey).set(mins);
+      }
     }
   } catch(e){}
 }
@@ -2196,7 +2241,19 @@ function pushStudyTotalToCloud(isoKey, mins){
 function pushSessionRecordToCloud(isoKey, recordData){
   try {
     if(db){
-      db.ref("session_records/" + isoKey).set(recordData);
+      if(recordData === null){
+        db.ref("session_records/" + isoKey).remove();
+      } else {
+        db.ref("session_records/" + isoKey).set(recordData);
+      }
+    }
+  } catch(e){}
+}
+
+function pushTimelineToCloud(isoKey, timelineData){
+  try {
+    if(db){
+      db.ref("pomo_timeline/" + isoKey).set(timelineData);
     }
   } catch(e){}
 }
@@ -2315,8 +2372,10 @@ function checkDailyReset(){
 function saveTimelineToStorage(){
   try {
     const todayKey = getTodayStorageKey() + '_timeline';
+    const isoKey = getTodayStorageKey().replace('selmer_focus_', '');
     localStorage.setItem(todayKey, JSON.stringify(pomodoroTimeline));
     localStorage.setItem('selmer_last_active_date', new Date().toDateString());
+    if(typeof pushTimelineToCloud === 'function') pushTimelineToCloud(isoKey, pomodoroTimeline);
   } catch(e){}
 }
 
@@ -2509,9 +2568,10 @@ function applyTheme(themeName, opts){
 
   opts = opts||{};
   state.theme = themeName;
+  if(opts.customHex) state.customHex = opts.customHex;
   if(themeName==='custom'){
     document.body.setAttribute('data-theme','custom');
-    setCustomPalette(opts.customHex || dom.customColorInput.value);
+    setCustomPalette(opts.customHex || state.customHex || (dom.customColorInput ? dom.customColorInput.value : '#3fd0ff'));
   } else {
     document.body.setAttribute('data-theme', themeName);
     ['--c1','--c1-rgb','--c2','--c2-rgb','--c3','--c3-rgb'].forEach(v=>document.documentElement.style.removeProperty(v));
@@ -2993,9 +3053,10 @@ function startOcean(){
   currentPresetName='ocean';
 }
 
-function selectPreset(name){
+function selectPreset(name, opts){
+  opts = opts || {};
   document.querySelectorAll('.preset-btn').forEach(b=>b.classList.toggle('active', b.dataset.preset===name));
-  if(name==='off'){ stopPreset(0.6); return; }
+  if(name==='off'){ stopPreset(0.6); if(!opts.skipSave) saveSettingsToStorage(); return; }
   if(name==='whiteNoise') startSimpleNoise('whiteNoise', 0.18, 'lowpass', 8000);
   else if(name==='blackNoise') startSimpleNoise('blackNoise', 0.28, 'lowpass', 350);
   else if(name==='pinkNoise') startSimpleNoise('pinkNoise', 0.22, 'lowpass', 5000);
@@ -3003,6 +3064,7 @@ function selectPreset(name){
   else if(name==='ocean') startOcean();
   else if(name==='bioGreen') startBioGreen();
   else if(name==='cyberpunkRain') startCyberpunkRain();
+  if(!opts.skipSave) saveSettingsToStorage();
 }
 function playUiSound(type){
   ensureAudio();
@@ -3765,7 +3827,13 @@ function saveSettingsToStorage(){
       celebrationStyle: state.celebrationStyle,
       focusMin: pomodoro.focusMin,
       shortMin: pomodoro.shortMin,
-      pomoAlarm: dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime'
+      pomoAlarm: dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime',
+      dfScale: state.dfScale !== undefined ? state.dfScale : (dom.dfScaleSlider ? parseFloat(dom.dfScaleSlider.value) : 1.0),
+      dfAtmosphere: state.dfAtmosphere || (dom.dfAtmosphereSelect ? dom.dfAtmosphereSelect.value : 'void'),
+      customHex: state.customHex || (dom.customColorInput ? dom.customColorInput.value : '#3fd0ff'),
+      soundPreset: currentPresetName || 'off',
+      activeMode: state.mode || 'clock',
+      sessionType: pomodoro.sessionType || 'focus'
     };
     localStorage.setItem('selmer_app_settings', JSON.stringify(settings));
     if(typeof pushSettingsToCloud === 'function') pushSettingsToCloud(settings);
@@ -3787,7 +3855,11 @@ function loadSettingsFromStorage(){
       if(dom.dfAlarmVolumeSlider) dom.dfAlarmVolumeSlider.value = s.alarmVolume;
       if(alarmGain) alarmGain.gain.value = parseFloat(s.alarmVolume);
     }
-    if(s.theme) applyTheme(s.theme, {skipSave: true});
+    if(s.customHex) {
+      state.customHex = s.customHex;
+      if(dom.customColorInput) dom.customColorInput.value = s.customHex;
+    }
+    if(s.theme) applyTheme(s.theme, {skipSave: true, customHex: s.customHex});
     if(s.profile) applyProfile(s.profile, {skipSave: true});
     if(s.mode3D !== undefined) applyMode3D(!!s.mode3D, {skipSave: true});
     if(s.showHeartPulse !== undefined) state.showHeartPulse = !!s.showHeartPulse;
@@ -3812,6 +3884,16 @@ function loadSettingsFromStorage(){
       if(dom.mainCelebrationStyleSelect) dom.mainCelebrationStyleSelect.value = s.celebrationStyle;
       if(dom.dfCelebrationStyleSelect) dom.dfCelebrationStyleSelect.value = s.celebrationStyle;
     }
+    if(s.dfScale !== undefined) {
+      state.dfScale = parseFloat(s.dfScale);
+      if(dom.dfScaleSlider) dom.dfScaleSlider.value = s.dfScale;
+      if(dom.dfScaleWrapper) dom.dfScaleWrapper.style.transform = `scale(${s.dfScale})`;
+    }
+    if(s.dfAtmosphere) {
+      state.dfAtmosphere = s.dfAtmosphere;
+      if(dom.dfAtmosphereSelect) dom.dfAtmosphereSelect.value = s.dfAtmosphere;
+      if(dom.deepFocusOverlay) dom.deepFocusOverlay.setAttribute('data-atmosphere', s.dfAtmosphere);
+    }
     if(s.focusMin) {
       pomodoro.focusMin = parseInt(s.focusMin, 10);
       if(dom.pomoFocusInput) dom.pomoFocusInput.value = s.focusMin;
@@ -3824,9 +3906,30 @@ function loadSettingsFromStorage(){
       if(dom.shortBreakRange) dom.shortBreakRange.value = s.shortMin;
       if(dom.shortBreakValue) dom.shortBreakValue.textContent = s.shortMin + ' dk';
     }
+    if(s.sessionType) {
+      pomodoro.sessionType = s.sessionType;
+      if(dom.pomoTypeDers && dom.pomoTypeMola) {
+        if(s.sessionType === 'short' || s.sessionType === 'long') {
+          dom.pomoTypeMola.classList.add('active');
+          dom.pomoTypeDers.classList.remove('active');
+        } else {
+          dom.pomoTypeDers.classList.add('active');
+          dom.pomoTypeMola.classList.remove('active');
+        }
+      }
+    }
     if(s.pomoAlarm) {
       if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.value = s.pomoAlarm;
       if(dom.dfAlarmSelect) dom.dfAlarmSelect.value = s.pomoAlarm;
+    }
+    if(s.activeMode) {
+      setMode(s.activeMode, {skipSave: true});
+    }
+    if(s.soundPreset && s.soundPreset !== currentPresetName) {
+      selectPreset(s.soundPreset, {skipSave: true});
+    }
+    if(!pomodoro.running){
+      pomodoro.remainingMs = pomodoroTotalMs();
     }
     applyMainPageCustomizations();
     applyDFCustomizations();
@@ -4125,7 +4228,8 @@ function updateParallax(){
   dom.layerFront.style.setProperty('--py','0px');
 }
 
-function setMode(mode){
+function setMode(mode, opts){
+  opts = opts || {};
   state.mode=mode;
   document.querySelectorAll('#modeTabs button').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
   
@@ -4136,6 +4240,7 @@ function setMode(mode){
   if(state.deepFocus){
     enterDeepFocus();
   }
+  if(!opts.skipSave) saveSettingsToStorage();
 }
 function openSettingsDrawer(){ dom.settingsDrawer.classList.add('open'); dom.drawerBackdrop.classList.add('open'); }
 function closeSettingsDrawer(){ dom.settingsDrawer.classList.remove('open'); dom.drawerBackdrop.classList.remove('open'); }
@@ -4284,6 +4389,7 @@ function wireEvents(){
       if(dom.focusDurationRange) dom.focusDurationRange.value = val;
       if(dom.focusDurationValue) dom.focusDurationValue.textContent = val + ' dk';
       if(pomodoro.sessionType === 'focus' && !pomodoro.running) pomodoroReset();
+      saveSettingsToStorage();
     });
   }
   if(dom.pomoFocusMinus){
@@ -4306,6 +4412,7 @@ function wireEvents(){
       if(dom.shortBreakRange) dom.shortBreakRange.value = val;
       if(dom.shortBreakValue) dom.shortBreakValue.textContent = val + ' dk';
       if(pomodoro.sessionType === 'short' && !pomodoro.running) pomodoroReset();
+      saveSettingsToStorage();
     });
   }
   if(dom.pomoBreakMinus){
@@ -4327,6 +4434,7 @@ function wireEvents(){
       dom.pomoTypeMola.classList.remove('active');
       pomodoro.sessionType = 'focus';
       pomodoroReset();
+      saveSettingsToStorage();
     });
   }
   if(dom.pomoTypeMola){
@@ -4335,6 +4443,7 @@ function wireEvents(){
       dom.pomoTypeDers.classList.remove('active');
       pomodoro.sessionType = 'short';
       pomodoroReset();
+      saveSettingsToStorage();
     });
   }
 
@@ -4394,12 +4503,17 @@ function wireEvents(){
   if(dom.dfScaleSlider){
     dom.dfScaleSlider.addEventListener('input', ()=>{
       const val = parseFloat(dom.dfScaleSlider.value) || 1.0;
+      state.dfScale = val;
       if(dom.dfScaleWrapper) dom.dfScaleWrapper.style.transform = `scale(${val})`;
+      saveSettingsToStorage();
     });
   }
   if(dom.dfAtmosphereSelect){
     dom.dfAtmosphereSelect.addEventListener('change', ()=>{
-      if(dom.deepFocusOverlay) dom.deepFocusOverlay.setAttribute('data-atmosphere', dom.dfAtmosphereSelect.value);
+      const val = dom.dfAtmosphereSelect.value;
+      state.dfAtmosphere = val;
+      if(dom.deepFocusOverlay) dom.deepFocusOverlay.setAttribute('data-atmosphere', val);
+      saveSettingsToStorage();
     });
   }
   if(dom.saveDayOpenBtn) dom.saveDayOpenBtn.addEventListener('click', openSaveDayModal);
@@ -4442,6 +4556,7 @@ function wireEvents(){
       dom.focusDurationValue.textContent=pomodoro.focusMin+' dk';
       if(dom.pomoFocusInput) dom.pomoFocusInput.value = pomodoro.focusMin;
       if(pomodoro.sessionType==='focus' && !pomodoro.running) pomodoroReset();
+      saveSettingsToStorage();
     });
   }
   if(dom.shortBreakRange){
@@ -4450,6 +4565,7 @@ function wireEvents(){
       dom.shortBreakValue.textContent=pomodoro.shortMin+' dk';
       if(dom.pomoBreakInput) dom.pomoBreakInput.value = pomodoro.shortMin;
       if(pomodoro.sessionType==='short' && !pomodoro.running) pomodoroReset();
+      saveSettingsToStorage();
     });
   }
   
