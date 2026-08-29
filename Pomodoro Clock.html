@@ -525,6 +525,44 @@ body.mode-pomodoro #soundPanel {
   align-items: center;
   justify-content: center;
   gap: 6px;
+  position: relative;
+}
+.save-day-btn {
+  margin-top: 10px;
+  background: rgba(var(--c1-rgb), 0.2);
+  border: 1px solid var(--c1);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: var(--radius-m);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.save-day-btn:hover {
+  background: var(--c1);
+  color: #000;
+  box-shadow: 0 0 15px rgba(var(--c1-rgb), 0.6);
+  transform: translateY(-2px);
+}
+.save-day-option-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.save-day-option-label:hover, .save-day-option-label.selected {
+  border-color: var(--c1);
+  background: rgba(var(--c1-rgb), 0.15);
 }
 .pomo-top-label {
   font-family: 'JetBrains Mono', monospace;
@@ -1282,6 +1320,7 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
         <div class="pomo-top-panel">
           <span class="pomo-top-label">TOPLAM ÇALIŞMA SÜRESİ</span>
           <span class="pomo-top-time" id="pomoTotalWorkTime">00s 00dk 00sn</span>
+          <button class="save-day-btn" id="saveDayOpenBtn">💾 Günü Kaydet</button>
         </div>
       </div>
 
@@ -1768,6 +1807,28 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
   </div>
 </aside>
 
+<!-- SAVE DAY MODAL -->
+<div class="pomo-modal-backdrop" id="saveDayModalBackdrop">
+  <div class="pomo-modal" id="saveDayModal" style="max-width:440px;">
+    <div class="pomo-modal-header">
+      <span>💾 GÜNÜ KAYDET</span>
+      <button class="pomo-modal-close" id="saveDayModalClose">&times;</button>
+    </div>
+    <div class="pomo-config-body" style="gap:16px;">
+      <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
+        Mevcut çalışma verilerinizi kaydedeceğiniz tarihi seçiniz (Son 3 Gün):
+      </p>
+      <div class="save-day-options" id="saveDayDateOptions" style="display:flex; flex-direction:column; gap:10px;">
+        <!-- Populated via JS -->
+      </div>
+      <div style="display:flex; justify-flex:flex-end; gap:10px; margin-top:10px;">
+        <button class="pomo-type-btn" id="saveDayCancelBtn">İptal</button>
+        <button class="pomo-type-btn active" id="saveDayConfirmBtn">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- POMODORO CONFIG MODAL -->
 <div class="pomo-modal-backdrop" id="pomoConfigModalBackdrop">
   <div class="pomo-modal" id="pomoConfigModal">
@@ -1850,7 +1911,7 @@ function cacheDom(){
    'focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'mode3dToggle','mode3dValue','focusDonutProgress','focusDonutLabel','todayMinutesLabel',
    'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
-   'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn'
+   'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn','saveDayOpenBtn','saveDayModalBackdrop','saveDayModalClose','saveDayDateOptions','saveDayCancelBtn','saveDayConfirmBtn'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -1909,7 +1970,7 @@ function getCurrentSessionElapsedMs(){
 function getTotalWorkSeconds(){
   const completedSec = pomodoroTimeline
     .filter(t => t.type === 'focus' && t.status === 'completed')
-    .reduce((acc, t) => acc + (t.elapsedSec || (t.mins * 60)), 0);
+    .reduce((acc, t) => acc + (typeof t.elapsedSec === 'number' ? t.elapsedSec : 0), 0);
 
   const activeSec = Math.floor(getCurrentSessionElapsedMs() / 1000);
   return completedSec + activeSec;
@@ -1926,13 +1987,16 @@ function checkDailyReset(){
     focusIndex = 1;
     localStorage.setItem('selmer_last_active_date', todayStr);
     localStorage.setItem(todayKey, JSON.stringify([]));
-  } else {
+  } else if(pomodoroTimeline.length === 0) {
     try {
       const savedTimeline = localStorage.getItem(todayKey);
       if(savedTimeline){
-        pomodoroTimeline = JSON.parse(savedTimeline);
-        const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
-        focusIndex = completed.length + 1;
+        const parsed = JSON.parse(savedTimeline);
+        if(Array.isArray(parsed) && parsed.length > 0){
+          pomodoroTimeline = parsed;
+          const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
+          focusIndex = completed.length + 1;
+        }
       }
     } catch(e){}
   }
@@ -2028,7 +2092,8 @@ function renderPomodoroTimeline(justCompletedIdx){
     if(item.status === 'completed'){
       statusText = 'TAMAMLANDI';
     } else if(item.status === 'active'){
-      statusText = pomodoro.running ? 'ÇALIŞIYOR' : 'DURAKLATILDI';
+      const sessionElapsed = getCurrentSessionElapsedMs();
+      statusText = pomodoro.running ? 'ÇALIŞIYOR' : (sessionElapsed > 0 ? 'DURAKLATILDI' : 'HAZIR');
     }
     let durText = item.elapsedSec ? Math.round(item.elapsedSec / 60) + ' dk' : item.mins + ' dk';
 
@@ -2919,7 +2984,8 @@ function renderPomodoro(ts){
   if(dom.pomoSessionBadge) dom.pomoSessionBadge.textContent = typeName;
   if(dom.pomodoroSessionType) dom.pomodoroSessionType.textContent = sessionTypeLabel(pomodoro.sessionType);
 
-  const statusStr = pomodoro.isOvertime ? 'FAZLA ÇALIŞMA (+)' : (pomodoro.running ? 'ÇALIŞIYOR' : 'DURAKLATILDI');
+  const sessionElapsed = getCurrentSessionElapsedMs();
+  const statusStr = pomodoro.isOvertime ? 'FAZLA ÇALIŞMA (+)' : (pomodoro.running ? 'ÇALIŞIYOR' : (sessionElapsed > 0 ? 'DURAKLATILDI' : 'HAZIR'));
   if(dom.pomoStatusSub) dom.pomoStatusSub.textContent = statusStr;
 
   const btnText = pomodoro.running ? 'DURAKLAT' : 'BAŞLAT';
@@ -2998,11 +3064,11 @@ function pomodoroStart(){
     lastItem.breakBeforeMins = breakMins;
   }
 
-  saveTimelineToStorage();
-  renderPomodoroTimeline();
-
   pomodoro.running = true;
   pomodoro.sessionStartTs = nowMs;
+
+  saveTimelineToStorage();
+  renderPomodoroTimeline();
 
   if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
   pomodoro.intervalId = setInterval(pomodoroTick, 100);
@@ -3199,7 +3265,8 @@ function renderDeepFocus(){
     const totalStr = 'TOPLAM ÇALIŞMA: ' + formatHoursMinutesSeconds(totalSec);
     if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.textContent = totalStr;
 
-    const sessionLabel = (focusIndex + '. ETÜT') + (pomodoro.running ? ' (ÇALIŞIYOR)' : ' (DURAKLATILDI)');
+    const dfSessionElapsed = getCurrentSessionElapsedMs();
+    const sessionLabel = (focusIndex + '. ETÜT') + (pomodoro.running ? ' (ÇALIŞIYOR)' : (dfSessionElapsed > 0 ? ' (DURAKLATILDI)' : ' (HAZIR)'));
     if(dom.dfSessionLabel) dom.dfSessionLabel.textContent = sessionLabel;
 
     let timeDisplayStr = '';
@@ -3256,6 +3323,142 @@ function _oldRenderDeepFocus(){
     dom.dfSessionLabel.textContent='SERBEST ODAK';
   }
   // dom.dfFocus removed
+}
+
+function getLast3Days(){
+  const days = [];
+  const today = new Date();
+  const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+  const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+  for(let i = 0; i < 3; i++){
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+
+    const isoKey = d.getFullYear() + '_' + String(d.getMonth()+1).padStart(2,'0') + '_' + String(d.getDate()).padStart(2,'0');
+    const dateDisplay = d.getDate() + ' ' + monthNames[d.getMonth()] + ' ' + d.getFullYear() + ' (' + dayNames[d.getDay()] + ')';
+
+    let tag = 'Bugün';
+    if(i === 1) tag = 'Dün';
+    if(i === 2) tag = '2 Gün Önce';
+
+    days.push({
+      index: i,
+      isoKey: isoKey,
+      tag: tag,
+      dateDisplay: dateDisplay
+    });
+  }
+  return days;
+}
+
+function openSaveDayModal(){
+  if(!dom.saveDayDateOptions) return;
+  dom.saveDayDateOptions.innerHTML = '';
+
+  const days = getLast3Days();
+  const currentTotalSec = getTotalWorkSeconds();
+  const timeFormatted = formatHoursMinutesSeconds(currentTotalSec);
+
+  days.forEach((day, idx) => {
+    const label = document.createElement('label');
+    label.className = 'save-day-option-label' + (idx === 0 ? ' selected' : '');
+    label.innerHTML = `
+      <input type="radio" name="saveDayDate" value="${day.isoKey}" ${idx === 0 ? 'checked' : ''} style="accent-color:var(--c1);">
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <span style="font-weight:700; color:var(--text); font-size:0.9rem;">${day.tag} - ${day.dateDisplay}</span>
+        <span style="font-size:0.8rem; color:var(--text-muted);">Kaydedilecek Süre: ${timeFormatted}</span>
+      </div>
+    `;
+
+    label.addEventListener('click', () => {
+      document.querySelectorAll('.save-day-option-label').forEach(el => el.classList.remove('selected'));
+      label.classList.add('selected');
+    });
+
+    dom.saveDayDateOptions.appendChild(label);
+  });
+
+  if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.add('open');
+}
+
+function confirmSaveDay(){
+  const selectedRadio = document.querySelector('input[name="saveDayDate"]:checked');
+  if(!selectedRadio){
+    showToast('Lütfen bir tarih seçiniz!');
+    return;
+  }
+  const isoKey = selectedRadio.value;
+  const totalSec = getTotalWorkSeconds();
+  const mins = Math.round(totalSec / 60);
+
+  try {
+    const storageKey = 'selmer_focus_' + isoKey;
+    const prevMins = parseInt(localStorage.getItem(storageKey) || '0', 10);
+    const newMins = prevMins + mins;
+    localStorage.setItem(storageKey, newMins);
+
+    const recordKey = 'selmer_record_' + isoKey;
+    const recordData = {
+      isoKey: isoKey,
+      totalWorkSeconds: totalSec,
+      completedEtuts: pomodoroTimeline.filter(t => t.status === 'completed'),
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(recordKey, JSON.stringify(recordData));
+
+    if(isoKey === getTodayStorageKey().replace('selmer_focus_','')){
+      todayFocusMinutes = newMins;
+      renderDataPanel();
+    }
+  } catch(e){}
+
+  showToast('Veriler başarıyla kaydedildi! 💾');
+  if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open');
+}
+
+function saveSettingsToStorage(){
+  try {
+    const settings = {
+      volume: dom.volumeSlider ? dom.volumeSlider.value : 0.4,
+      alarmVolume: dom.alarmVolumeSlider ? dom.alarmVolumeSlider.value : 0.7,
+      preset: state.preset || 'deepSynth',
+      theme: state.theme || 'cyberpunkBlue',
+      profile: state.profile || 'neon2',
+      dfFont: state.dfFont,
+      progressStyle: state.progressStyle,
+      dfPomoViewMode: state.dfPomoViewMode,
+      focusMin: pomodoro.focusMin,
+      shortMin: pomodoro.shortMin,
+      pomoAlarm: dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime'
+    };
+    localStorage.setItem('selmer_app_settings', JSON.stringify(settings));
+  } catch(e){}
+}
+
+function loadSettingsFromStorage(){
+  try {
+    const raw = localStorage.getItem('selmer_app_settings');
+    if(!raw) return;
+    const s = JSON.parse(raw);
+    if(s.volume !== undefined && dom.volumeSlider) { dom.volumeSlider.value = s.volume; if(dom.dfVolumeSlider) dom.dfVolumeSlider.value = s.volume; }
+    if(s.alarmVolume !== undefined && dom.alarmVolumeSlider) { dom.alarmVolumeSlider.value = s.alarmVolume; if(dom.dfAlarmVolumeSlider) dom.dfAlarmVolumeSlider.value = s.alarmVolume; }
+    if(s.theme) applyTheme(s.theme);
+    if(s.profile) applyProfile(s.profile);
+    if(s.dfFont) {
+      state.dfFont = s.dfFont;
+      if(dom.dfFontSelect) dom.dfFontSelect.value = s.dfFont;
+      if(dom.dfPomoFontSelect) dom.dfPomoFontSelect.value = s.dfFont;
+    }
+    if(s.progressStyle) applyProgressStyle(s.progressStyle);
+    if(s.dfPomoViewMode) state.dfPomoViewMode = s.dfPomoViewMode;
+    if(s.focusMin && dom.pomoFocusInput) { pomodoro.focusMin = parseInt(s.focusMin, 10); dom.pomoFocusInput.value = s.focusMin; }
+    if(s.shortMin && dom.pomoBreakInput) { pomodoro.shortMin = parseInt(s.shortMin, 10); dom.pomoBreakInput.value = s.shortMin; }
+    if(s.pomoAlarm) {
+      if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.value = s.pomoAlarm;
+      if(dom.dfAlarmSelect) dom.dfAlarmSelect.value = s.pomoAlarm;
+    }
+  } catch(e){}
 }
 
 function getTodayStorageKey(){
@@ -3610,6 +3813,16 @@ function wireEvents(){
       if(dom.deepFocusOverlay) dom.deepFocusOverlay.setAttribute('data-atmosphere', dom.dfAtmosphereSelect.value);
     });
   }
+  if(dom.saveDayOpenBtn) dom.saveDayOpenBtn.addEventListener('click', openSaveDayModal);
+  if(dom.saveDayModalClose) dom.saveDayModalClose.addEventListener('click', ()=>{ if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open'); });
+  if(dom.saveDayCancelBtn) dom.saveDayCancelBtn.addEventListener('click', ()=>{ if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open'); });
+  if(dom.saveDayConfirmBtn) dom.saveDayConfirmBtn.addEventListener('click', confirmSaveDay);
+  if(dom.saveDayModalBackdrop){
+    dom.saveDayModalBackdrop.addEventListener('click', (e)=>{
+      if(e.target === dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open');
+    });
+  }
+
   if(dom.resetTodayTimelineBtn){
     dom.resetTodayTimelineBtn.addEventListener('click', ()=>{
       if(confirm('Bugünkü etüt çizelgesini ve toplam çalışma süresini sıfırlamak istediğinize emin misiniz?')){
@@ -3690,6 +3903,7 @@ function init(){
   dom.profileThumbY2026.src=ASSETS.y2026;
   buildTicks();
   setupRings();
+  loadSettingsFromStorage();
   applyProfile(state.profile);
   applyMode3D(true);
   wireEvents();
