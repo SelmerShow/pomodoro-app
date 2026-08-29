@@ -1894,13 +1894,26 @@ function refreshColorCache(){
 
 
 
-let totalWorkMs = 0;
-let totalWorkSeconds = 0;
-let sessionBaseWorkMs = 0;
-let sessionStartTs = 0;
-let overtimeStartTs = 0;
 let pomodoroTimeline = [];
 let focusIndex = 1;
+
+function getCurrentSessionElapsedMs(){
+  if(pomodoro.sessionType !== 'focus') return 0;
+  let currentRunMs = 0;
+  if(pomodoro.running && pomodoro.sessionStartTs > 0){
+    currentRunMs = Math.max(0, Date.now() - pomodoro.sessionStartTs);
+  }
+  return (pomodoro.sessionAccumulatedMs || 0) + currentRunMs;
+}
+
+function getTotalWorkSeconds(){
+  const completedSec = pomodoroTimeline
+    .filter(t => t.type === 'focus' && t.status === 'completed')
+    .reduce((acc, t) => acc + (t.elapsedSec || (t.mins * 60)), 0);
+
+  const activeSec = Math.floor(getCurrentSessionElapsedMs() / 1000);
+  return completedSec + activeSec;
+}
 
 function checkDailyReset(){
   const todayKey = getTodayStorageKey() + '_timeline';
@@ -1909,9 +1922,6 @@ function checkDailyReset(){
 
   if(savedDate !== todayStr){
     // Midnight reset
-    totalWorkMs = 0;
-    totalWorkSeconds = 0;
-    sessionBaseWorkMs = 0;
     pomodoroTimeline = [];
     focusIndex = 1;
     localStorage.setItem('selmer_last_active_date', todayStr);
@@ -1923,10 +1933,6 @@ function checkDailyReset(){
         pomodoroTimeline = JSON.parse(savedTimeline);
         const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
         focusIndex = completed.length + 1;
-        const completedSec = completed.reduce((acc, t) => acc + (t.elapsedSec || (t.mins * 60)), 0);
-        totalWorkSeconds = completedSec;
-        totalWorkMs = completedSec * 1000;
-        sessionBaseWorkMs = totalWorkMs;
       }
     } catch(e){}
   }
@@ -2875,6 +2881,7 @@ function formatMs(ms){
 function renderPomodoro(ts){
   const PRING_BIG_C = 2 * Math.PI * 98;
   const currentTotal = pomodoroTotalMs();
+  const elapsedMs = getCurrentSessionElapsedMs();
 
   let frac = 0;
   let timeStr = '';
@@ -2919,11 +2926,11 @@ function renderPomodoro(ts){
   if(dom.pomodoroStartPause) dom.pomodoroStartPause.textContent = btnText;
   if(dom.pomoMainStartPause) dom.pomoMainStartPause.textContent = btnText;
 
-  const showFinish = pomodoro.isOvertime || (pomodoro.running && pomodoro.sessionType === 'focus');
+  const showFinish = (pomodoro.sessionType === 'focus') && (pomodoro.running || elapsedMs > 0 || pomodoro.isOvertime);
   if(dom.pomoFinishBtn) dom.pomoFinishBtn.style.display = showFinish ? 'inline-block' : 'none';
   if(dom.dfFinishBtn) dom.dfFinishBtn.style.display = (showFinish && state.deepFocus) ? 'inline-block' : 'none';
 
-  if(dom.pomoTotalWorkTime) dom.pomoTotalWorkTime.textContent = formatHoursMinutesSeconds(totalWorkSeconds);
+  if(dom.pomoTotalWorkTime) dom.pomoTotalWorkTime.textContent = formatHoursMinutesSeconds(getTotalWorkSeconds());
 }
 
 function _oldRenderPomodoro(){
@@ -2957,7 +2964,7 @@ function pomodoroStart(){
   
   const nowMs = Date.now();
   const now = new Date(nowMs);
-  const end = new Date(nowMs + pomodoro.focusMin * 60000);
+  const end = new Date(nowMs + (pomodoro.remainingMs || (pomodoro.focusMin * 60000)));
   const startStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
   const endStr = String(end.getHours()).padStart(2,'0') + ':' + String(end.getMinutes()).padStart(2,'0');
 
@@ -2995,56 +3002,38 @@ function pomodoroStart(){
   renderPomodoroTimeline();
 
   pomodoro.running = true;
-  pomodoro.lastTickTs = nowMs;
-  sessionBaseWorkMs = totalWorkMs;
-  sessionStartTs = nowMs;
-  if(pomodoro.isOvertime){
-    overtimeStartTs = nowMs - (pomodoro.overtimeSec * 1000);
-  }
+  pomodoro.sessionStartTs = nowMs;
 
-  if(pomodoro.timerMode === 'stopwatch'){
-    pomodoro.startTime = nowMs - pomodoro.elapsedTimeMs;
-  } else {
-    pomodoro.endTime = nowMs + pomodoro.remainingMs;
-  }
+  if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
   pomodoro.intervalId = setInterval(pomodoroTick, 100);
   renderPomodoro();
 }
+
 function pomodoroPause(){
   if(!pomodoro.running) return;
-  pomodoro.running = false;
-  playUiSound('pause');
   const nowMs = Date.now();
-  if(pomodoro.sessionType === 'focus'){
-    totalWorkMs = sessionBaseWorkMs + (nowMs - sessionStartTs);
-    totalWorkSeconds = Math.floor(totalWorkMs / 1000);
-    sessionBaseWorkMs = totalWorkMs;
+  if(pomodoro.sessionStartTs > 0){
+    pomodoro.sessionAccumulatedMs = (pomodoro.sessionAccumulatedMs || 0) + (nowMs - pomodoro.sessionStartTs);
   }
-  if(pomodoro.timerMode === 'stopwatch'){
-    pomodoro.elapsedTimeMs = nowMs - pomodoro.startTime;
-  } else {
-    pomodoro.remainingMs = Math.max(0, pomodoro.endTime - nowMs);
-  }
-  clearInterval(pomodoro.intervalId);
+  pomodoro.sessionStartTs = 0;
+  pomodoro.running = false;
+  if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
+
+  playUiSound('pause');
   renderPomodoroTimeline();
   renderPomodoro();
 }
+
 function pomodoroReset(){
   playUiSound('reset');
+  if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
   pomodoro.running = false;
   pomodoro.isOvertime = false;
   pomodoro.overtimeSec = 0;
-  clearInterval(pomodoro.intervalId);
-  if(pomodoro.timerMode === 'stopwatch'){
-    if(pomodoro.elapsedTimeMs > 5000 && typeof recordWorkMinutes === 'function'){
-      recordWorkMinutes(Math.round(pomodoro.elapsedTimeMs / 60000));
-    }
-    pomodoro.elapsedTimeMs = 0;
-  } else {
-    totalWorkMs = sessionBaseWorkMs;
-    totalWorkSeconds = Math.floor(totalWorkMs / 1000);
-    pomodoro.remainingMs = pomodoroTotalMs();
-  }
+  pomodoro.sessionAccumulatedMs = 0;
+  pomodoro.sessionStartTs = 0;
+  pomodoro.remainingMs = pomodoroTotalMs();
+
   pomodoroTimeline.forEach(t => {
     if(t.status === 'active') t.status = 'pending';
   });
@@ -3052,79 +3041,75 @@ function pomodoroReset(){
   renderPomodoroTimeline();
   renderPomodoro();
 }
+
 function pomodoroTick(){
-  const now = Date.now();
-  pomodoro.lastTickTs = now;
+  if(!pomodoro.running) return;
+  const targetMs = pomodoroTotalMs();
+  const elapsedMs = getCurrentSessionElapsedMs();
 
-  if(pomodoro.running && pomodoro.sessionType === 'focus'){
-    totalWorkMs = sessionBaseWorkMs + (now - sessionStartTs);
-    totalWorkSeconds = Math.floor(totalWorkMs / 1000);
-  }
-
-  if(pomodoro.timerMode === 'stopwatch'){
-    pomodoro.elapsedTimeMs = now - pomodoro.startTime;
-    renderPomodoro();
-    return;
-  }
-
-  if(pomodoro.isOvertime){
-    if(!overtimeStartTs) overtimeStartTs = now - (pomodoro.overtimeSec * 1000);
-    pomodoro.overtimeSec = (now - overtimeStartTs) / 1000;
-    renderPomodoro();
-    return;
-  }
-
-  pomodoro.remainingMs = Math.max(0, pomodoro.endTime - now);
-  if(pomodoro.remainingMs <= 0){
+  if(elapsedMs >= targetMs){
+    if(!pomodoro.isOvertime){
+      pomodoro.isOvertime = true;
+      playAlarmSound((dom.dfAlarmSelect && dom.dfAlarmSelect.value) || (dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime'));
+      showToast('Etüt Süresi Doldu! Overtime (+00:00) Başladı.');
+    }
     pomodoro.remainingMs = 0;
-    pomodoro.isOvertime = true;
-    overtimeStartTs = now;
+    pomodoro.overtimeSec = Math.floor((elapsedMs - targetMs) / 1000);
+  } else {
+    pomodoro.isOvertime = false;
     pomodoro.overtimeSec = 0;
-    playAlarmSound((dom.dfAlarmSelect && dom.dfAlarmSelect.value) || (dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime'));
-    showToast('Etüt Süresi Doldu! Overtime (+00:00) Başladı.');
+    pomodoro.remainingMs = Math.max(0, targetMs - elapsedMs);
   }
+
   renderPomodoro();
 }
 
 function handleFinishClick(){
   const wasDeepFocus = state.deepFocus;
 
-  let totalElapsedSec = 0;
-  if(pomodoro.isOvertime){
-    totalElapsedSec = (pomodoro.focusMin * 60) + Math.floor(pomodoro.overtimeSec);
-  } else {
-    const totalMs = pomodoroTotalMs();
-    const doneMs = Math.max(0, totalMs - pomodoro.remainingMs);
-    totalElapsedSec = Math.floor(doneMs / 1000);
+  // 1. Calculate final elapsed seconds for this session
+  const elapsedMs = getCurrentSessionElapsedMs();
+  const totalElapsedSec = Math.floor(elapsedMs / 1000);
+
+  // 2. Stop timer and clear active session timing
+  if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
+  pomodoro.running = false;
+  pomodoro.isOvertime = false;
+  pomodoro.overtimeSec = 0;
+  pomodoro.sessionAccumulatedMs = 0;
+  pomodoro.sessionStartTs = 0;
+
+  // 3. Update active timeline node
+  let completedEtutName = 'Etüt';
+  let completedEtutIdx = null;
+
+  let activeItem = pomodoroTimeline.find(t => t.status === 'active');
+  if(!activeItem) {
+    activeItem = pomodoroTimeline.find(t => t.status === 'pending');
+  }
+  if(!activeItem && pomodoroTimeline.length > 0) {
+    activeItem = pomodoroTimeline[pomodoroTimeline.length - 1];
   }
 
-  clearInterval(pomodoro.intervalId);
-  pomodoro.running = false;
-  sessionBaseWorkMs = totalWorkMs;
+  if(activeItem){
+    activeItem.status = 'completed';
+    activeItem.endTimeMs = Date.now();
+    activeItem.elapsedSec = totalElapsedSec;
+    completedEtutName = activeItem.name;
+    completedEtutIdx = activeItem.idx;
+  }
 
+  // 4. Record work minutes for statistics panel if > 0
   const totalElapsedMins = Math.max(1, Math.round(totalElapsedSec / 60));
-
-  if(totalElapsedMins > 0){
+  if(totalElapsedSec > 0){
     recordWorkMinutes(totalElapsedMins);
   }
 
-  let completedEtutName = 'Etüt';
-  let completedEtutIdx = null;
-  if(pomodoroTimeline.length > 0){
-    const activeItem = pomodoroTimeline.find(t => t.status === 'active') || pomodoroTimeline.find(t => t.status !== 'completed') || pomodoroTimeline[pomodoroTimeline.length - 1];
-    if(activeItem){
-      activeItem.status = 'completed';
-      activeItem.endTimeMs = Date.now();
-      activeItem.elapsedSec = totalElapsedSec;
-      completedEtutName = activeItem.name;
-      completedEtutIdx = activeItem.idx;
-    }
-  }
-
+  // 5. Update focusIndex for next session
   const completedCount = pomodoroTimeline.filter(t => t.status === 'completed').length;
   focusIndex = completedCount + 1;
 
-  // Prepare next etüt node as pending
+  // 6. Push next pending etüt node to timeline
   const now = new Date();
   const end = new Date(now.getTime() + pomodoro.focusMin * 60000);
   const startStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
@@ -3138,20 +3123,22 @@ function handleFinishClick(){
     status: 'pending'
   });
 
+  // 7. Exit Deep Focus mode if active, and switch tab to Pomodoro
   if(wasDeepFocus){
     exitDeepFocus();
-    setMode('pomodoro');
   }
+  setMode('pomodoro');
 
+  // 8. Save timeline and re-render with completion pulse animation
   saveTimelineToStorage();
   renderPomodoroTimeline(completedEtutIdx);
-  showToast(completedEtutName + ' Başarıyla Bitirildi! 🎉');
 
+  // 9. Play audio & celebration feedback
   playUiSound('finish');
   triggerCelebrationEffects();
+  showToast(completedEtutName + ' Başarıyla Bitirildi! 🎉');
 
-  pomodoro.isOvertime = false;
-  pomodoro.overtimeSec = 0;
+  // 10. Reset remaining time for next session
   pomodoro.remainingMs = pomodoroTotalMs();
   renderPomodoro();
 }
@@ -3206,22 +3193,31 @@ function renderDeepFocus(){
   if(!state.deepFocus) return;
   applyDFCustomizations();
 
+  const totalSec = getTotalWorkSeconds();
+
   if(state.mode === 'pomodoro'){
-    const totalStr = 'TOPLAM ÇALIŞMA: ' + formatHoursMinutesSeconds(totalWorkSeconds);
+    const totalStr = 'TOPLAM ÇALIŞMA: ' + formatHoursMinutesSeconds(totalSec);
     if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.textContent = totalStr;
 
     const sessionLabel = (focusIndex + '. ETÜT') + (pomodoro.running ? ' (ÇALIŞIYOR)' : ' (DURAKLATILDI)');
     if(dom.dfSessionLabel) dom.dfSessionLabel.textContent = sessionLabel;
 
+    let timeDisplayStr = '';
+    if(pomodoro.isOvertime){
+      timeDisplayStr = '+ ' + formatMs(pomodoro.overtimeSec * 1000);
+    } else {
+      timeDisplayStr = formatMs(pomodoro.remainingMs);
+    }
+
     if(state.dfPomoViewMode === 'total'){
-      dom.dfTime.textContent = formatHoursMinutesSeconds(totalWorkSeconds);
+      dom.dfTime.textContent = formatHoursMinutesSeconds(totalSec);
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
     } else if(state.dfPomoViewMode === 'countdown'){
-      dom.dfTime.textContent = formatMs(pomodoro.remainingMs);
+      dom.dfTime.textContent = timeDisplayStr;
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
     } else {
       // both
-      dom.dfTime.textContent = formatMs(pomodoro.remainingMs);
+      dom.dfTime.textContent = timeDisplayStr;
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'block';
     }
   } else {
@@ -3617,8 +3613,13 @@ function wireEvents(){
   if(dom.resetTodayTimelineBtn){
     dom.resetTodayTimelineBtn.addEventListener('click', ()=>{
       if(confirm('Bugünkü etüt çizelgesini ve toplam çalışma süresini sıfırlamak istediğinize emin misiniz?')){
-        totalWorkMs = 0;
-        totalWorkSeconds = 0;
+        pomodoro.running = false;
+        if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
+        pomodoro.sessionAccumulatedMs = 0;
+        pomodoro.sessionStartTs = 0;
+        pomodoro.isOvertime = false;
+        pomodoro.overtimeSec = 0;
+        pomodoro.remainingMs = pomodoroTotalMs();
         pomodoroTimeline = [];
         focusIndex = 1;
         saveTimelineToStorage();
