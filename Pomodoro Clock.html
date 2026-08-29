@@ -525,6 +525,44 @@ body.mode-pomodoro #soundPanel {
   align-items: center;
   justify-content: center;
   gap: 6px;
+  position: relative;
+}
+.save-day-btn {
+  margin-top: 10px;
+  background: rgba(var(--c1-rgb), 0.2);
+  border: 1px solid var(--c1);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: var(--radius-m);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.save-day-btn:hover {
+  background: var(--c1);
+  color: #000;
+  box-shadow: 0 0 15px rgba(var(--c1-rgb), 0.6);
+  transform: translateY(-2px);
+}
+.save-day-option-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.save-day-option-label:hover, .save-day-option-label.selected {
+  border-color: var(--c1);
+  background: rgba(var(--c1-rgb), 0.15);
 }
 .pomo-top-label {
   font-family: 'JetBrains Mono', monospace;
@@ -873,6 +911,14 @@ body.mode-pomodoro #soundPanel {
   border-color: rgba(var(--c1-rgb), 0.5);
   background: linear-gradient(90deg, rgba(var(--c1-rgb), 0.12), rgba(10, 14, 28, 0.9));
   box-shadow: 0 4px 18px rgba(var(--c1-rgb), 0.15);
+}
+@keyframes nodeCompletePulse {
+  0% { transform: scale(0.92) translateX(-10px); opacity: 0.6; box-shadow: 0 0 0 0 rgba(var(--c1-rgb), 0.9); }
+  50% { transform: scale(1.06) translateX(4px); opacity: 1; box-shadow: 0 0 35px 10px rgba(var(--c1-rgb), 0.85); border-color: var(--c1); }
+  100% { transform: scale(1) translateX(0); box-shadow: 0 4px 18px rgba(var(--c1-rgb), 0.15); }
+}
+.pomo-node.just-completed {
+  animation: nodeCompletePulse 1.2s var(--ease) forwards !important;
 }
 .pomo-node.active {
   border-color: var(--c1);
@@ -1274,6 +1320,7 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
         <div class="pomo-top-panel">
           <span class="pomo-top-label">TOPLAM ÇALIŞMA SÜRESİ</span>
           <span class="pomo-top-time" id="pomoTotalWorkTime">00s 00dk 00sn</span>
+          <button class="save-day-btn" id="saveDayOpenBtn">💾 Günü Kaydet</button>
         </div>
       </div>
 
@@ -1357,9 +1404,15 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
           <button class="preset-btn" data-preset="cyberpunkRain">CYBER RAIN</button>
         </div>
         <canvas id="waveCanvas"></canvas>
-        <div class="volume-row">
+        <div class="volume-row" style="margin-bottom:8px;">
+          <span style="font-size:0.75rem; color:var(--text-dim); min-width:82px;">Ortam Sesi:</span>
           <svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3z"></path><path d="M16 8a5 5 0 010 8"></path></svg>
           <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.55">
+        </div>
+        <div class="volume-row">
+          <span style="font-size:0.75rem; color:var(--text-dim); min-width:82px;">Zil & Alarm:</span>
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <input type="range" id="alarmVolumeSlider" min="0" max="1" step="0.01" value="0.70">
         </div>
       </div>
     </div>
@@ -1442,6 +1495,16 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
       <div id="dfPomoSettings" style="display:none;">
         <div class="df-section-title">Pomodoro Görünümü</div>
         <div class="df-toggle-row">
+          <span>Yazı Tipi (Font)</span>
+          <select id="dfPomoFontSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+            <option value="'Orbitron', sans-serif">Orbitron (Modern Futuristic)</option>
+            <option value="'JetBrains Mono', monospace">JetBrains Mono (Digital Mono)</option>
+            <option value="'Rajdhani', sans-serif">Rajdhani (Tech Clean)</option>
+            <option value="'Inter', sans-serif">Inter (Minimal Sans)</option>
+            <option value="system-ui, sans-serif">Sistem (System Standard)</option>
+          </select>
+        </div>
+        <div class="df-toggle-row">
           <span>Sayaç İlerleme Görseli</span>
           <select id="dfPomoProgressStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
             <option value="ring">Dairesel Çizgi (Circular Ring)</option>
@@ -1518,12 +1581,26 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
 
       <div class="df-section-title">Ses ve Bildirim</div>
       <div class="df-toggle-row">
+        <span>Zil Sesi Melodisi</span>
+        <select id="dfAlarmSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+          <option value="chime">Siber Melodi</option>
+          <option value="beep">Dijital Bip</option>
+          <option value="gong">Zen Gong</option>
+          <option value="bell">Klasik Zil</option>
+          <option value="synth">Bio Sentetik</option>
+        </select>
+      </div>
+      <div class="df-toggle-row">
         <span>Zil Sesi Testi</span>
         <button id="dfAlarmTestBtn" style="padding:4px 10px; border-radius:var(--radius-s); border:1px solid var(--hairline-strong); background:rgba(255,255,255,0.08); font-size:0.75rem;">🔔 Dinle</button>
       </div>
       <div class="df-toggle-row">
-        <span>Ses Seviyesi</span>
+        <span>Ortam Sesi Seviyesi</span>
         <input type="range" id="dfVolumeSlider" min="0" max="1" step="0.01" value="0.55" style="width:110px;">
+      </div>
+      <div class="df-toggle-row">
+        <span>Zil & Alarm Seviyesi</span>
+        <input type="range" id="dfAlarmVolumeSlider" min="0" max="1" step="0.01" value="0.70" style="width:110px;">
       </div>
 
       <div class="df-section-title">Hızlı Renk Paleti</div>
@@ -1730,6 +1807,28 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
   </div>
 </aside>
 
+<!-- SAVE DAY MODAL -->
+<div class="pomo-modal-backdrop" id="saveDayModalBackdrop">
+  <div class="pomo-modal" id="saveDayModal" style="max-width:440px;">
+    <div class="pomo-modal-header">
+      <span>💾 GÜNÜ KAYDET</span>
+      <button class="pomo-modal-close" id="saveDayModalClose">&times;</button>
+    </div>
+    <div class="pomo-config-body" style="gap:16px;">
+      <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
+        Mevcut çalışma verilerinizi kaydedeceğiniz tarihi seçiniz (Son 3 Gün):
+      </p>
+      <div class="save-day-options" id="saveDayDateOptions" style="display:flex; flex-direction:column; gap:10px;">
+        <!-- Populated via JS -->
+      </div>
+      <div style="display:flex; justify-flex:flex-end; gap:10px; margin-top:10px;">
+        <button class="pomo-type-btn" id="saveDayCancelBtn">İptal</button>
+        <button class="pomo-type-btn active" id="saveDayConfirmBtn">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- POMODORO CONFIG MODAL -->
 <div class="pomo-modal-backdrop" id="pomoConfigModalBackdrop">
   <div class="pomo-modal" id="pomoConfigModal">
@@ -1805,14 +1904,14 @@ function cacheDom(){
    'bpmReadout','profileCaption','modeTabs','panels',
    'pomodoroPanel','pomodoroProgress','pomodoroSessionType','pomodoroTimeLabel',
    'pomodoroStartPause','pomodoroReset','sessionDots',
-   'soundPanel','soundPresets','waveCanvas','volumeSlider',
+   'soundPanel','soundPresets','waveCanvas','volumeSlider','alarmVolumeSlider',
    'deepFocusOverlay','exitDeepFocus','dfMount','dfTime','dfSessionLabel','dfFocus',
    'drawerBackdrop','settingsDrawer','closeSettings','profileOptions',
    'profileThumbNeon2','profileThumbY2026','themeSwatches','customColorInput',
    'focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'mode3dToggle','mode3dValue','focusDonutProgress','focusDonutLabel','todayMinutesLabel',
-   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
-   'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn'
+   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
+   'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn','saveDayOpenBtn','saveDayModalBackdrop','saveDayModalClose','saveDayDateOptions','saveDayCancelBtn','saveDayConfirmBtn'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -1856,10 +1955,26 @@ function refreshColorCache(){
 
 
 
-let totalWorkMs = 0;
-let totalWorkSeconds = 0;
 let pomodoroTimeline = [];
 let focusIndex = 1;
+
+function getCurrentSessionElapsedMs(){
+  if(pomodoro.sessionType !== 'focus') return 0;
+  let currentRunMs = 0;
+  if(pomodoro.running && pomodoro.sessionStartTs > 0){
+    currentRunMs = Math.max(0, Date.now() - pomodoro.sessionStartTs);
+  }
+  return (pomodoro.sessionAccumulatedMs || 0) + currentRunMs;
+}
+
+function getTotalWorkSeconds(){
+  const completedSec = pomodoroTimeline
+    .filter(t => t.type === 'focus' && t.status === 'completed')
+    .reduce((acc, t) => acc + (typeof t.elapsedSec === 'number' ? t.elapsedSec : 0), 0);
+
+  const activeSec = Math.floor(getCurrentSessionElapsedMs() / 1000);
+  return completedSec + activeSec;
+}
 
 function checkDailyReset(){
   const todayKey = getTodayStorageKey() + '_timeline';
@@ -1868,19 +1983,20 @@ function checkDailyReset(){
 
   if(savedDate !== todayStr){
     // Midnight reset
-    totalWorkMs = 0;
-    totalWorkSeconds = 0;
     pomodoroTimeline = [];
     focusIndex = 1;
     localStorage.setItem('selmer_last_active_date', todayStr);
     localStorage.setItem(todayKey, JSON.stringify([]));
-  } else {
+  } else if(pomodoroTimeline.length === 0) {
     try {
       const savedTimeline = localStorage.getItem(todayKey);
       if(savedTimeline){
-        pomodoroTimeline = JSON.parse(savedTimeline);
-        const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
-        focusIndex = completed.length + 1;
+        const parsed = JSON.parse(savedTimeline);
+        if(Array.isArray(parsed) && parsed.length > 0){
+          pomodoroTimeline = parsed;
+          const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
+          focusIndex = completed.length + 1;
+        }
       }
     } catch(e){}
   }
@@ -1902,41 +2018,49 @@ function formatHoursMinutesSeconds(sec){
   return String(m).padStart(2,'0') + 'dk ' + String(s).padStart(2,'0') + 'sn';
 }
 
+function getAlarmGainNode(){
+  return (typeof alarmGain !== 'undefined' && alarmGain) ? alarmGain : (masterGain || null);
+}
+function getAmbientGainNode(){
+  return (typeof ambientGain !== 'undefined' && ambientGain) ? ambientGain : (masterGain || null);
+}
+
 function playAlarmSound(soundType){
   ensureAudio();
   if(!audioCtx) return;
   const t = audioCtx.currentTime;
+  const outGain = getAlarmGainNode();
   if(soundType === 'beep') {
-    [0, 0.12, 0.24].forEach(dt => {
-      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = 880;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, t + dt); g.gain.exponentialRampToValueAtTime(0.001, t + dt + 0.08);
-      o.connect(g); g.connect(masterGain); o.start(t + dt); o.stop(t + dt + 0.09);
+    [0, 0.1, 0.2, 0.3].forEach(dt => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(1046.5, t + dt); o.frequency.setValueAtTime(1318.5, t + dt + 0.04);
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, t + dt); g.gain.exponentialRampToValueAtTime(0.001, t + dt + 0.075);
+      o.connect(g); g.connect(outGain); o.start(t + dt); o.stop(t + dt + 0.08);
     });
   } else if(soundType === 'gong') {
-    const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = 140;
-    const o2 = audioCtx.createOscillator(); o2.type = 'triangle'; o2.frequency.value = 210;
-    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.28, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.5);
-    o.connect(g); o2.connect(g); g.connect(masterGain);
-    o.start(t); o2.start(t); o.stop(t + 2.5); o2.stop(t + 2.5);
+    const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(110, t + 1.2);
+    const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.setValueAtTime(2400, t); filter.frequency.exponentialRampToValueAtTime(200, t + 1.2);
+    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.5);
+    o.connect(filter); filter.connect(g); g.connect(outGain);
+    o.start(t); o.stop(t + 1.5);
   } else if(soundType === 'bell') {
-    [523.25, 1046.5, 1567.98].forEach((f, i) => {
-      const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.15 / (i+1), t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
-      o.connect(g); g.connect(masterGain); o.start(t); o.stop(t + 1.2);
+    [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(f, t + i*0.08);
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, t + i*0.08); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.08 + 0.5);
+      o.connect(g); g.connect(outGain); o.start(t + i*0.08); o.stop(t + i*0.08 + 0.55);
     });
   } else if(soundType === 'synth') {
-    [329.63, 440, 659.25].forEach((f, i) => {
-      const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f;
-      const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 1200;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0, t + i*0.1); g.gain.linearRampToValueAtTime(0.1, t + i*0.1 + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + i*0.1 + 0.4);
-      o.connect(filter); filter.connect(g); g.connect(masterGain); o.start(t + i*0.1); o.stop(t + i*0.1 + 0.45);
+    [440, 554.37, 659.25, 880].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f, t + i*0.08);
+      const filter = audioCtx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = f * 2; filter.Q.value = 4;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, t + i*0.08); g.gain.exponentialRampToValueAtTime(0.0001, t + i*0.08 + 0.35);
+      o.connect(filter); filter.connect(g); g.connect(outGain); o.start(t + i*0.08); o.stop(t + i*0.08 + 0.38);
     });
   } else {
     playChime('focus');
   }
 }
 
-function renderPomodoroTimeline(){
+function renderPomodoroTimeline(justCompletedIdx){
   if(!dom.pomoTimelineTrack) return;
   dom.pomoTimelineTrack.innerHTML = '';
   checkDailyReset();
@@ -1961,9 +2085,16 @@ function renderPomodoroTimeline(){
   pomodoroTimeline.forEach((item, index) => {
     if(item.status === 'completed') completedCnt++;
     const node = document.createElement('div');
-    node.className = 'pomo-node ' + item.status;
+    const isAnim = (justCompletedIdx !== undefined && item.idx === justCompletedIdx);
+    node.className = 'pomo-node ' + item.status + (isAnim ? ' just-completed' : '');
     
-    let statusText = item.status === 'completed' ? 'TAMAMLANDI' : (item.status === 'active' ? 'ÇALIŞIYOR' : 'HAZIR');
+    let statusText = 'HAZIR';
+    if(item.status === 'completed'){
+      statusText = 'TAMAMLANDI';
+    } else if(item.status === 'active'){
+      const sessionElapsed = getCurrentSessionElapsedMs();
+      statusText = pomodoro.running ? 'ÇALIŞIYOR' : (sessionElapsed > 0 ? 'DURAKLATILDI' : 'HAZIR');
+    }
     let durText = item.elapsedSec ? Math.round(item.elapsedSec / 60) + ' dk' : item.mins + ' dk';
 
     node.innerHTML = `
@@ -2027,6 +2158,7 @@ function applyDFCustomizations(){
 
   if(dom.dfClockTypeSelect) dom.dfClockTypeSelect.value = state.dfClockType || '24h';
   if(dom.dfFontSelect) dom.dfFontSelect.value = state.dfFont || "'Orbitron', sans-serif";
+  if(dom.dfPomoFontSelect) dom.dfPomoFontSelect.value = state.dfFont || "'Orbitron', sans-serif";
   if(dom.dfTime) dom.dfTime.style.fontFamily = state.dfFont || "'Orbitron', sans-serif";
   if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.style.fontFamily = state.dfFont || "'Orbitron', sans-serif";
   if(dom.dfShowIconToggle) dom.dfShowIconToggle.checked = !!state.dfShowIcon;
@@ -2355,16 +2487,26 @@ function drawBg(t, dt){
   }
 }
 
-let audioCtx=null, masterGain=null, analyser=null, analyserData=null;
+let audioCtx=null, masterGain=null, ambientGain=null, alarmGain=null, analyser=null, analyserData=null;
 let currentPresetNodes=null, currentPresetName='off';
 function ensureAudio(){
   if(!audioCtx){
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    masterGain=audioCtx.createGain();
-    masterGain.gain.value=parseFloat(dom.volumeSlider.value||0.55);
     analyser=audioCtx.createAnalyser(); analyser.fftSize=512;
     analyserData=new Uint8Array(analyser.frequencyBinCount);
-    masterGain.connect(analyser); analyser.connect(audioCtx.destination);
+    analyser.connect(audioCtx.destination);
+
+    masterGain=audioCtx.createGain(); masterGain.gain.value=1.0; masterGain.connect(analyser);
+
+    ambientGain=audioCtx.createGain();
+    const ambVol = dom.volumeSlider ? parseFloat(dom.volumeSlider.value) : 0.55;
+    ambientGain.gain.value = ambVol;
+    ambientGain.connect(analyser);
+
+    alarmGain=audioCtx.createGain();
+    const alarmVol = dom.alarmVolumeSlider ? parseFloat(dom.alarmVolumeSlider.value) : (dom.dfAlarmVolumeSlider ? parseFloat(dom.dfAlarmVolumeSlider.value) : 0.70);
+    alarmGain.gain.value = alarmVol;
+    alarmGain.connect(analyser);
   }
   if(audioCtx.state==='suspended') audioCtx.resume();
 }
@@ -2388,7 +2530,7 @@ function stopPreset(fade){
 function startBioGreen(){
   ensureAudio(); stopPreset(0.4);
   const now=audioCtx.currentTime;
-  const g=audioCtx.createGain(); g.gain.value=0; g.connect(masterGain);
+  const g=audioCtx.createGain(); g.gain.value=0; g.connect(getAmbientGainNode());
   g.gain.linearRampToValueAtTime(1, now+1.6);
   const cleanupFns=[];
   [110,164.81,220,329.63].forEach((f,i)=>{
@@ -2417,7 +2559,7 @@ function startBioGreen(){
 function startCyberpunkRain(){
   ensureAudio(); stopPreset(0.4);
   const now=audioCtx.currentTime;
-  const g=audioCtx.createGain(); g.gain.value=0; g.connect(masterGain);
+  const g=audioCtx.createGain(); g.gain.value=0; g.connect(getAmbientGainNode());
   g.gain.linearRampToValueAtTime(1, now+1.2);
   const cleanupFns=[];
   const noise=audioCtx.createBufferSource(); noise.buffer=makeNoiseBuffer(3,'white'); noise.loop=true;
@@ -2464,7 +2606,7 @@ function startCyberpunkRain(){
 function startSimpleNoise(type, gainVal, filterType, filterFreq){
   ensureAudio(); stopPreset(0.4);
   const now=audioCtx.currentTime;
-  const g=audioCtx.createGain(); g.gain.value=0; g.connect(masterGain);
+  const g=audioCtx.createGain(); g.gain.value=0; g.connect(getAmbientGainNode());
   g.gain.linearRampToValueAtTime(1, now+0.8);
   const noise=audioCtx.createBufferSource();
   const noiseShape = (type==='blackNoise') ? 'brown' : ((type==='pinkNoise') ? 'pink' : 'white');
@@ -2490,7 +2632,7 @@ function startSimpleNoise(type, gainVal, filterType, filterFreq){
 function startRain(){
   ensureAudio(); stopPreset(0.4);
   const now=audioCtx.currentTime;
-  const g=audioCtx.createGain(); g.gain.value=0; g.connect(masterGain);
+  const g=audioCtx.createGain(); g.gain.value=0; g.connect(getAmbientGainNode());
   g.gain.linearRampToValueAtTime(1, now+1.0);
   
   const noise=audioCtx.createBufferSource(); noise.buffer=makeNoiseBuffer(3, 'white'); noise.loop=true;
@@ -2515,7 +2657,7 @@ function startRain(){
 function startOcean(){
   ensureAudio(); stopPreset(0.4);
   const now=audioCtx.currentTime;
-  const g=audioCtx.createGain(); g.gain.value=0; g.connect(masterGain);
+  const g=audioCtx.createGain(); g.gain.value=0; g.connect(getAmbientGainNode());
   g.gain.linearRampToValueAtTime(1, now+1.2);
   
   const noise=audioCtx.createBufferSource(); noise.buffer=makeNoiseBuffer(4, 'pink'); noise.loop=true;
@@ -2552,52 +2694,56 @@ function playUiSound(type){
   ensureAudio();
   if(!audioCtx) return;
   const t = audioCtx.currentTime;
+  const outGain = getAlarmGainNode();
   if(type === 'click'){
-    const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(1200, t); o.frequency.exponentialRampToValueAtTime(400, t + 0.04);
-    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-    o.connect(g); g.connect(masterGain); o.start(t); o.stop(t + 0.045);
+    const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(1800, t); o.frequency.exponentialRampToValueAtTime(800, t + 0.035);
+    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
+    o.connect(g); g.connect(outGain); o.start(t); o.stop(t + 0.04);
   } else if(type === 'start'){
-    [523.25, 659.25, 783.99].forEach((f, i) => {
-      const o = audioCtx.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.09, t + i*0.06); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.06 + 0.18);
-      o.connect(g); g.connect(masterGain); o.start(t + i*0.06); o.stop(t + i*0.06 + 0.2);
+    [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = f;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t + i*0.05); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.05 + 0.12);
+      o.connect(g); g.connect(outGain); o.start(t + i*0.05); o.stop(t + i*0.05 + 0.13);
     });
   } else if(type === 'pause'){
-    [783.99, 523.25].forEach((f, i) => {
-      const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t + i*0.06); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.06 + 0.15);
-      o.connect(g); g.connect(masterGain); o.start(t + i*0.06); o.stop(t + i*0.06 + 0.16);
+    [880, 659.25, 440].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = f;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t + i*0.05); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.05 + 0.1);
+      o.connect(g); g.connect(outGain); o.start(t + i*0.05); o.stop(t + i*0.05 + 0.11);
     });
   } else if(type === 'reset'){
-    const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(600, t); o.frequency.linearRampToValueAtTime(200, t + 0.1);
-    const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 800;
-    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-    o.connect(filter); filter.connect(g); g.connect(masterGain); o.start(t); o.stop(t + 0.11);
+    const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(900, t); o.frequency.exponentialRampToValueAtTime(150, t + 0.12);
+    const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 1400;
+    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.09, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    o.connect(filter); filter.connect(g); g.connect(outGain); o.start(t); o.stop(t + 0.13);
   } else if(type === 'finish'){
-    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
-      const o = audioCtx.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, t + i*0.08); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.08 + 0.35);
-      o.connect(g); g.connect(masterGain); o.start(t + i*0.08); o.stop(t + i*0.08 + 0.38);
+    [523.25, 659.25, 783.99, 1046.5, 1318.51].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = f;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.1, t + i*0.07); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.07 + 0.28);
+      o.connect(g); g.connect(outGain); o.start(t + i*0.07); o.stop(t + i*0.07 + 0.3);
     });
   } else if(type === 'tab'){
-    const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(800, t); o.frequency.exponentialRampToValueAtTime(1200, t + 0.05);
-    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-    o.connect(g); g.connect(masterGain); o.start(t); o.stop(t + 0.055);
+    [987.77, 1318.51].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = f;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.06, t + i*0.035); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.035 + 0.04);
+      o.connect(g); g.connect(outGain); o.start(t + i*0.035); o.stop(t + i*0.035 + 0.045);
+    });
   }
 }
 
 function playChime(kind){
   ensureAudio();
-  const t=audioCtx.currentTime;
-  const pairs = kind==='break' ? [660,880] : [523.25,784];
-  pairs.forEach((f,i)=>{
-    const o=audioCtx.createOscillator(); o.type='sine'; o.frequency.value=f;
-    const g=audioCtx.createGain();
-    g.gain.setValueAtTime(0, t+i*0.15);
-    g.gain.linearRampToValueAtTime(0.13, t+i*0.15+0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t+i*0.15+0.55);
-    o.connect(g); g.connect(masterGain);
-    o.start(t+i*0.15); o.stop(t+i*0.15+0.6);
+  const t = audioCtx.currentTime;
+  const outGain = getAlarmGainNode();
+  const notes = kind === 'break' ? [659.25, 880, 1046.50] : [523.25, 783.99, 1046.50];
+  notes.forEach((f, i) => {
+    const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(f, t + i*0.08);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.001, t + i*0.08);
+    g.gain.linearRampToValueAtTime(0.1, t + i*0.08 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + i*0.08 + 0.45);
+    o.connect(g); g.connect(outGain);
+    o.start(t + i*0.08); o.stop(t + i*0.08 + 0.5);
   });
 }
 let waveCtx, waveWidth=0, waveHeight=0;
@@ -2800,6 +2946,7 @@ function formatMs(ms){
 function renderPomodoro(ts){
   const PRING_BIG_C = 2 * Math.PI * 98;
   const currentTotal = pomodoroTotalMs();
+  const elapsedMs = getCurrentSessionElapsedMs();
 
   let frac = 0;
   let timeStr = '';
@@ -2837,18 +2984,19 @@ function renderPomodoro(ts){
   if(dom.pomoSessionBadge) dom.pomoSessionBadge.textContent = typeName;
   if(dom.pomodoroSessionType) dom.pomodoroSessionType.textContent = sessionTypeLabel(pomodoro.sessionType);
 
-  const statusStr = pomodoro.isOvertime ? 'FAZLA ÇALIŞMA (+)' : (pomodoro.running ? 'ÇALIŞIYOR' : 'DURAKLATILDI');
+  const sessionElapsed = getCurrentSessionElapsedMs();
+  const statusStr = pomodoro.isOvertime ? 'FAZLA ÇALIŞMA (+)' : (pomodoro.running ? 'ÇALIŞIYOR' : (sessionElapsed > 0 ? 'DURAKLATILDI' : 'HAZIR'));
   if(dom.pomoStatusSub) dom.pomoStatusSub.textContent = statusStr;
 
   const btnText = pomodoro.running ? 'DURAKLAT' : 'BAŞLAT';
   if(dom.pomodoroStartPause) dom.pomodoroStartPause.textContent = btnText;
   if(dom.pomoMainStartPause) dom.pomoMainStartPause.textContent = btnText;
 
-  const showFinish = pomodoro.isOvertime || (pomodoro.running && pomodoro.sessionType === 'focus');
+  const showFinish = (pomodoro.sessionType === 'focus') && (pomodoro.running || elapsedMs > 0 || pomodoro.isOvertime);
   if(dom.pomoFinishBtn) dom.pomoFinishBtn.style.display = showFinish ? 'inline-block' : 'none';
   if(dom.dfFinishBtn) dom.dfFinishBtn.style.display = (showFinish && state.deepFocus) ? 'inline-block' : 'none';
 
-  if(dom.pomoTotalWorkTime) dom.pomoTotalWorkTime.textContent = formatHoursMinutesSeconds(totalWorkSeconds);
+  if(dom.pomoTotalWorkTime) dom.pomoTotalWorkTime.textContent = formatHoursMinutesSeconds(getTotalWorkSeconds());
 }
 
 function _oldRenderPomodoro(){
@@ -2880,9 +3028,9 @@ function pomodoroStart(){
   ensureAudio();
   playUiSound('start');
   
-  const now = new Date();
-  const nowMs = now.getTime();
-  const end = new Date(nowMs + pomodoro.focusMin * 60000);
+  const nowMs = Date.now();
+  const now = new Date(nowMs);
+  const end = new Date(nowMs + (pomodoro.remainingMs || (pomodoro.focusMin * 60000)));
   const startStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
   const endStr = String(end.getHours()).padStart(2,'0') + ':' + String(end.getMinutes()).padStart(2,'0');
 
@@ -2916,104 +3064,118 @@ function pomodoroStart(){
     lastItem.breakBeforeMins = breakMins;
   }
 
+  pomodoro.running = true;
+  pomodoro.sessionStartTs = nowMs;
+
   saveTimelineToStorage();
   renderPomodoroTimeline();
 
-  pomodoro.running=true;
-  pomodoro.lastTickTs = Date.now();
-  if(pomodoro.timerMode==='stopwatch'){
-    pomodoro.startTime = Date.now() - pomodoro.elapsedTimeMs;
-  } else {
-    pomodoro.endTime = Date.now() + pomodoro.remainingMs;
-  }
-  pomodoro.intervalId=setInterval(pomodoroTick, 100);
+  if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
+  pomodoro.intervalId = setInterval(pomodoroTick, 100);
   renderPomodoro();
 }
+
 function pomodoroPause(){
   if(!pomodoro.running) return;
-  pomodoro.running=false;
-  playUiSound('pause');
-  if(pomodoro.timerMode==='stopwatch'){
-    pomodoro.elapsedTimeMs = Date.now() - pomodoro.startTime;
-  } else {
-    pomodoro.remainingMs = Math.max(0, pomodoro.endTime - Date.now());
+  const nowMs = Date.now();
+  if(pomodoro.sessionStartTs > 0){
+    pomodoro.sessionAccumulatedMs = (pomodoro.sessionAccumulatedMs || 0) + (nowMs - pomodoro.sessionStartTs);
   }
-  clearInterval(pomodoro.intervalId);
+  pomodoro.sessionStartTs = 0;
+  pomodoro.running = false;
+  if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
+
+  playUiSound('pause');
+  renderPomodoroTimeline();
   renderPomodoro();
 }
+
 function pomodoroReset(){
   playUiSound('reset');
-  pomodoro.running=false;
-  pomodoro.isOvertime=false;
-  pomodoro.overtimeSec=0;
-  clearInterval(pomodoro.intervalId);
-  if(pomodoro.timerMode==='stopwatch'){
-    if(pomodoro.elapsedTimeMs > 5000 && typeof recordWorkMinutes === 'function'){
-      recordWorkMinutes(Math.round(pomodoro.elapsedTimeMs / 60000));
-    }
-    pomodoro.elapsedTimeMs = 0;
-  } else {
-    pomodoro.remainingMs=pomodoroTotalMs();
-  }
+  if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
+  pomodoro.running = false;
+  pomodoro.isOvertime = false;
+  pomodoro.overtimeSec = 0;
+  pomodoro.sessionAccumulatedMs = 0;
+  pomodoro.sessionStartTs = 0;
+  pomodoro.remainingMs = pomodoroTotalMs();
+
+  pomodoroTimeline.forEach(t => {
+    if(t.status === 'active') t.status = 'pending';
+  });
+  saveTimelineToStorage();
+  renderPomodoroTimeline();
   renderPomodoro();
 }
+
 function pomodoroTick(){
-  const now = Date.now();
-  const delta = now - (pomodoro.lastTickTs || now);
-  pomodoro.lastTickTs = now;
+  if(!pomodoro.running) return;
+  const targetMs = pomodoroTotalMs();
+  const elapsedMs = getCurrentSessionElapsedMs();
 
-  if(pomodoro.running && pomodoro.sessionType==='focus'){
-    totalWorkMs += delta;
-    totalWorkSeconds = Math.floor(totalWorkMs / 1000);
-  }
-
-  if(pomodoro.timerMode==='stopwatch'){
-    pomodoro.elapsedTimeMs = Date.now() - pomodoro.startTime;
-    renderPomodoro();
-    return;
-  }
-
-  if(pomodoro.isOvertime){
-    pomodoro.overtimeSec += (delta / 1000);
-    renderPomodoro();
-    return;
-  }
-
-  pomodoro.remainingMs=Math.max(0, pomodoro.endTime - now);
-  renderPomodoro();
-  if(pomodoro.remainingMs<=0){
+  if(elapsedMs >= targetMs){
+    if(!pomodoro.isOvertime){
+      pomodoro.isOvertime = true;
+      playAlarmSound((dom.dfAlarmSelect && dom.dfAlarmSelect.value) || (dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime'));
+      showToast('Etüt Süresi Doldu! Overtime (+00:00) Başladı.');
+    }
     pomodoro.remainingMs = 0;
-    pomodoro.isOvertime = true;
+    pomodoro.overtimeSec = Math.floor((elapsedMs - targetMs) / 1000);
+  } else {
+    pomodoro.isOvertime = false;
     pomodoro.overtimeSec = 0;
-    playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
-    showToast('Etüt Süresi Doldu! Overtime (+00:00) Başladı.');
+    pomodoro.remainingMs = Math.max(0, targetMs - elapsedMs);
   }
+
+  renderPomodoro();
 }
 
 function handleFinishClick(){
-  if(!pomodoro.isOvertime && !pomodoro.running && pomodoro.remainingMs > 0) return;
+  const wasDeepFocus = state.deepFocus;
 
-  clearInterval(pomodoro.intervalId);
+  // 1. Calculate final elapsed seconds for this session
+  const elapsedMs = getCurrentSessionElapsedMs();
+  const totalElapsedSec = Math.floor(elapsedMs / 1000);
+
+  // 2. Stop timer and clear active session timing
+  if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
   pomodoro.running = false;
+  pomodoro.isOvertime = false;
+  pomodoro.overtimeSec = 0;
+  pomodoro.sessionAccumulatedMs = 0;
+  pomodoro.sessionStartTs = 0;
 
-  const totalElapsedSec = (pomodoro.focusMin * 60) + Math.floor(pomodoro.overtimeSec);
-  const totalElapsedMins = Math.max(1, Math.round(totalElapsedSec / 60));
-
-  recordWorkMinutes(totalElapsedMins);
-
+  // 3. Update active timeline node
   let completedEtutName = 'Etüt';
-  if(pomodoroTimeline.length > 0){
-    const activeItem = pomodoroTimeline[pomodoroTimeline.length - 1];
+  let completedEtutIdx = null;
+
+  let activeItem = pomodoroTimeline.find(t => t.status === 'active');
+  if(!activeItem) {
+    activeItem = pomodoroTimeline.find(t => t.status === 'pending');
+  }
+  if(!activeItem && pomodoroTimeline.length > 0) {
+    activeItem = pomodoroTimeline[pomodoroTimeline.length - 1];
+  }
+
+  if(activeItem){
     activeItem.status = 'completed';
     activeItem.endTimeMs = Date.now();
     activeItem.elapsedSec = totalElapsedSec;
     completedEtutName = activeItem.name;
+    completedEtutIdx = activeItem.idx;
   }
 
+  // 4. Record work minutes for statistics panel if > 0
+  const totalElapsedMins = Math.max(1, Math.round(totalElapsedSec / 60));
+  if(totalElapsedSec > 0){
+    recordWorkMinutes(totalElapsedMins);
+  }
+
+  // 5. Update focusIndex for next session
   const completedCount = pomodoroTimeline.filter(t => t.status === 'completed').length;
   focusIndex = completedCount + 1;
 
-  // Prepare next etüt node as pending
+  // 6. Push next pending etüt node to timeline
   const now = new Date();
   const end = new Date(now.getTime() + pomodoro.focusMin * 60000);
   const startStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
@@ -3027,15 +3189,22 @@ function handleFinishClick(){
     status: 'pending'
   });
 
-  saveTimelineToStorage();
-  renderPomodoroTimeline();
-  showToast(completedEtutName + ' Başarıyla Bitirildi! 🎉');
+  // 7. Exit Deep Focus mode if active, and switch tab to Pomodoro
+  if(wasDeepFocus){
+    exitDeepFocus();
+  }
+  setMode('pomodoro');
 
+  // 8. Save timeline and re-render with completion pulse animation
+  saveTimelineToStorage();
+  renderPomodoroTimeline(completedEtutIdx);
+
+  // 9. Play audio & celebration feedback
   playUiSound('finish');
   triggerCelebrationEffects();
+  showToast(completedEtutName + ' Başarıyla Bitirildi! 🎉');
 
-  pomodoro.isOvertime = false;
-  pomodoro.overtimeSec = 0;
+  // 10. Reset remaining time for next session
   pomodoro.remainingMs = pomodoroTotalMs();
   renderPomodoro();
 }
@@ -3090,22 +3259,32 @@ function renderDeepFocus(){
   if(!state.deepFocus) return;
   applyDFCustomizations();
 
+  const totalSec = getTotalWorkSeconds();
+
   if(state.mode === 'pomodoro'){
-    const totalStr = 'TOPLAM ÇALIŞMA: ' + formatHoursMinutesSeconds(totalWorkSeconds);
+    const totalStr = 'TOPLAM ÇALIŞMA: ' + formatHoursMinutesSeconds(totalSec);
     if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.textContent = totalStr;
 
-    const sessionLabel = (focusIndex + '. ETÜT') + (pomodoro.running ? ' (ÇALIŞIYOR)' : ' (DURAKLATILDI)');
+    const dfSessionElapsed = getCurrentSessionElapsedMs();
+    const sessionLabel = (focusIndex + '. ETÜT') + (pomodoro.running ? ' (ÇALIŞIYOR)' : (dfSessionElapsed > 0 ? ' (DURAKLATILDI)' : ' (HAZIR)'));
     if(dom.dfSessionLabel) dom.dfSessionLabel.textContent = sessionLabel;
 
+    let timeDisplayStr = '';
+    if(pomodoro.isOvertime){
+      timeDisplayStr = '+ ' + formatMs(pomodoro.overtimeSec * 1000);
+    } else {
+      timeDisplayStr = formatMs(pomodoro.remainingMs);
+    }
+
     if(state.dfPomoViewMode === 'total'){
-      dom.dfTime.textContent = formatHoursMinutesSeconds(totalWorkSeconds);
+      dom.dfTime.textContent = formatHoursMinutesSeconds(totalSec);
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
     } else if(state.dfPomoViewMode === 'countdown'){
-      dom.dfTime.textContent = formatMs(pomodoro.remainingMs);
+      dom.dfTime.textContent = timeDisplayStr;
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
     } else {
       // both
-      dom.dfTime.textContent = formatMs(pomodoro.remainingMs);
+      dom.dfTime.textContent = timeDisplayStr;
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'block';
     }
   } else {
@@ -3144,6 +3323,142 @@ function _oldRenderDeepFocus(){
     dom.dfSessionLabel.textContent='SERBEST ODAK';
   }
   // dom.dfFocus removed
+}
+
+function getLast3Days(){
+  const days = [];
+  const today = new Date();
+  const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+  const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+  for(let i = 0; i < 3; i++){
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+
+    const isoKey = d.getFullYear() + '_' + String(d.getMonth()+1).padStart(2,'0') + '_' + String(d.getDate()).padStart(2,'0');
+    const dateDisplay = d.getDate() + ' ' + monthNames[d.getMonth()] + ' ' + d.getFullYear() + ' (' + dayNames[d.getDay()] + ')';
+
+    let tag = 'Bugün';
+    if(i === 1) tag = 'Dün';
+    if(i === 2) tag = '2 Gün Önce';
+
+    days.push({
+      index: i,
+      isoKey: isoKey,
+      tag: tag,
+      dateDisplay: dateDisplay
+    });
+  }
+  return days;
+}
+
+function openSaveDayModal(){
+  if(!dom.saveDayDateOptions) return;
+  dom.saveDayDateOptions.innerHTML = '';
+
+  const days = getLast3Days();
+  const currentTotalSec = getTotalWorkSeconds();
+  const timeFormatted = formatHoursMinutesSeconds(currentTotalSec);
+
+  days.forEach((day, idx) => {
+    const label = document.createElement('label');
+    label.className = 'save-day-option-label' + (idx === 0 ? ' selected' : '');
+    label.innerHTML = `
+      <input type="radio" name="saveDayDate" value="${day.isoKey}" ${idx === 0 ? 'checked' : ''} style="accent-color:var(--c1);">
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        <span style="font-weight:700; color:var(--text); font-size:0.9rem;">${day.tag} - ${day.dateDisplay}</span>
+        <span style="font-size:0.8rem; color:var(--text-muted);">Kaydedilecek Süre: ${timeFormatted}</span>
+      </div>
+    `;
+
+    label.addEventListener('click', () => {
+      document.querySelectorAll('.save-day-option-label').forEach(el => el.classList.remove('selected'));
+      label.classList.add('selected');
+    });
+
+    dom.saveDayDateOptions.appendChild(label);
+  });
+
+  if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.add('open');
+}
+
+function confirmSaveDay(){
+  const selectedRadio = document.querySelector('input[name="saveDayDate"]:checked');
+  if(!selectedRadio){
+    showToast('Lütfen bir tarih seçiniz!');
+    return;
+  }
+  const isoKey = selectedRadio.value;
+  const totalSec = getTotalWorkSeconds();
+  const mins = Math.round(totalSec / 60);
+
+  try {
+    const storageKey = 'selmer_focus_' + isoKey;
+    const prevMins = parseInt(localStorage.getItem(storageKey) || '0', 10);
+    const newMins = prevMins + mins;
+    localStorage.setItem(storageKey, newMins);
+
+    const recordKey = 'selmer_record_' + isoKey;
+    const recordData = {
+      isoKey: isoKey,
+      totalWorkSeconds: totalSec,
+      completedEtuts: pomodoroTimeline.filter(t => t.status === 'completed'),
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(recordKey, JSON.stringify(recordData));
+
+    if(isoKey === getTodayStorageKey().replace('selmer_focus_','')){
+      todayFocusMinutes = newMins;
+      renderDataPanel();
+    }
+  } catch(e){}
+
+  showToast('Veriler başarıyla kaydedildi! 💾');
+  if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open');
+}
+
+function saveSettingsToStorage(){
+  try {
+    const settings = {
+      volume: dom.volumeSlider ? dom.volumeSlider.value : 0.4,
+      alarmVolume: dom.alarmVolumeSlider ? dom.alarmVolumeSlider.value : 0.7,
+      preset: state.preset || 'deepSynth',
+      theme: state.theme || 'cyberpunkBlue',
+      profile: state.profile || 'neon2',
+      dfFont: state.dfFont,
+      progressStyle: state.progressStyle,
+      dfPomoViewMode: state.dfPomoViewMode,
+      focusMin: pomodoro.focusMin,
+      shortMin: pomodoro.shortMin,
+      pomoAlarm: dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime'
+    };
+    localStorage.setItem('selmer_app_settings', JSON.stringify(settings));
+  } catch(e){}
+}
+
+function loadSettingsFromStorage(){
+  try {
+    const raw = localStorage.getItem('selmer_app_settings');
+    if(!raw) return;
+    const s = JSON.parse(raw);
+    if(s.volume !== undefined && dom.volumeSlider) { dom.volumeSlider.value = s.volume; if(dom.dfVolumeSlider) dom.dfVolumeSlider.value = s.volume; }
+    if(s.alarmVolume !== undefined && dom.alarmVolumeSlider) { dom.alarmVolumeSlider.value = s.alarmVolume; if(dom.dfAlarmVolumeSlider) dom.dfAlarmVolumeSlider.value = s.alarmVolume; }
+    if(s.theme) applyTheme(s.theme);
+    if(s.profile) applyProfile(s.profile);
+    if(s.dfFont) {
+      state.dfFont = s.dfFont;
+      if(dom.dfFontSelect) dom.dfFontSelect.value = s.dfFont;
+      if(dom.dfPomoFontSelect) dom.dfPomoFontSelect.value = s.dfFont;
+    }
+    if(s.progressStyle) applyProgressStyle(s.progressStyle);
+    if(s.dfPomoViewMode) state.dfPomoViewMode = s.dfPomoViewMode;
+    if(s.focusMin && dom.pomoFocusInput) { pomodoro.focusMin = parseInt(s.focusMin, 10); dom.pomoFocusInput.value = s.focusMin; }
+    if(s.shortMin && dom.pomoBreakInput) { pomodoro.shortMin = parseInt(s.shortMin, 10); dom.pomoBreakInput.value = s.shortMin; }
+    if(s.pomoAlarm) {
+      if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.value = s.pomoAlarm;
+      if(dom.dfAlarmSelect) dom.dfAlarmSelect.value = s.pomoAlarm;
+    }
+  } catch(e){}
 }
 
 function getTodayStorageKey(){
@@ -3268,7 +3583,15 @@ function wireEvents(){
     });
   }
   if(dom.dfClockTypeSelect) dom.dfClockTypeSelect.addEventListener('change', ()=>{ state.dfClockType = dom.dfClockTypeSelect.value; renderDeepFocus(); });
-  if(dom.dfFontSelect) dom.dfFontSelect.addEventListener('change', ()=>{ state.dfFont = dom.dfFontSelect.value; applyDFCustomizations(); });
+  const handleFontChange = (val) => {
+    state.dfFont = val;
+    if(dom.dfFontSelect) dom.dfFontSelect.value = val;
+    if(dom.dfPomoFontSelect) dom.dfPomoFontSelect.value = val;
+    applyDFCustomizations();
+    renderDeepFocus();
+  };
+  if(dom.dfFontSelect) dom.dfFontSelect.addEventListener('change', ()=>{ handleFontChange(dom.dfFontSelect.value); });
+  if(dom.dfPomoFontSelect) dom.dfPomoFontSelect.addEventListener('change', ()=>{ handleFontChange(dom.dfPomoFontSelect.value); });
   if(dom.dfShowIconToggle) dom.dfShowIconToggle.addEventListener('change', ()=>{ state.dfShowIcon = dom.dfShowIconToggle.checked; applyDFCustomizations(); });
   if(dom.dfOnlyTimeToggle) dom.dfOnlyTimeToggle.addEventListener('change', ()=>{ state.dfOnlyTime = dom.dfOnlyTimeToggle.checked; applyDFCustomizations(); });
   if(dom.dfDigitalOnlyToggle) dom.dfDigitalOnlyToggle.addEventListener('change', ()=>{ state.dfDigitalOnly = dom.dfDigitalOnlyToggle.checked; applyDFCustomizations(); });
@@ -3431,20 +3754,51 @@ function wireEvents(){
     });
   }
 
+  const handleAlarmSelect = (val) => {
+    if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.value = val;
+    if(dom.dfAlarmSelect) dom.dfAlarmSelect.value = val;
+  };
+  if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.addEventListener('change', ()=>{ handleAlarmSelect(dom.pomoAlarmSelect.value); });
+  if(dom.dfAlarmSelect) dom.dfAlarmSelect.addEventListener('change', ()=>{ handleAlarmSelect(dom.dfAlarmSelect.value); });
+
   if(dom.pomoAlarmTestBtn){
     dom.pomoAlarmTestBtn.addEventListener('click', ()=>{
-      playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
+      const soundVal = (dom.dfAlarmSelect && dom.dfAlarmSelect.value) || (dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
+      playAlarmSound(soundVal);
     });
   }
   if(dom.dfAlarmTestBtn){
     dom.dfAlarmTestBtn.addEventListener('click', ()=>{
-      playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
+      const soundVal = (dom.dfAlarmSelect && dom.dfAlarmSelect.value) || (dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
+      playAlarmSound(soundVal);
+    });
+  }
+  if(dom.volumeSlider){
+    dom.volumeSlider.addEventListener('input', ()=>{
+      const val = parseFloat(dom.volumeSlider.value);
+      if(dom.dfVolumeSlider) dom.dfVolumeSlider.value = val;
+      if(ambientGain) ambientGain.gain.value = val;
     });
   }
   if(dom.dfVolumeSlider){
     dom.dfVolumeSlider.addEventListener('input', ()=>{
-      if(dom.volumeSlider) dom.volumeSlider.value = dom.dfVolumeSlider.value;
-      if(masterGain) masterGain.gain.value = parseFloat(dom.dfVolumeSlider.value);
+      const val = parseFloat(dom.dfVolumeSlider.value);
+      if(dom.volumeSlider) dom.volumeSlider.value = val;
+      if(ambientGain) ambientGain.gain.value = val;
+    });
+  }
+  if(dom.alarmVolumeSlider){
+    dom.alarmVolumeSlider.addEventListener('input', ()=>{
+      const val = parseFloat(dom.alarmVolumeSlider.value);
+      if(dom.dfAlarmVolumeSlider) dom.dfAlarmVolumeSlider.value = val;
+      if(alarmGain) alarmGain.gain.value = val;
+    });
+  }
+  if(dom.dfAlarmVolumeSlider){
+    dom.dfAlarmVolumeSlider.addEventListener('input', ()=>{
+      const val = parseFloat(dom.dfAlarmVolumeSlider.value);
+      if(dom.alarmVolumeSlider) dom.alarmVolumeSlider.value = val;
+      if(alarmGain) alarmGain.gain.value = val;
     });
   }
 
@@ -3459,11 +3813,26 @@ function wireEvents(){
       if(dom.deepFocusOverlay) dom.deepFocusOverlay.setAttribute('data-atmosphere', dom.dfAtmosphereSelect.value);
     });
   }
+  if(dom.saveDayOpenBtn) dom.saveDayOpenBtn.addEventListener('click', openSaveDayModal);
+  if(dom.saveDayModalClose) dom.saveDayModalClose.addEventListener('click', ()=>{ if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open'); });
+  if(dom.saveDayCancelBtn) dom.saveDayCancelBtn.addEventListener('click', ()=>{ if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open'); });
+  if(dom.saveDayConfirmBtn) dom.saveDayConfirmBtn.addEventListener('click', confirmSaveDay);
+  if(dom.saveDayModalBackdrop){
+    dom.saveDayModalBackdrop.addEventListener('click', (e)=>{
+      if(e.target === dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open');
+    });
+  }
+
   if(dom.resetTodayTimelineBtn){
     dom.resetTodayTimelineBtn.addEventListener('click', ()=>{
       if(confirm('Bugünkü etüt çizelgesini ve toplam çalışma süresini sıfırlamak istediğinize emin misiniz?')){
-        totalWorkMs = 0;
-        totalWorkSeconds = 0;
+        pomodoro.running = false;
+        if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
+        pomodoro.sessionAccumulatedMs = 0;
+        pomodoro.sessionStartTs = 0;
+        pomodoro.isOvertime = false;
+        pomodoro.overtimeSec = 0;
+        pomodoro.remainingMs = pomodoroTotalMs();
         pomodoroTimeline = [];
         focusIndex = 1;
         saveTimelineToStorage();
@@ -3475,7 +3844,6 @@ function wireEvents(){
   }
 
   document.querySelectorAll('.preset-btn').forEach(btn=>{ btn.addEventListener('click', ()=>selectPreset(btn.dataset.preset)); });
-  dom.volumeSlider.addEventListener('input', ()=>{ if(masterGain) masterGain.gain.value=parseFloat(dom.volumeSlider.value); });
   document.querySelectorAll('.profile-option').forEach(btn=>{ btn.addEventListener('click', ()=>applyProfile(btn.dataset.profile)); });
   document.querySelectorAll('.theme-swatch').forEach(btn=>{ btn.addEventListener('click', ()=>applyTheme(btn.dataset.theme)); });
   dom.customColorInput.addEventListener('input', ()=>applyTheme('custom',{customHex:dom.customColorInput.value}));
@@ -3535,6 +3903,7 @@ function init(){
   dom.profileThumbY2026.src=ASSETS.y2026;
   buildTicks();
   setupRings();
+  loadSettingsFromStorage();
   applyProfile(state.profile);
   applyMode3D(true);
   wireEvents();
