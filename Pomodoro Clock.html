@@ -1542,6 +1542,16 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
 
       <div class="df-section-title">Ses ve Bildirim</div>
       <div class="df-toggle-row">
+        <span>Zil Sesi Melodisi</span>
+        <select id="dfAlarmSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+          <option value="chime">Siber Melodi</option>
+          <option value="beep">Dijital Bip</option>
+          <option value="gong">Zen Gong</option>
+          <option value="bell">Klasik Zil</option>
+          <option value="synth">Bio Sentetik</option>
+        </select>
+      </div>
+      <div class="df-toggle-row">
         <span>Zil Sesi Testi</span>
         <button id="dfAlarmTestBtn" style="padding:4px 10px; border-radius:var(--radius-s); border:1px solid var(--hairline-strong); background:rgba(255,255,255,0.08); font-size:0.75rem;">🔔 Dinle</button>
       </div>
@@ -1839,7 +1849,7 @@ function cacheDom(){
    'profileThumbNeon2','profileThumbY2026','themeSwatches','customColorInput',
    'focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'mode3dToggle','mode3dValue','focusDonutProgress','focusDonutLabel','todayMinutesLabel',
-   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
+   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
    'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
@@ -2008,7 +2018,12 @@ function renderPomodoroTimeline(justCompletedIdx){
     const isAnim = (justCompletedIdx !== undefined && item.idx === justCompletedIdx);
     node.className = 'pomo-node ' + item.status + (isAnim ? ' just-completed' : '');
     
-    let statusText = item.status === 'completed' ? 'TAMAMLANDI' : (item.status === 'active' ? 'ÇALIŞIYOR' : 'HAZIR');
+    let statusText = 'HAZIR';
+    if(item.status === 'completed'){
+      statusText = 'TAMAMLANDI';
+    } else if(item.status === 'active'){
+      statusText = pomodoro.running ? 'ÇALIŞIYOR' : 'DURAKLATILDI';
+    }
     let durText = item.elapsedSec ? Math.round(item.elapsedSec / 60) + ' dk' : item.mins + ' dk';
 
     node.innerHTML = `
@@ -3011,6 +3026,7 @@ function pomodoroPause(){
     pomodoro.remainingMs = Math.max(0, pomodoro.endTime - nowMs);
   }
   clearInterval(pomodoro.intervalId);
+  renderPomodoroTimeline();
   renderPomodoro();
 }
 function pomodoroReset(){
@@ -3029,6 +3045,11 @@ function pomodoroReset(){
     totalWorkSeconds = Math.floor(totalWorkMs / 1000);
     pomodoro.remainingMs = pomodoroTotalMs();
   }
+  pomodoroTimeline.forEach(t => {
+    if(t.status === 'active') t.status = 'pending';
+  });
+  saveTimelineToStorage();
+  renderPomodoroTimeline();
   renderPomodoro();
 }
 function pomodoroTick(){
@@ -3059,35 +3080,45 @@ function pomodoroTick(){
     pomodoro.isOvertime = true;
     overtimeStartTs = now;
     pomodoro.overtimeSec = 0;
-    playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
+    playAlarmSound((dom.dfAlarmSelect && dom.dfAlarmSelect.value) || (dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime'));
     showToast('Etüt Süresi Doldu! Overtime (+00:00) Başladı.');
   }
   renderPomodoro();
 }
 
 function handleFinishClick(){
-  if(!pomodoro.isOvertime && !pomodoro.running && pomodoro.remainingMs > 0) return;
-
   const wasDeepFocus = state.deepFocus;
+
+  let totalElapsedSec = 0;
+  if(pomodoro.isOvertime){
+    totalElapsedSec = (pomodoro.focusMin * 60) + Math.floor(pomodoro.overtimeSec);
+  } else {
+    const totalMs = pomodoroTotalMs();
+    const doneMs = Math.max(0, totalMs - pomodoro.remainingMs);
+    totalElapsedSec = Math.floor(doneMs / 1000);
+  }
 
   clearInterval(pomodoro.intervalId);
   pomodoro.running = false;
   sessionBaseWorkMs = totalWorkMs;
 
-  const totalElapsedSec = (pomodoro.focusMin * 60) + Math.floor(pomodoro.overtimeSec);
   const totalElapsedMins = Math.max(1, Math.round(totalElapsedSec / 60));
 
-  recordWorkMinutes(totalElapsedMins);
+  if(totalElapsedMins > 0){
+    recordWorkMinutes(totalElapsedMins);
+  }
 
   let completedEtutName = 'Etüt';
   let completedEtutIdx = null;
   if(pomodoroTimeline.length > 0){
-    const activeItem = pomodoroTimeline[pomodoroTimeline.length - 1];
-    activeItem.status = 'completed';
-    activeItem.endTimeMs = Date.now();
-    activeItem.elapsedSec = totalElapsedSec;
-    completedEtutName = activeItem.name;
-    completedEtutIdx = activeItem.idx;
+    const activeItem = pomodoroTimeline.find(t => t.status === 'active') || pomodoroTimeline.find(t => t.status !== 'completed') || pomodoroTimeline[pomodoroTimeline.length - 1];
+    if(activeItem){
+      activeItem.status = 'completed';
+      activeItem.endTimeMs = Date.now();
+      activeItem.elapsedSec = totalElapsedSec;
+      completedEtutName = activeItem.name;
+      completedEtutIdx = activeItem.idx;
+    }
   }
 
   const completedCount = pomodoroTimeline.filter(t => t.status === 'completed').length;
@@ -3524,14 +3555,23 @@ function wireEvents(){
     });
   }
 
+  const handleAlarmSelect = (val) => {
+    if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.value = val;
+    if(dom.dfAlarmSelect) dom.dfAlarmSelect.value = val;
+  };
+  if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.addEventListener('change', ()=>{ handleAlarmSelect(dom.pomoAlarmSelect.value); });
+  if(dom.dfAlarmSelect) dom.dfAlarmSelect.addEventListener('change', ()=>{ handleAlarmSelect(dom.dfAlarmSelect.value); });
+
   if(dom.pomoAlarmTestBtn){
     dom.pomoAlarmTestBtn.addEventListener('click', ()=>{
-      playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
+      const soundVal = (dom.dfAlarmSelect && dom.dfAlarmSelect.value) || (dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
+      playAlarmSound(soundVal);
     });
   }
   if(dom.dfAlarmTestBtn){
     dom.dfAlarmTestBtn.addEventListener('click', ()=>{
-      playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
+      const soundVal = (dom.dfAlarmSelect && dom.dfAlarmSelect.value) || (dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
+      playAlarmSound(soundVal);
     });
   }
   if(dom.volumeSlider){
