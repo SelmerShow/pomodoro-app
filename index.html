@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box; margin:0; padding:0;}
 html,body{height:100%;}
@@ -433,6 +435,211 @@ body[data-mode3d="off"] .ring-cluster{ perspective:none; }
   justify-content: center;
   transition: transform 0.3s var(--ease);
   transform-origin: center center;
+}
+
+/* History Management CSS */
+.history-section-card {
+  width: 100%;
+  margin-top: 18px;
+  background: rgba(10, 14, 28, 0.6);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-m);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.history-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: var(--text-0);
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 8px;
+}
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.history-item-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-s);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  gap: 8px;
+}
+.history-item-card.locked {
+  opacity: 0.7;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+.history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.history-date {
+  font-weight: 700;
+  color: var(--text-0);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+}
+.history-meta {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+.history-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.history-btn {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--hairline-strong);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-0);
+  transition: all 0.2s;
+}
+.history-btn.edit-btn:hover { border-color: var(--c1); color: var(--c1); background: rgba(var(--c1-rgb), 0.15); }
+.history-btn.delete-btn:hover { border-color: #ff5555; color: #ff5555; background: rgba(255, 85, 85, 0.15); }
+.history-locked-badge {
+  font-size: 0.62rem;
+  color: var(--text-dimmer);
+  font-family: 'JetBrains Mono', monospace;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  border: 1px solid var(--hairline);
+}
+
+/* Monthly Analytics Grid & Tooltip Styles */
+.monthly-analytics-card {
+  width: 100%;
+  margin-top: 18px;
+  background: rgba(10, 14, 28, 0.6);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-m);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.monthly-analytics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: var(--text-0);
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 8px;
+}
+.monthly-grid-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+.monthly-day-header {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--text-dimmer);
+  text-transform: uppercase;
+  padding-bottom: 4px;
+}
+.monthly-cell {
+  aspect-ratio: 1/1;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.monthly-cell:hover {
+  border-color: var(--c1);
+  background: rgba(var(--c1-rgb), 0.2);
+  transform: scale(1.08);
+  z-index: 10;
+}
+.monthly-cell.empty {
+  background: transparent;
+  border: none;
+  cursor: default;
+}
+.monthly-cell.has-data {
+  background: rgba(var(--c1-rgb), 0.15);
+  border-color: rgba(var(--c1-rgb), 0.4);
+  color: var(--text-0);
+  font-weight: 700;
+}
+.monthly-cell.today {
+  border: 1.5px solid var(--c3);
+  box-shadow: 0 0 10px rgba(var(--c3-rgb), 0.5);
+}
+
+/* Hover Tooltip */
+.monthly-cell .cell-tooltip {
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  background: rgba(8, 11, 24, 0.95);
+  border: 1px solid var(--c1);
+  border-radius: var(--radius-s);
+  padding: 8px 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.2s var(--ease);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.7), 0 0 14px rgba(var(--c1-rgb), 0.3);
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+.monthly-cell:hover .cell-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+.tooltip-date {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--c1);
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 3px;
+  margin-bottom: 2px;
+}
+.tooltip-info {
+  font-size: 0.62rem;
+  color: var(--text-0);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* Customization & Transition Styles */
@@ -1803,6 +2010,33 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
         </div>
       </div>
       <div class="weekly-bars" id="weeklyBars"></div>
+
+      <!-- HISTORY MANAGEMENT (EDIT & DELETE LAST 2 DAYS ONLY) -->
+      <div class="history-section-card">
+        <div class="history-section-header">
+          <span>📜 ÇALIŞMA GEÇMİŞİ VE DÜZENLEME</span>
+          <small style="font-size:0.62rem; color:var(--text-dimmer); font-family:'JetBrains Mono',monospace;">Son 2 Gün Düzenlenebilir</small>
+        </div>
+        <div class="history-list" id="historyListContainer"></div>
+      </div>
+
+      <!-- MONTHLY ANALYTICS CALENDAR -->
+      <div class="monthly-analytics-card">
+        <div class="monthly-analytics-header">
+          <span>📅 AYLIK ANALİZ VE PERFORMANS</span>
+          <span id="monthlyAnalyticsMonthName" style="color:var(--c1); font-size:0.7rem;">-</span>
+        </div>
+        <div class="monthly-grid-days">
+          <div class="monthly-day-header">Pzt</div>
+          <div class="monthly-day-header">Sal</div>
+          <div class="monthly-day-header">Çar</div>
+          <div class="monthly-day-header">Per</div>
+          <div class="monthly-day-header">Cum</div>
+          <div class="monthly-day-header">Cmt</div>
+          <div class="monthly-day-header">Paz</div>
+        </div>
+        <div class="monthly-grid-days" id="monthlyAnalyticsGrid"></div>
+      </div>
     </div>
   </div>
 </aside>
@@ -1894,6 +2128,82 @@ const DONUT_R=40, DONUT_C=2*Math.PI*DONUT_R;
 let focusLevel=10, bpm=60, deepFocusStart=0, lastDigitalSecond=-1;
 let todayFocusMinutes = seedTodayMinutes();
 let CACHED_C1='#3fd0ff', CACHED_C2='#7b6cff', CACHED_C3='#ff5da2';
+
+// --- Firebase Database Real-time Integration & Clock Sync ---
+let db = null;
+let serverTimeOffsetMs = 0;
+
+function initFirebaseSync(){
+  try {
+    const firebaseConfig = {
+      databaseURL: "https://pomodoro-selmershow-default-rtdb.firebaseio.com"
+    };
+    if(typeof firebase !== 'undefined' && firebase.apps){
+      if(!firebase.apps.length){
+        firebase.initializeApp(firebaseConfig);
+      }
+      db = firebase.database();
+
+      // Server time offset synchronization
+      const offsetRef = db.ref(".info/serverTimeOffset");
+      offsetRef.on("value", (snap) => {
+        serverTimeOffsetMs = snap.val() || 0;
+      });
+
+      // Synchronize settings from Cloud in real-time
+      const settingsRef = db.ref("app_settings");
+      settingsRef.on("value", (snap) => {
+        const cloudSettings = snap.val();
+        if(cloudSettings){
+          localStorage.setItem('selmer_app_settings', JSON.stringify(cloudSettings));
+          loadSettingsFromStorage();
+        }
+      });
+
+      // Synchronize today's focus minutes from Cloud
+      const todayKey = getTodayStorageKey();
+      const todayRef = db.ref("study_totals/" + todayKey);
+      todayRef.on("value", (snap) => {
+        const val = snap.val();
+        if(val !== null && val !== undefined){
+          todayFocusMinutes = parseInt(val, 10) || 0;
+          localStorage.setItem(todayKey, todayFocusMinutes);
+          renderDataPanel();
+        }
+      });
+    }
+  } catch(e) {
+    console.warn("Firebase offline or initialization fallback", e);
+  }
+}
+
+function pushSettingsToCloud(settings){
+  try {
+    if(db){
+      db.ref("app_settings").set(settings);
+    }
+  } catch(e){}
+}
+
+function pushStudyTotalToCloud(isoKey, mins){
+  try {
+    if(db){
+      db.ref("study_totals/selmer_focus_" + isoKey).set(mins);
+    }
+  } catch(e){}
+}
+
+function pushSessionRecordToCloud(isoKey, recordData){
+  try {
+    if(db){
+      db.ref("session_records/" + isoKey).set(recordData);
+    }
+  } catch(e){}
+}
+
+function getSyncedNow(){
+  return new Date(Date.now() + serverTimeOffsetMs);
+}
 
 const dom = {};
 function cacheDom(){
@@ -2132,7 +2442,8 @@ function renderPomodoroTimeline(justCompletedIdx){
 }
 
 
-function applyProgressStyle(styleName){
+function applyProgressStyle(styleName, opts){
+  opts = opts || {};
   state.progressStyle = styleName;
   const styles = ['ring', 'linear', 'wave', 'border', 'particles', 'dotted', 'fill', 'minimal'];
   styles.forEach(s => document.body.classList.remove('progress-style-' + s));
@@ -2141,6 +2452,7 @@ function applyProgressStyle(styleName){
   if(dom.mainProgressStyleSelect) dom.mainProgressStyleSelect.value = styleName;
   if(dom.dfPomoProgressStyleSelect) dom.dfPomoProgressStyleSelect.value = styleName;
   renderPomodoro();
+  if(!opts.skipSave) saveSettingsToStorage();
 }
 
 function applyDFCustomizations(){
@@ -2206,6 +2518,7 @@ function applyTheme(themeName, opts){
   }
   document.querySelectorAll('.theme-swatch').forEach(btn=>{ btn.classList.toggle('selected', btn.dataset.theme===themeName); });
   refreshColorCache();
+  if(!opts.skipSave) saveSettingsToStorage();
 }
 function setCustomPalette(hex){
   const {c1,c2,c3} = deriveCustomPalette(hex);
@@ -2222,7 +2535,8 @@ function applyProfile(profileKey, opts){
   dom.avatarImg.src = ASSETS[profileKey];
   document.querySelectorAll('.profile-option').forEach(btn=>{ btn.classList.toggle('selected', btn.dataset.profile===profileKey); });
   dom.profileCaption.textContent = PROFILE_META[profileKey].name;
-  if(!opts.skipTheme) applyTheme(PROFILE_META[profileKey].theme);
+  if(!opts.skipTheme) applyTheme(PROFILE_META[profileKey].theme, opts);
+  if(!opts.skipSave) saveSettingsToStorage();
 }
 
 function buildTicks(){
@@ -2248,7 +2562,7 @@ function setupRings(){
   dom.focusDonutProgress.setAttribute('stroke-dasharray', DONUT_C.toFixed(2));
 }
 function renderClock(){
-  const now=new Date();
+  const now=getSyncedNow();
   const h=now.getHours()%12, m=now.getMinutes(), s=now.getSeconds(), ms=now.getMilliseconds();
   const secFrac=(s+ms/1000)/60;
   dom.secondsProgress.setAttribute('stroke-dashoffset', (SEC_C*(1-secFrac)).toFixed(2));
@@ -2281,7 +2595,7 @@ function getISOWeek(date){
   return Math.ceil((((d-yearStart)/86400000)+1)/7);
 }
 function updateDateCluster(){
-  const now=new Date();
+  const now=getSyncedNow();
   const loc=LOCALE_CYCLE[localeIdx];
   let text;
   if(loc==='iso'){ text=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0'); }
@@ -3398,41 +3712,63 @@ function confirmSaveDay(){
     const newMins = prevMins + mins;
     localStorage.setItem(storageKey, newMins);
 
+    const completedSessions = pomodoroTimeline.filter(t => t.status === 'completed');
     const recordKey = 'selmer_record_' + isoKey;
     const recordData = {
       isoKey: isoKey,
       totalWorkSeconds: totalSec,
-      completedEtuts: pomodoroTimeline.filter(t => t.status === 'completed'),
+      totalMinutes: newMins,
+      sessionCount: completedSessions.length,
+      completedEtuts: completedSessions,
       savedAt: new Date().toISOString()
     };
     localStorage.setItem(recordKey, JSON.stringify(recordData));
+
+    // Push to Firebase Cloud Database
+    pushStudyTotalToCloud(isoKey, newMins);
+    pushSessionRecordToCloud(isoKey, recordData);
 
     if(isoKey === getTodayStorageKey().replace('selmer_focus_','')){
       todayFocusMinutes = newMins;
       renderDataPanel();
     }
+
+    if(typeof renderMonthlyAnalytics === 'function') renderMonthlyAnalytics();
+    if(typeof renderHistoryList === 'function') renderHistoryList();
   } catch(e){}
 
-  showToast('Veriler başarıyla kaydedildi! 💾');
+  showToast('Veriler başarıyla bulut veri tabanına kaydedildi! 💾');
   if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open');
 }
 
 function saveSettingsToStorage(){
   try {
     const settings = {
-      volume: dom.volumeSlider ? dom.volumeSlider.value : 0.4,
-      alarmVolume: dom.alarmVolumeSlider ? dom.alarmVolumeSlider.value : 0.7,
-      preset: state.preset || 'deepSynth',
+      volume: dom.volumeSlider ? dom.volumeSlider.value : 0.55,
+      alarmVolume: dom.alarmVolumeSlider ? dom.alarmVolumeSlider.value : 0.70,
       theme: state.theme || 'cyberpunkBlue',
       profile: state.profile || 'neon2',
+      mode3D: state.mode3D,
+      showHeartPulse: state.showHeartPulse,
+      clockOnlyMode: state.clockOnlyMode,
+      dfShowIcon: state.dfShowIcon,
+      dfOnlyTime: state.dfOnlyTime,
+      dfDigitalOnly: state.dfDigitalOnly,
+      dfClockType: state.dfClockType,
       dfFont: state.dfFont,
-      progressStyle: state.progressStyle,
       dfPomoViewMode: state.dfPomoViewMode,
+      dfPomoShowIcon: state.dfPomoShowIcon,
+      dfPomoShowLabel: state.dfPomoShowLabel,
+      dfPomoShowRing: state.dfPomoShowRing,
+      progressStyle: state.progressStyle,
+      enableCelebration: state.enableCelebration,
+      celebrationStyle: state.celebrationStyle,
       focusMin: pomodoro.focusMin,
       shortMin: pomodoro.shortMin,
       pomoAlarm: dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime'
     };
     localStorage.setItem('selmer_app_settings', JSON.stringify(settings));
+    if(typeof pushSettingsToCloud === 'function') pushSettingsToCloud(settings);
   } catch(e){}
 }
 
@@ -3441,23 +3777,59 @@ function loadSettingsFromStorage(){
     const raw = localStorage.getItem('selmer_app_settings');
     if(!raw) return;
     const s = JSON.parse(raw);
-    if(s.volume !== undefined && dom.volumeSlider) { dom.volumeSlider.value = s.volume; if(dom.dfVolumeSlider) dom.dfVolumeSlider.value = s.volume; }
-    if(s.alarmVolume !== undefined && dom.alarmVolumeSlider) { dom.alarmVolumeSlider.value = s.alarmVolume; if(dom.dfAlarmVolumeSlider) dom.dfAlarmVolumeSlider.value = s.alarmVolume; }
-    if(s.theme) applyTheme(s.theme);
-    if(s.profile) applyProfile(s.profile);
-    if(s.dfFont) {
-      state.dfFont = s.dfFont;
-      if(dom.dfFontSelect) dom.dfFontSelect.value = s.dfFont;
-      if(dom.dfPomoFontSelect) dom.dfPomoFontSelect.value = s.dfFont;
+    if(s.volume !== undefined) {
+      if(dom.volumeSlider) dom.volumeSlider.value = s.volume;
+      if(dom.dfVolumeSlider) dom.dfVolumeSlider.value = s.volume;
+      if(ambientGain) ambientGain.gain.value = parseFloat(s.volume);
     }
-    if(s.progressStyle) applyProgressStyle(s.progressStyle);
+    if(s.alarmVolume !== undefined) {
+      if(dom.alarmVolumeSlider) dom.alarmVolumeSlider.value = s.alarmVolume;
+      if(dom.dfAlarmVolumeSlider) dom.dfAlarmVolumeSlider.value = s.alarmVolume;
+      if(alarmGain) alarmGain.gain.value = parseFloat(s.alarmVolume);
+    }
+    if(s.theme) applyTheme(s.theme, {skipSave: true});
+    if(s.profile) applyProfile(s.profile, {skipSave: true});
+    if(s.mode3D !== undefined) applyMode3D(!!s.mode3D, {skipSave: true});
+    if(s.showHeartPulse !== undefined) state.showHeartPulse = !!s.showHeartPulse;
+    if(s.clockOnlyMode !== undefined) state.clockOnlyMode = !!s.clockOnlyMode;
+    if(s.dfShowIcon !== undefined) state.dfShowIcon = !!s.dfShowIcon;
+    if(s.dfOnlyTime !== undefined) state.dfOnlyTime = !!s.dfOnlyTime;
+    if(s.dfDigitalOnly !== undefined) state.dfDigitalOnly = !!s.dfDigitalOnly;
+    if(s.dfClockType) state.dfClockType = s.dfClockType;
+    if(s.dfFont) state.dfFont = s.dfFont;
     if(s.dfPomoViewMode) state.dfPomoViewMode = s.dfPomoViewMode;
-    if(s.focusMin && dom.pomoFocusInput) { pomodoro.focusMin = parseInt(s.focusMin, 10); dom.pomoFocusInput.value = s.focusMin; }
-    if(s.shortMin && dom.pomoBreakInput) { pomodoro.shortMin = parseInt(s.shortMin, 10); dom.pomoBreakInput.value = s.shortMin; }
+    if(s.dfPomoShowIcon !== undefined) state.dfPomoShowIcon = !!s.dfPomoShowIcon;
+    if(s.dfPomoShowLabel !== undefined) state.dfPomoShowLabel = !!s.dfPomoShowLabel;
+    if(s.dfPomoShowRing !== undefined) state.dfPomoShowRing = !!s.dfPomoShowRing;
+    if(s.progressStyle) applyProgressStyle(s.progressStyle, {skipSave: true});
+    if(s.enableCelebration !== undefined) {
+      state.enableCelebration = !!s.enableCelebration;
+      if(dom.mainCelebrationToggle) dom.mainCelebrationToggle.checked = state.enableCelebration;
+      if(dom.dfCelebrationToggle) dom.dfCelebrationToggle.checked = state.enableCelebration;
+    }
+    if(s.celebrationStyle) {
+      state.celebrationStyle = s.celebrationStyle;
+      if(dom.mainCelebrationStyleSelect) dom.mainCelebrationStyleSelect.value = s.celebrationStyle;
+      if(dom.dfCelebrationStyleSelect) dom.dfCelebrationStyleSelect.value = s.celebrationStyle;
+    }
+    if(s.focusMin) {
+      pomodoro.focusMin = parseInt(s.focusMin, 10);
+      if(dom.pomoFocusInput) dom.pomoFocusInput.value = s.focusMin;
+      if(dom.focusDurationRange) dom.focusDurationRange.value = s.focusMin;
+      if(dom.focusDurationValue) dom.focusDurationValue.textContent = s.focusMin + ' dk';
+    }
+    if(s.shortMin) {
+      pomodoro.shortMin = parseInt(s.shortMin, 10);
+      if(dom.pomoBreakInput) dom.pomoBreakInput.value = s.shortMin;
+      if(dom.shortBreakRange) dom.shortBreakRange.value = s.shortMin;
+      if(dom.shortBreakValue) dom.shortBreakValue.textContent = s.shortMin + ' dk';
+    }
     if(s.pomoAlarm) {
       if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.value = s.pomoAlarm;
       if(dom.dfAlarmSelect) dom.dfAlarmSelect.value = s.pomoAlarm;
     }
+    applyMainPageCustomizations();
+    applyDFCustomizations();
   } catch(e){}
 }
 
@@ -3511,7 +3883,208 @@ function buildWeeklyBars(){
     requestAnimationFrame(()=>{ bar.style.transition='height .7s cubic-bezier(.16,.84,.44,1)'; bar.style.height=Math.max(4,(minutes/max)*100)+'%'; });
   });
 }
-function renderDataPanel(){ renderDonut(); buildWeeklyBars(); }
+function renderMonthlyAnalytics(){
+  const grid = document.getElementById('monthlyAnalyticsGrid');
+  const monthNameEl = document.getElementById('monthlyAnalyticsMonthName');
+  if(!grid) return;
+  grid.innerHTML = '';
+
+  const now = getSyncedNow();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  if(monthNameEl) monthNameEl.textContent = monthNames[month] + ' ' + year;
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+
+  // 0 = Sunday, transform so 0 = Monday ... 6 = Sunday
+  let startDayIdx = (firstDay.getDay() + 6) % 7;
+
+  for(let i = 0; i < startDayIdx; i++){
+    const emptyCell = document.createElement('div');
+    emptyCell.className = 'monthly-cell empty';
+    grid.appendChild(emptyCell);
+  }
+
+  const todayDate = now.getDate();
+
+  for(let day = 1; day <= daysInMonth; day++){
+    const isoKey = year + '_' + String(month + 1).padStart(2, '0') + '_' + String(day).padStart(2, '0');
+    const storageKey = 'selmer_focus_' + isoKey;
+    const recordKey = 'selmer_record_' + isoKey;
+
+    let focusMins = parseInt(localStorage.getItem(storageKey) || '0', 10);
+    let sessionCount = 0;
+
+    try {
+      const rec = localStorage.getItem(recordKey);
+      if(rec){
+        const parsed = JSON.parse(rec);
+        if(parsed.sessionCount) sessionCount = parsed.sessionCount;
+        if(parsed.completedEtuts) sessionCount = Math.max(sessionCount, parsed.completedEtuts.length);
+      }
+    } catch(e){}
+
+    const isToday = (day === todayDate);
+    const hasData = focusMins > 0 || sessionCount > 0;
+
+    const cell = document.createElement('div');
+    cell.className = 'monthly-cell' + (hasData ? ' has-data' : '') + (isToday ? ' today' : '');
+    cell.textContent = day;
+
+    const timeFormatted = formatHoursMinutes(focusMins);
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'cell-tooltip';
+    tooltip.innerHTML = `
+      <div class="tooltip-date">${day} ${monthNames[month]} ${year}</div>
+      <div class="tooltip-info">⏱ Toplam Süre: <b>${timeFormatted}</b></div>
+      <div class="tooltip-info">🎯 Etüt Sayısı: <b>${sessionCount} Seans</b></div>
+    `;
+
+    cell.appendChild(tooltip);
+    grid.appendChild(cell);
+  }
+}
+
+function isDateWithinLast2Days(isoKey){
+  // isoKey format: YYYY_MM_DD
+  const parts = isoKey.split('_');
+  if(parts.length !== 3) return false;
+
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+
+  const targetDate = new Date(year, month, day);
+  const now = getSyncedNow();
+  const todayZero = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const diffMs = todayZero - targetDate;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  // 0 = Today, 1 = Yesterday (Strictly last 2 days allowed)
+  return diffDays >= 0 && diffDays <= 1;
+}
+
+function renderHistoryList(){
+  const container = document.getElementById('historyListContainer');
+  if(!container) return;
+  container.innerHTML = '';
+
+  const now = getSyncedNow();
+
+  // Find all logged records in localStorage
+  const historyKeys = [];
+  for(let i = 0; i < localStorage.length; i++){
+    const key = localStorage.key(i);
+    if(key && key.startsWith('selmer_record_')){
+      historyKeys.push(key);
+    }
+  }
+
+  historyKeys.sort().reverse();
+
+  if(historyKeys.length === 0){
+    container.innerHTML = '<div style="font-size:0.75rem; color:var(--text-dimmer); text-align:center; padding:12px;">Henüz kaydedilmiş çalışma geçmişi bulunmuyor.</div>';
+    return;
+  }
+
+  const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+  historyKeys.forEach(recordKey => {
+    const isoKey = recordKey.replace('selmer_record_', '');
+    let recordData = null;
+    try {
+      recordData = JSON.parse(localStorage.getItem(recordKey));
+    } catch(e){}
+
+    const focusMins = parseInt(localStorage.getItem('selmer_focus_' + isoKey) || '0', 10);
+    const parts = isoKey.split('_');
+    const dateStr = parts.length === 3 ? (parts[2] + ' ' + monthNames[parseInt(parts[1], 10) - 1] + ' ' + parts[0]) : isoKey;
+
+    const sessionCount = (recordData && recordData.sessionCount) ? recordData.sessionCount : 0;
+    const editable = isDateWithinLast2Days(isoKey);
+
+    const card = document.createElement('div');
+    card.className = 'history-item-card' + (editable ? '' : ' locked');
+
+    card.innerHTML = `
+      <div class="history-info">
+        <span class="history-date">${dateStr}</span>
+        <span class="history-meta">⏱ ${formatHoursMinutes(focusMins)} · 🎯 ${sessionCount} Seans</span>
+      </div>
+      <div class="history-actions">
+        ${editable ? `
+          <button class="history-btn edit-btn" data-isokey="${isoKey}">✏️ Düzenle</button>
+          <button class="history-btn delete-btn" data-isokey="${isoKey}">🗑 Sil</button>
+        ` : `
+          <span class="history-locked-badge">🔒 Kilitli</span>
+        `}
+      </div>
+    `;
+
+    if(editable){
+      const editBtn = card.querySelector('.edit-btn');
+      const deleteBtn = card.querySelector('.delete-btn');
+
+      if(editBtn){
+        editBtn.addEventListener('click', () => {
+          const newMinsStr = prompt(dateStr + ' için yeni çalışma süresini dakika olarak giriniz:', focusMins);
+          if(newMinsStr !== null){
+            const newMins = parseInt(newMinsStr, 10);
+            if(!isNaN(newMins) && newMins >= 0){
+              localStorage.setItem('selmer_focus_' + isoKey, newMins);
+
+              const updatedRecord = recordData || { isoKey, totalWorkSeconds: newMins * 60, completedEtuts: [] };
+              updatedRecord.totalMinutes = newMins;
+              updatedRecord.updatedAt = new Date().toISOString();
+              localStorage.setItem('selmer_record_' + isoKey, JSON.stringify(updatedRecord));
+
+              pushStudyTotalToCloud(isoKey, newMins);
+              pushSessionRecordToCloud(isoKey, updatedRecord);
+
+              if(isoKey === getTodayStorageKey().replace('selmer_focus_','')){
+                todayFocusMinutes = newMins;
+              }
+
+              renderDataPanel();
+              renderHistoryList();
+              showToast('Çalışma geçmişi güncellendi! ✏️');
+            }
+          }
+        });
+      }
+
+      if(deleteBtn){
+        deleteBtn.addEventListener('click', () => {
+          if(confirm(dateStr + ' tarihine ait çalışma kaydını silmek istediğinize emin misiniz?')){
+            localStorage.removeItem('selmer_focus_' + isoKey);
+            localStorage.removeItem('selmer_record_' + isoKey);
+
+            pushStudyTotalToCloud(isoKey, 0);
+            pushSessionRecordToCloud(isoKey, null);
+
+            if(isoKey === getTodayStorageKey().replace('selmer_focus_','')){
+              todayFocusMinutes = 0;
+            }
+
+            renderDataPanel();
+            renderHistoryList();
+            showToast('Kayıt başarıyla silindi! 🗑');
+          }
+        });
+      }
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function renderDataPanel(){ renderDonut(); buildWeeklyBars(); renderMonthlyAnalytics(); renderHistoryList(); }
 
 function showToast(text){
   const el=document.createElement('div');
@@ -3523,18 +4096,20 @@ function showToast(text){
 
 let mouseNX=0, mouseNY=0, curNX=0, curNY=0;
 function onMouseMove(e){ mouseNX=(e.clientX/window.innerWidth)*2-1; mouseNY=(e.clientY/window.innerHeight)*2-1; }
-function applyMode3D(on){
+function applyMode3D(on, opts){
+  opts = opts || {};
   state.mode3D=on;
   document.body.setAttribute('data-mode3d', on?'on':'off');
-  dom.mode3dValue.textContent=on?'3D':'2D';
-  dom.mode3dToggle.checked=on;
+  if(dom.mode3dValue) dom.mode3dValue.textContent=on?'3D':'2D';
+  if(dom.mode3dToggle) dom.mode3dToggle.checked=on;
   if(!on){
     document.documentElement.style.setProperty('--tilt-x','0deg');
     document.documentElement.style.setProperty('--tilt-y','0deg');
     ['layerBack','layerMid','layerFront'].forEach(k=>{
-      dom[k].style.setProperty('--px','0px'); dom[k].style.setProperty('--py','0px');
+      if(dom[k]) { dom[k].style.setProperty('--px','0px'); dom[k].style.setProperty('--py','0px'); }
     });
   }
+  if(!opts.skipSave) saveSettingsToStorage();
 }
 function updateParallax(){
   if(!state.mode3D || prefersReducedMotion) return;
@@ -3582,19 +4157,20 @@ function wireEvents(){
       dom.dfCustomizeBtn.classList.remove('active');
     });
   }
-  if(dom.dfClockTypeSelect) dom.dfClockTypeSelect.addEventListener('change', ()=>{ state.dfClockType = dom.dfClockTypeSelect.value; renderDeepFocus(); });
+  if(dom.dfClockTypeSelect) dom.dfClockTypeSelect.addEventListener('change', ()=>{ state.dfClockType = dom.dfClockTypeSelect.value; renderDeepFocus(); saveSettingsToStorage(); });
   const handleFontChange = (val) => {
     state.dfFont = val;
     if(dom.dfFontSelect) dom.dfFontSelect.value = val;
     if(dom.dfPomoFontSelect) dom.dfPomoFontSelect.value = val;
     applyDFCustomizations();
     renderDeepFocus();
+    saveSettingsToStorage();
   };
   if(dom.dfFontSelect) dom.dfFontSelect.addEventListener('change', ()=>{ handleFontChange(dom.dfFontSelect.value); });
   if(dom.dfPomoFontSelect) dom.dfPomoFontSelect.addEventListener('change', ()=>{ handleFontChange(dom.dfPomoFontSelect.value); });
-  if(dom.dfShowIconToggle) dom.dfShowIconToggle.addEventListener('change', ()=>{ state.dfShowIcon = dom.dfShowIconToggle.checked; applyDFCustomizations(); });
-  if(dom.dfOnlyTimeToggle) dom.dfOnlyTimeToggle.addEventListener('change', ()=>{ state.dfOnlyTime = dom.dfOnlyTimeToggle.checked; applyDFCustomizations(); });
-  if(dom.dfDigitalOnlyToggle) dom.dfDigitalOnlyToggle.addEventListener('change', ()=>{ state.dfDigitalOnly = dom.dfDigitalOnlyToggle.checked; applyDFCustomizations(); });
+  if(dom.dfShowIconToggle) dom.dfShowIconToggle.addEventListener('change', ()=>{ state.dfShowIcon = dom.dfShowIconToggle.checked; applyDFCustomizations(); saveSettingsToStorage(); });
+  if(dom.dfOnlyTimeToggle) dom.dfOnlyTimeToggle.addEventListener('change', ()=>{ state.dfOnlyTime = dom.dfOnlyTimeToggle.checked; applyDFCustomizations(); saveSettingsToStorage(); });
+  if(dom.dfDigitalOnlyToggle) dom.dfDigitalOnlyToggle.addEventListener('change', ()=>{ state.dfDigitalOnly = dom.dfDigitalOnlyToggle.checked; applyDFCustomizations(); saveSettingsToStorage(); });
 
   if(dom.mainProgressStyleSelect){
     dom.mainProgressStyleSelect.addEventListener('change', ()=>{
@@ -3626,12 +4202,14 @@ function wireEvents(){
     dom.dfPomoViewModeSelect.addEventListener('change', ()=>{
       state.dfPomoViewMode = dom.dfPomoViewModeSelect.value;
       renderDeepFocus();
+      saveSettingsToStorage();
     });
   }
   if(dom.dfPomoShowIconToggle){
     dom.dfPomoShowIconToggle.addEventListener('change', ()=>{
       state.dfPomoShowIcon = dom.dfPomoShowIconToggle.checked;
       applyDFCustomizations();
+      saveSettingsToStorage();
     });
   }
 
@@ -3639,36 +4217,42 @@ function wireEvents(){
     dom.dfCelebrationToggle.addEventListener('change', ()=>{
       state.enableCelebration = dom.dfCelebrationToggle.checked;
       if(dom.mainCelebrationToggle) dom.mainCelebrationToggle.checked = state.enableCelebration;
+      saveSettingsToStorage();
     });
   }
   if(dom.mainCelebrationToggle){
     dom.mainCelebrationToggle.addEventListener('change', ()=>{
       state.enableCelebration = dom.mainCelebrationToggle.checked;
       if(dom.dfCelebrationToggle) dom.dfCelebrationToggle.checked = state.enableCelebration;
+      saveSettingsToStorage();
     });
   }
   if(dom.dfCelebrationStyleSelect){
     dom.dfCelebrationStyleSelect.addEventListener('change', ()=>{
       state.celebrationStyle = dom.dfCelebrationStyleSelect.value;
       if(dom.mainCelebrationStyleSelect) dom.mainCelebrationStyleSelect.value = state.celebrationStyle;
+      saveSettingsToStorage();
     });
   }
   if(dom.mainCelebrationStyleSelect){
     dom.mainCelebrationStyleSelect.addEventListener('change', ()=>{
       state.celebrationStyle = dom.mainCelebrationStyleSelect.value;
       if(dom.dfCelebrationStyleSelect) dom.dfCelebrationStyleSelect.value = state.celebrationStyle;
+      saveSettingsToStorage();
     });
   }
   if(dom.dfPomoShowRingToggle){
     dom.dfPomoShowRingToggle.addEventListener('change', ()=>{
       state.dfPomoShowRing = dom.dfPomoShowRingToggle.checked;
       applyDFCustomizations();
+      saveSettingsToStorage();
     });
   }
   if(dom.dfPomoShowLabelToggle){
     dom.dfPomoShowLabelToggle.addEventListener('change', ()=>{
       state.dfPomoShowLabel = dom.dfPomoShowLabelToggle.checked;
       applyDFCustomizations();
+      saveSettingsToStorage();
     });
   }
 
@@ -3757,6 +4341,7 @@ function wireEvents(){
   const handleAlarmSelect = (val) => {
     if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.value = val;
     if(dom.dfAlarmSelect) dom.dfAlarmSelect.value = val;
+    saveSettingsToStorage();
   };
   if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.addEventListener('change', ()=>{ handleAlarmSelect(dom.pomoAlarmSelect.value); });
   if(dom.dfAlarmSelect) dom.dfAlarmSelect.addEventListener('change', ()=>{ handleAlarmSelect(dom.dfAlarmSelect.value); });
@@ -3778,6 +4363,7 @@ function wireEvents(){
       const val = parseFloat(dom.volumeSlider.value);
       if(dom.dfVolumeSlider) dom.dfVolumeSlider.value = val;
       if(ambientGain) ambientGain.gain.value = val;
+      saveSettingsToStorage();
     });
   }
   if(dom.dfVolumeSlider){
@@ -3785,6 +4371,7 @@ function wireEvents(){
       const val = parseFloat(dom.dfVolumeSlider.value);
       if(dom.volumeSlider) dom.volumeSlider.value = val;
       if(ambientGain) ambientGain.gain.value = val;
+      saveSettingsToStorage();
     });
   }
   if(dom.alarmVolumeSlider){
@@ -3792,6 +4379,7 @@ function wireEvents(){
       const val = parseFloat(dom.alarmVolumeSlider.value);
       if(dom.dfAlarmVolumeSlider) dom.dfAlarmVolumeSlider.value = val;
       if(alarmGain) alarmGain.gain.value = val;
+      saveSettingsToStorage();
     });
   }
   if(dom.dfAlarmVolumeSlider){
@@ -3799,6 +4387,7 @@ function wireEvents(){
       const val = parseFloat(dom.dfAlarmVolumeSlider.value);
       if(dom.alarmVolumeSlider) dom.alarmVolumeSlider.value = val;
       if(alarmGain) alarmGain.gain.value = val;
+      saveSettingsToStorage();
     });
   }
 
@@ -3865,9 +4454,9 @@ function wireEvents(){
   }
   
   if(dom.heartPulseToggle) dom.heartPulseToggle.addEventListener('change', ()=>{ state.showHeartPulse = dom.heartPulseToggle.checked; applyMainPageCustomizations();
-  applyDFCustomizations(); });
+  applyDFCustomizations(); saveSettingsToStorage(); });
   if(dom.clockOnlyToggle) dom.clockOnlyToggle.addEventListener('change', ()=>{ state.clockOnlyMode = dom.clockOnlyToggle.checked; applyMainPageCustomizations();
-  applyDFCustomizations(); });
+  applyDFCustomizations(); saveSettingsToStorage(); });
 
   dom.mode3dToggle.addEventListener('change', ()=>applyMode3D(dom.mode3dToggle.checked));
   window.addEventListener('mousemove', onMouseMove);
@@ -3899,13 +4488,14 @@ function frame(ts){
 
 function init(){
   cacheDom();
+  initFirebaseSync();
   dom.profileThumbNeon2.src=ASSETS.neon2;
   dom.profileThumbY2026.src=ASSETS.y2026;
   buildTicks();
   setupRings();
   loadSettingsFromStorage();
-  applyProfile(state.profile);
-  applyMode3D(true);
+  applyProfile(state.profile, {skipSave: true});
+  applyMode3D(state.mode3D, {skipSave: true});
   wireEvents();
   setupBg();
   setupCelebrationCanvas();
