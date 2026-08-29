@@ -297,11 +297,14 @@ body.deep-focus-active .deep-focus-overlay{opacity:1; visibility:visible; pointe
 .df-session-label{ font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.2em; color:var(--text-dim); margin-top:10px; text-transform:uppercase; }
 .df-focus{ font-family:'JetBrains Mono',monospace; font-size:.85rem; letter-spacing:.1em; color:var(--c1); margin-top:6px; }
 .exit-df{
-  position:absolute; top:26px; right:26px; display:flex; align-items:center; gap:8px;
-  font-size:.68rem; letter-spacing:.15em; color:var(--text-dim);
-  padding:9px 16px; border:1px solid var(--hairline-strong); border-radius:999px; opacity:.55; transition:all .25s;
+  position:absolute; top:clamp(16px, 3vh, 32px); right:clamp(16px, 3vw, 32px); display:flex; align-items:center; gap:clamp(6px, 0.8vw, 10px);
+  font-size:clamp(0.72rem, 1.3vw, 1.05rem); letter-spacing:.15em; color:var(--text-dim); font-weight:700;
+  padding:clamp(8px, 1.2vh, 14px) clamp(16px, 2vw, 26px); border:1px solid var(--hairline-strong); border-radius:999px; opacity:.75; transition:all .25s;
+  background:rgba(10, 13, 26, 0.6); backdrop-filter:blur(12px); cursor:pointer; z-index:42;
 }
-.exit-df:hover{opacity:1; border-color:rgba(var(--c1-rgb),.6); color:var(--text-0);}
+.exit-df svg{ width:clamp(12px, 1.4vw, 18px); height:clamp(12px, 1.4vw, 18px); }
+.exit-df:hover{opacity:1; border-color:var(--c1); color:var(--text-0); background:rgba(var(--c1-rgb), 0.18); box-shadow:0 0 16px rgba(var(--c1-rgb), 0.35); transform:scale(1.05);}
+.exit-df:active{transform:scale(0.98);}
 
 .drawer-backdrop{
   position:fixed; inset:0; z-index:48; background:rgba(3,4,10,.55); backdrop-filter:blur(3px);
@@ -467,30 +470,60 @@ body.mode-pomodoro #soundPanel {
 
 .pomo-top-panel {
   width: 100%;
-  max-width: 500px;
-  background: linear-gradient(160deg, rgba(var(--c1-rgb), 0.14), rgba(10, 13, 26, 0.85));
-  border: 1px solid rgba(var(--c1-rgb), 0.4);
-  border-radius: var(--radius-m);
-  padding: 16px 24px;
+  max-width: 680px;
+  margin: 0 auto;
+  background: linear-gradient(160deg, rgba(var(--c1-rgb), 0.18), rgba(10, 13, 26, 0.9));
+  border: 1px solid rgba(var(--c1-rgb), 0.45);
+  border-radius: var(--radius-l);
+  padding: 20px 32px;
   text-align: center;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 24px rgba(var(--c1-rgb), 0.2);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.45), 0 0 28px rgba(var(--c1-rgb), 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .pomo-top-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.24em;
+  font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+  letter-spacing: 0.28em;
   color: var(--c1);
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  font-weight: 700;
 }
 .pomo-top-time {
   font-family: 'Orbitron', sans-serif;
-  font-weight: 800;
-  font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+  font-weight: 900;
+  font-size: clamp(2.4rem, 5.5vw, 3.8rem);
   letter-spacing: 0.06em;
   color: var(--text-0);
-  text-shadow: 0 0 20px rgba(var(--c1-rgb), 0.6);
+  text-shadow: 0 0 28px rgba(var(--c1-rgb), 0.7);
   font-variant-numeric: tabular-nums;
+}
+.pomo-card-settings-btn {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline-strong);
+  background: rgba(255,255,255,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  transition: all 0.25s;
+  cursor: pointer;
+  z-index: 5;
+}
+.pomo-card-settings-btn:hover {
+  color: var(--c1);
+  border-color: var(--c1);
+  background: rgba(var(--c1-rgb), 0.18);
+  box-shadow: 0 0 14px rgba(var(--c1-rgb), 0.4);
+  transform: scale(1.1);
 }
 
 .pomo-mid-grid {
@@ -808,9 +841,11 @@ body.mode-pomodoro #soundPanel {
   box-shadow: 0 0 14px var(--c1), 0 0 6px var(--c1); transition: width 0.3s var(--ease);
 }
 .progress-style-linear .pomo-linear-bar-wrap { display: block !important; }
+.progress-style-linear .pring-track,
 .progress-style-linear .pring-progress,
 .progress-style-linear .radial-fill-overlay,
-.progress-style-linear .pring-dotted { display: none !important; }
+.progress-style-linear .pring-dotted,
+.progress-style-linear .pomo-big-ring-wrap > svg { display: none !important; }
 
 .pomo-wave-canvas {
   position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%;
@@ -828,7 +863,7 @@ body.mode-pomodoro #soundPanel {
 
 .pring-dotted {
   fill: none; stroke: var(--c1); stroke-width: 6; stroke-dasharray: 6 10; stroke-linecap: round;
-  filter: drop-shadow(0 0 10px rgba(var(--c1-rgb),0.9)); transition: stroke-dashoffset 0.4s var(--ease);
+  filter: drop-shadow(0 0 10px rgba(var(--c1-rgb),0.9));
   display: none; transform-origin: 110px 110px;
 }
 .progress-style-dotted .pring-dotted { display: block !important; }
@@ -1091,9 +1126,14 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
             <canvas class="pomo-wave-canvas" id="pomoWaveCanvas"></canvas>
             <canvas class="pomo-particles-canvas" id="pomoParticlesCanvas"></canvas>
             <svg viewBox="0 0 220 220">
+              <defs>
+                <mask id="pomoDottedMask">
+                  <circle cx="110" cy="110" r="98" fill="none" stroke="#ffffff" stroke-width="12" id="pomoDottedMaskArc" transform="rotate(-90 110 110)" />
+                </mask>
+              </defs>
               <circle class="pring-track" cx="110" cy="110" r="98"></circle>
               <circle class="pring-progress" id="pomoBigProgress" cx="110" cy="110" r="98" transform="rotate(-90 110 110)"></circle>
-              <circle class="pring-dotted" id="pomoDottedProgress" cx="110" cy="110" r="98" transform="rotate(-90 110 110)"></circle>
+              <circle class="pring-dotted" id="pomoDottedProgress" cx="110" cy="110" r="98" mask="url(#pomoDottedMask)"></circle>
             </svg>
             <div class="pomo-big-center">
               <span class="pomo-badge" id="pomoSessionBadge">1. ETÜT</span>
@@ -1102,6 +1142,9 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
               <div class="pomo-linear-bar-wrap" id="pomoLinearBarWrap"><div class="pomo-linear-bar-fill" id="pomoLinearBarFill"></div></div>
             </div>
           </div>
+          <button class="pomo-card-settings-btn" id="pomoTimeLayerSettingsBtn" title="Ders & Mola Ayarları">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 13a7.6 7.6 0 000-2l2-1.5-2-3.4-2.3.9a7.7 7.7 0 00-1.7-1L15 3.4h-4l-.4 2.6a7.7 7.7 0 00-1.7 1l-2.3-.9-2 3.4L6.6 11a7.6 7.6 0 000 2l-2 1.5 2 3.4 2.3-.9c.5.4 1.1.75 1.7 1l.4 2.6h4l.4-2.6c.6-.25 1.2-.6 1.7-1l2.3.9 2-3.4-2-1.5z"></path></svg>
+          </button>
         </div>
 
         <div class="pomo-config-card" id="pomoConfigCard">
@@ -1215,7 +1258,7 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
 <div class="deep-focus-overlay" id="deepFocusOverlay">
   <button class="exit-df" id="exitDeepFocus">
     <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" fill="none" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"></path></svg>
-    ÇIKIŞ
+    BİTİR
   </button>
   <button class="df-customize-btn" id="dfCustomizeBtn">
     <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2">
@@ -1574,7 +1617,7 @@ function cacheDom(){
    'longBreakRange','longBreakValue','sessionsBeforeLongRange','sessionsBeforeLongValue',
    'mode3dToggle','mode3dValue','focusDonutProgress','focusDonutLabel','todayMinutesLabel',
    'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
-   'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoConfigCard','pomoConfigHeader','pomoConfigBody','accordionIcon'
+   'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoDottedMaskArc','pomoBorderGlowBox','pomoBorderGlowLine','pomoConfigCard','pomoConfigHeader','pomoConfigBody','accordionIcon','pomoTimeLayerSettingsBtn'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -2206,6 +2249,41 @@ function selectPreset(name){
   else if(name==='bioGreen') startBioGreen();
   else if(name==='cyberpunkRain') startCyberpunkRain();
 }
+function playUiSound(type='click'){
+  try {
+    ensureAudio();
+    if(!audioCtx) return;
+    const t = audioCtx.currentTime;
+    if(type === 'click'){
+      const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(1200, t); o.frequency.exponentialRampToValueAtTime(400, t + 0.04);
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+      o.connect(g); g.connect(masterGain); o.start(t); o.stop(t + 0.05);
+    } else if(type === 'start'){
+      [523.25, 659.25, 784].forEach((f, i) => {
+        const o = audioCtx.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
+        const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t + i*0.06); g.gain.exponentialRampToValueAtTime(0.0001, t + i*0.06 + 0.18);
+        o.connect(g); g.connect(masterGain); o.start(t + i*0.06); o.stop(t + i*0.06 + 0.2);
+      });
+    } else if(type === 'pause'){
+      [784, 523.25].forEach((f, i) => {
+        const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+        const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t + i*0.07); g.gain.exponentialRampToValueAtTime(0.0001, t + i*0.07 + 0.15);
+        o.connect(g); g.connect(masterGain); o.start(t + i*0.07); o.stop(t + i*0.07 + 0.18);
+      });
+    } else if(type === 'reset'){
+      const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(600, t); o.frequency.exponentialRampToValueAtTime(200, t + 0.12);
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.09, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+      o.connect(g); g.connect(masterGain); o.start(t); o.stop(t + 0.14);
+    } else if(type === 'finish'){
+      [523.25, 659.25, 784, 1046.5].forEach((f, i) => {
+        const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+        const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, t + i*0.1); g.gain.exponentialRampToValueAtTime(0.0001, t + i*0.1 + 0.45);
+        o.connect(g); g.connect(masterGain); o.start(t + i*0.1); o.stop(t + i*0.1 + 0.5);
+      });
+    }
+  } catch(e){}
+}
+
 function playChime(kind){
   ensureAudio();
   const t=audioCtx.currentTime;
@@ -2311,19 +2389,42 @@ function drawPomoVisuals(ts, frac){
     pomoWaveCtx.restore();
   }
 
-  // 3. Matrix / Particle Stream Canvas
+  // 3. Matrix / Particle Stream Canvas with Sand Accumulation
   if(pomoParticlesCtx && state.progressStyle === 'particles'){
+    const elapsedFrac = 1 - frac;
     pomoParticlesCtx.clearRect(0, 0, 240, 240);
     pomoParticlesCtx.save();
     pomoParticlesCtx.beginPath();
     pomoParticlesCtx.arc(120, 120, 118, 0, Math.PI * 2);
     pomoParticlesCtx.clip();
 
-    pomoStreamParticles.forEach(p => {
-      p.y += p.speed;
-      if(p.y > 240){ p.y = 0; p.x = Math.random()*240; }
+    // Accumulated sand bed at bottom
+    const pileMaxHeight = 180;
+    const sandY = 240 - (elapsedFrac * pileMaxHeight);
+
+    if (elapsedFrac > 0) {
       pomoParticlesCtx.fillStyle = CACHED_C1;
-      pomoParticlesCtx.globalAlpha = p.opacity * (0.3 + frac * 0.7);
+      pomoParticlesCtx.globalAlpha = 0.45;
+      pomoParticlesCtx.beginPath();
+      for (let x = 0; x <= 240; x += 4) {
+        const mound = Math.sin((x / 240) * Math.PI) * 12 * elapsedFrac;
+        const wave = Math.sin(x * 0.06 + ts * 0.002) * 3;
+        const y = sandY - mound + wave;
+        if (x === 0) pomoParticlesCtx.moveTo(x, y);
+        else pomoParticlesCtx.lineTo(x, y);
+      }
+      pomoParticlesCtx.lineTo(240, 240);
+      pomoParticlesCtx.lineTo(0, 240);
+      pomoParticlesCtx.closePath();
+      pomoParticlesCtx.fill();
+    }
+
+    // Falling sand particles
+    pomoStreamParticles.forEach(p => {
+      p.y += p.speed * 1.5;
+      if(p.y > sandY){ p.y = Math.random() * 40; p.x = 60 + Math.random() * 120; }
+      pomoParticlesCtx.fillStyle = CACHED_C1;
+      pomoParticlesCtx.globalAlpha = p.opacity * 0.8;
       pomoParticlesCtx.beginPath();
       pomoParticlesCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
       pomoParticlesCtx.fill();
@@ -2332,12 +2433,13 @@ function drawPomoVisuals(ts, frac){
     pomoParticlesCtx.restore();
   }
 
-  // 4. Dotted Neon Radial Circle
-  if(dom.pomoDottedProgress){
+  // 4. Dotted Neon Radial Circle with stationary pattern mask
+  if(dom.pomoDottedMaskArc){
     const PRING_BIG_C = 2 * Math.PI * 98;
-    const dashOffset = (PRING_BIG_C * (1 - frac)).toFixed(2);
-    dom.pomoDottedProgress.setAttribute('stroke-dasharray', '8 10');
-    dom.pomoDottedProgress.setAttribute('stroke-dashoffset', dashOffset);
+    const elapsedFrac = 1 - frac;
+    const dashOffset = (PRING_BIG_C * (1 - elapsedFrac)).toFixed(2);
+    dom.pomoDottedMaskArc.setAttribute('stroke-dasharray', PRING_BIG_C.toFixed(2));
+    dom.pomoDottedMaskArc.setAttribute('stroke-dashoffset', dashOffset);
   }
 
   // 5. Border Glow Walk Rotation
@@ -2447,6 +2549,7 @@ function renderSessionDots(){
 function pomodoroStart(){
   if(pomodoro.running) return;
   ensureAudio();
+  playUiSound('start');
 
   const now = new Date();
   const nowMs = now.getTime();
@@ -2500,6 +2603,7 @@ function pomodoroStart(){
 function pomodoroPause(){
   if(!pomodoro.running) return;
   pomodoro.running=false;
+  playUiSound('pause');
   if(pomodoro.timerMode==='stopwatch'){
     pomodoro.elapsedTimeMs = Date.now() - pomodoro.startTime;
   } else {
@@ -2510,6 +2614,7 @@ function pomodoroPause(){
 }
 function pomodoroReset(){
   pomodoro.running=false;
+  playUiSound('reset');
   clearInterval(pomodoro.intervalId);
   if(pomodoro.timerMode==='stopwatch'){
     if(pomodoro.elapsedTimeMs > 5000 && typeof recordWorkMinutes === 'function'){
@@ -2548,6 +2653,7 @@ function handleSessionComplete(){
   pomodoro.running = false;
   clearInterval(pomodoro.intervalId);
 
+  playUiSound('finish');
   playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
   recordWorkMinutes(pomodoro.focusMin);
 
@@ -2834,6 +2940,14 @@ function wireEvents(){
       dom.pomoConfigCard.classList.toggle('collapsed');
     });
   }
+  if(dom.pomoTimeLayerSettingsBtn){
+    dom.pomoTimeLayerSettingsBtn.addEventListener('click', ()=>{
+      if(dom.pomoConfigCard){
+        dom.pomoConfigCard.classList.remove('collapsed');
+        dom.pomoConfigCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  }
   if(dom.dfPomoViewModeSelect){
     dom.dfPomoViewModeSelect.addEventListener('change', ()=>{
       state.dfPomoViewMode = dom.dfPomoViewModeSelect.value;
@@ -3002,6 +3116,15 @@ function wireEvents(){
   applyDFCustomizations(); });
   if(dom.clockOnlyToggle) dom.clockOnlyToggle.addEventListener('change', ()=>{ state.clockOnlyMode = dom.clockOnlyToggle.checked; applyMainPageCustomizations();
   applyDFCustomizations(); });
+
+  document.querySelectorAll('button, .pbtn, .preset-btn, .mode-tabs button, .profile-option, .theme-swatch, .step-btn, .pomo-type-btn, .df-swatch').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      // Don't override start/pause/reset specific sound effects
+      if (btn.id !== 'pomoMainStartPause' && btn.id !== 'pomoMainReset' && btn.id !== 'pomodoroStartPause' && btn.id !== 'pomodoroReset') {
+        playUiSound('click');
+      }
+    });
+  });
 
   dom.mode3dToggle.addEventListener('change', ()=>applyMode3D(dom.mode3dToggle.checked));
   window.addEventListener('mousemove', onMouseMove);
