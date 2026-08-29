@@ -874,6 +874,14 @@ body.mode-pomodoro #soundPanel {
   background: linear-gradient(90deg, rgba(var(--c1-rgb), 0.12), rgba(10, 14, 28, 0.9));
   box-shadow: 0 4px 18px rgba(var(--c1-rgb), 0.15);
 }
+@keyframes nodeCompletePulse {
+  0% { transform: scale(0.92) translateX(-10px); opacity: 0.6; box-shadow: 0 0 0 0 rgba(var(--c1-rgb), 0.9); }
+  50% { transform: scale(1.06) translateX(4px); opacity: 1; box-shadow: 0 0 35px 10px rgba(var(--c1-rgb), 0.85); border-color: var(--c1); }
+  100% { transform: scale(1) translateX(0); box-shadow: 0 4px 18px rgba(var(--c1-rgb), 0.15); }
+}
+.pomo-node.just-completed {
+  animation: nodeCompletePulse 1.2s var(--ease) forwards !important;
+}
 .pomo-node.active {
   border-color: var(--c1);
   background: linear-gradient(90deg, rgba(var(--c1-rgb), 0.25), rgba(10, 14, 28, 0.95));
@@ -1357,9 +1365,15 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
           <button class="preset-btn" data-preset="cyberpunkRain">CYBER RAIN</button>
         </div>
         <canvas id="waveCanvas"></canvas>
-        <div class="volume-row">
+        <div class="volume-row" style="margin-bottom:8px;">
+          <span style="font-size:0.75rem; color:var(--text-dim); min-width:82px;">Ortam Sesi:</span>
           <svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3z"></path><path d="M16 8a5 5 0 010 8"></path></svg>
           <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.55">
+        </div>
+        <div class="volume-row">
+          <span style="font-size:0.75rem; color:var(--text-dim); min-width:82px;">Zil & Alarm:</span>
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <input type="range" id="alarmVolumeSlider" min="0" max="1" step="0.01" value="0.70">
         </div>
       </div>
     </div>
@@ -1442,6 +1456,16 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
       <div id="dfPomoSettings" style="display:none;">
         <div class="df-section-title">Pomodoro Görünümü</div>
         <div class="df-toggle-row">
+          <span>Yazı Tipi (Font)</span>
+          <select id="dfPomoFontSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+            <option value="'Orbitron', sans-serif">Orbitron (Modern Futuristic)</option>
+            <option value="'JetBrains Mono', monospace">JetBrains Mono (Digital Mono)</option>
+            <option value="'Rajdhani', sans-serif">Rajdhani (Tech Clean)</option>
+            <option value="'Inter', sans-serif">Inter (Minimal Sans)</option>
+            <option value="system-ui, sans-serif">Sistem (System Standard)</option>
+          </select>
+        </div>
+        <div class="df-toggle-row">
           <span>Sayaç İlerleme Görseli</span>
           <select id="dfPomoProgressStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
             <option value="ring">Dairesel Çizgi (Circular Ring)</option>
@@ -1522,8 +1546,12 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
         <button id="dfAlarmTestBtn" style="padding:4px 10px; border-radius:var(--radius-s); border:1px solid var(--hairline-strong); background:rgba(255,255,255,0.08); font-size:0.75rem;">🔔 Dinle</button>
       </div>
       <div class="df-toggle-row">
-        <span>Ses Seviyesi</span>
+        <span>Ortam Sesi Seviyesi</span>
         <input type="range" id="dfVolumeSlider" min="0" max="1" step="0.01" value="0.55" style="width:110px;">
+      </div>
+      <div class="df-toggle-row">
+        <span>Zil & Alarm Seviyesi</span>
+        <input type="range" id="dfAlarmVolumeSlider" min="0" max="1" step="0.01" value="0.70" style="width:110px;">
       </div>
 
       <div class="df-section-title">Hızlı Renk Paleti</div>
@@ -1805,13 +1833,13 @@ function cacheDom(){
    'bpmReadout','profileCaption','modeTabs','panels',
    'pomodoroPanel','pomodoroProgress','pomodoroSessionType','pomodoroTimeLabel',
    'pomodoroStartPause','pomodoroReset','sessionDots',
-   'soundPanel','soundPresets','waveCanvas','volumeSlider',
+   'soundPanel','soundPresets','waveCanvas','volumeSlider','alarmVolumeSlider',
    'deepFocusOverlay','exitDeepFocus','dfMount','dfTime','dfSessionLabel','dfFocus',
    'drawerBackdrop','settingsDrawer','closeSettings','profileOptions',
    'profileThumbNeon2','profileThumbY2026','themeSwatches','customColorInput',
    'focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'mode3dToggle','mode3dValue','focusDonutProgress','focusDonutLabel','todayMinutesLabel',
-   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
+   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
    'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
@@ -1858,6 +1886,9 @@ function refreshColorCache(){
 
 let totalWorkMs = 0;
 let totalWorkSeconds = 0;
+let sessionBaseWorkMs = 0;
+let sessionStartTs = 0;
+let overtimeStartTs = 0;
 let pomodoroTimeline = [];
 let focusIndex = 1;
 
@@ -1870,6 +1901,7 @@ function checkDailyReset(){
     // Midnight reset
     totalWorkMs = 0;
     totalWorkSeconds = 0;
+    sessionBaseWorkMs = 0;
     pomodoroTimeline = [];
     focusIndex = 1;
     localStorage.setItem('selmer_last_active_date', todayStr);
@@ -1881,6 +1913,10 @@ function checkDailyReset(){
         pomodoroTimeline = JSON.parse(savedTimeline);
         const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
         focusIndex = completed.length + 1;
+        const completedSec = completed.reduce((acc, t) => acc + (t.elapsedSec || (t.mins * 60)), 0);
+        totalWorkSeconds = completedSec;
+        totalWorkMs = completedSec * 1000;
+        sessionBaseWorkMs = totalWorkMs;
       }
     } catch(e){}
   }
@@ -1902,41 +1938,49 @@ function formatHoursMinutesSeconds(sec){
   return String(m).padStart(2,'0') + 'dk ' + String(s).padStart(2,'0') + 'sn';
 }
 
+function getAlarmGainNode(){
+  return (typeof alarmGain !== 'undefined' && alarmGain) ? alarmGain : (masterGain || null);
+}
+function getAmbientGainNode(){
+  return (typeof ambientGain !== 'undefined' && ambientGain) ? ambientGain : (masterGain || null);
+}
+
 function playAlarmSound(soundType){
   ensureAudio();
   if(!audioCtx) return;
   const t = audioCtx.currentTime;
+  const outGain = getAlarmGainNode();
   if(soundType === 'beep') {
-    [0, 0.12, 0.24].forEach(dt => {
-      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = 880;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, t + dt); g.gain.exponentialRampToValueAtTime(0.001, t + dt + 0.08);
-      o.connect(g); g.connect(masterGain); o.start(t + dt); o.stop(t + dt + 0.09);
+    [0, 0.1, 0.2, 0.3].forEach(dt => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(1046.5, t + dt); o.frequency.setValueAtTime(1318.5, t + dt + 0.04);
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, t + dt); g.gain.exponentialRampToValueAtTime(0.001, t + dt + 0.075);
+      o.connect(g); g.connect(outGain); o.start(t + dt); o.stop(t + dt + 0.08);
     });
   } else if(soundType === 'gong') {
-    const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = 140;
-    const o2 = audioCtx.createOscillator(); o2.type = 'triangle'; o2.frequency.value = 210;
-    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.28, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.5);
-    o.connect(g); o2.connect(g); g.connect(masterGain);
-    o.start(t); o2.start(t); o.stop(t + 2.5); o2.stop(t + 2.5);
+    const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(110, t + 1.2);
+    const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.setValueAtTime(2400, t); filter.frequency.exponentialRampToValueAtTime(200, t + 1.2);
+    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.5);
+    o.connect(filter); filter.connect(g); g.connect(outGain);
+    o.start(t); o.stop(t + 1.5);
   } else if(soundType === 'bell') {
-    [523.25, 1046.5, 1567.98].forEach((f, i) => {
-      const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.15 / (i+1), t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
-      o.connect(g); g.connect(masterGain); o.start(t); o.stop(t + 1.2);
+    [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(f, t + i*0.08);
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, t + i*0.08); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.08 + 0.5);
+      o.connect(g); g.connect(outGain); o.start(t + i*0.08); o.stop(t + i*0.08 + 0.55);
     });
   } else if(soundType === 'synth') {
-    [329.63, 440, 659.25].forEach((f, i) => {
-      const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f;
-      const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 1200;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0, t + i*0.1); g.gain.linearRampToValueAtTime(0.1, t + i*0.1 + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + i*0.1 + 0.4);
-      o.connect(filter); filter.connect(g); g.connect(masterGain); o.start(t + i*0.1); o.stop(t + i*0.1 + 0.45);
+    [440, 554.37, 659.25, 880].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f, t + i*0.08);
+      const filter = audioCtx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = f * 2; filter.Q.value = 4;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, t + i*0.08); g.gain.exponentialRampToValueAtTime(0.0001, t + i*0.08 + 0.35);
+      o.connect(filter); filter.connect(g); g.connect(outGain); o.start(t + i*0.08); o.stop(t + i*0.08 + 0.38);
     });
   } else {
     playChime('focus');
   }
 }
 
-function renderPomodoroTimeline(){
+function renderPomodoroTimeline(justCompletedIdx){
   if(!dom.pomoTimelineTrack) return;
   dom.pomoTimelineTrack.innerHTML = '';
   checkDailyReset();
@@ -1961,7 +2005,8 @@ function renderPomodoroTimeline(){
   pomodoroTimeline.forEach((item, index) => {
     if(item.status === 'completed') completedCnt++;
     const node = document.createElement('div');
-    node.className = 'pomo-node ' + item.status;
+    const isAnim = (justCompletedIdx !== undefined && item.idx === justCompletedIdx);
+    node.className = 'pomo-node ' + item.status + (isAnim ? ' just-completed' : '');
     
     let statusText = item.status === 'completed' ? 'TAMAMLANDI' : (item.status === 'active' ? 'ÇALIŞIYOR' : 'HAZIR');
     let durText = item.elapsedSec ? Math.round(item.elapsedSec / 60) + ' dk' : item.mins + ' dk';
@@ -2027,6 +2072,7 @@ function applyDFCustomizations(){
 
   if(dom.dfClockTypeSelect) dom.dfClockTypeSelect.value = state.dfClockType || '24h';
   if(dom.dfFontSelect) dom.dfFontSelect.value = state.dfFont || "'Orbitron', sans-serif";
+  if(dom.dfPomoFontSelect) dom.dfPomoFontSelect.value = state.dfFont || "'Orbitron', sans-serif";
   if(dom.dfTime) dom.dfTime.style.fontFamily = state.dfFont || "'Orbitron', sans-serif";
   if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.style.fontFamily = state.dfFont || "'Orbitron', sans-serif";
   if(dom.dfShowIconToggle) dom.dfShowIconToggle.checked = !!state.dfShowIcon;
@@ -2355,16 +2401,26 @@ function drawBg(t, dt){
   }
 }
 
-let audioCtx=null, masterGain=null, analyser=null, analyserData=null;
+let audioCtx=null, masterGain=null, ambientGain=null, alarmGain=null, analyser=null, analyserData=null;
 let currentPresetNodes=null, currentPresetName='off';
 function ensureAudio(){
   if(!audioCtx){
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    masterGain=audioCtx.createGain();
-    masterGain.gain.value=parseFloat(dom.volumeSlider.value||0.55);
     analyser=audioCtx.createAnalyser(); analyser.fftSize=512;
     analyserData=new Uint8Array(analyser.frequencyBinCount);
-    masterGain.connect(analyser); analyser.connect(audioCtx.destination);
+    analyser.connect(audioCtx.destination);
+
+    masterGain=audioCtx.createGain(); masterGain.gain.value=1.0; masterGain.connect(analyser);
+
+    ambientGain=audioCtx.createGain();
+    const ambVol = dom.volumeSlider ? parseFloat(dom.volumeSlider.value) : 0.55;
+    ambientGain.gain.value = ambVol;
+    ambientGain.connect(analyser);
+
+    alarmGain=audioCtx.createGain();
+    const alarmVol = dom.alarmVolumeSlider ? parseFloat(dom.alarmVolumeSlider.value) : (dom.dfAlarmVolumeSlider ? parseFloat(dom.dfAlarmVolumeSlider.value) : 0.70);
+    alarmGain.gain.value = alarmVol;
+    alarmGain.connect(analyser);
   }
   if(audioCtx.state==='suspended') audioCtx.resume();
 }
@@ -2388,7 +2444,7 @@ function stopPreset(fade){
 function startBioGreen(){
   ensureAudio(); stopPreset(0.4);
   const now=audioCtx.currentTime;
-  const g=audioCtx.createGain(); g.gain.value=0; g.connect(masterGain);
+  const g=audioCtx.createGain(); g.gain.value=0; g.connect(getAmbientGainNode());
   g.gain.linearRampToValueAtTime(1, now+1.6);
   const cleanupFns=[];
   [110,164.81,220,329.63].forEach((f,i)=>{
@@ -2417,7 +2473,7 @@ function startBioGreen(){
 function startCyberpunkRain(){
   ensureAudio(); stopPreset(0.4);
   const now=audioCtx.currentTime;
-  const g=audioCtx.createGain(); g.gain.value=0; g.connect(masterGain);
+  const g=audioCtx.createGain(); g.gain.value=0; g.connect(getAmbientGainNode());
   g.gain.linearRampToValueAtTime(1, now+1.2);
   const cleanupFns=[];
   const noise=audioCtx.createBufferSource(); noise.buffer=makeNoiseBuffer(3,'white'); noise.loop=true;
@@ -2464,7 +2520,7 @@ function startCyberpunkRain(){
 function startSimpleNoise(type, gainVal, filterType, filterFreq){
   ensureAudio(); stopPreset(0.4);
   const now=audioCtx.currentTime;
-  const g=audioCtx.createGain(); g.gain.value=0; g.connect(masterGain);
+  const g=audioCtx.createGain(); g.gain.value=0; g.connect(getAmbientGainNode());
   g.gain.linearRampToValueAtTime(1, now+0.8);
   const noise=audioCtx.createBufferSource();
   const noiseShape = (type==='blackNoise') ? 'brown' : ((type==='pinkNoise') ? 'pink' : 'white');
@@ -2490,7 +2546,7 @@ function startSimpleNoise(type, gainVal, filterType, filterFreq){
 function startRain(){
   ensureAudio(); stopPreset(0.4);
   const now=audioCtx.currentTime;
-  const g=audioCtx.createGain(); g.gain.value=0; g.connect(masterGain);
+  const g=audioCtx.createGain(); g.gain.value=0; g.connect(getAmbientGainNode());
   g.gain.linearRampToValueAtTime(1, now+1.0);
   
   const noise=audioCtx.createBufferSource(); noise.buffer=makeNoiseBuffer(3, 'white'); noise.loop=true;
@@ -2515,7 +2571,7 @@ function startRain(){
 function startOcean(){
   ensureAudio(); stopPreset(0.4);
   const now=audioCtx.currentTime;
-  const g=audioCtx.createGain(); g.gain.value=0; g.connect(masterGain);
+  const g=audioCtx.createGain(); g.gain.value=0; g.connect(getAmbientGainNode());
   g.gain.linearRampToValueAtTime(1, now+1.2);
   
   const noise=audioCtx.createBufferSource(); noise.buffer=makeNoiseBuffer(4, 'pink'); noise.loop=true;
@@ -2552,52 +2608,56 @@ function playUiSound(type){
   ensureAudio();
   if(!audioCtx) return;
   const t = audioCtx.currentTime;
+  const outGain = getAlarmGainNode();
   if(type === 'click'){
-    const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(1200, t); o.frequency.exponentialRampToValueAtTime(400, t + 0.04);
-    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-    o.connect(g); g.connect(masterGain); o.start(t); o.stop(t + 0.045);
+    const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(1800, t); o.frequency.exponentialRampToValueAtTime(800, t + 0.035);
+    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
+    o.connect(g); g.connect(outGain); o.start(t); o.stop(t + 0.04);
   } else if(type === 'start'){
-    [523.25, 659.25, 783.99].forEach((f, i) => {
-      const o = audioCtx.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.09, t + i*0.06); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.06 + 0.18);
-      o.connect(g); g.connect(masterGain); o.start(t + i*0.06); o.stop(t + i*0.06 + 0.2);
+    [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = f;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t + i*0.05); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.05 + 0.12);
+      o.connect(g); g.connect(outGain); o.start(t + i*0.05); o.stop(t + i*0.05 + 0.13);
     });
   } else if(type === 'pause'){
-    [783.99, 523.25].forEach((f, i) => {
-      const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t + i*0.06); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.06 + 0.15);
-      o.connect(g); g.connect(masterGain); o.start(t + i*0.06); o.stop(t + i*0.06 + 0.16);
+    [880, 659.25, 440].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = f;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.08, t + i*0.05); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.05 + 0.1);
+      o.connect(g); g.connect(outGain); o.start(t + i*0.05); o.stop(t + i*0.05 + 0.11);
     });
   } else if(type === 'reset'){
-    const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(600, t); o.frequency.linearRampToValueAtTime(200, t + 0.1);
-    const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 800;
-    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.07, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-    o.connect(filter); filter.connect(g); g.connect(masterGain); o.start(t); o.stop(t + 0.11);
+    const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(900, t); o.frequency.exponentialRampToValueAtTime(150, t + 0.12);
+    const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 1400;
+    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.09, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    o.connect(filter); filter.connect(g); g.connect(outGain); o.start(t); o.stop(t + 0.13);
   } else if(type === 'finish'){
-    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
-      const o = audioCtx.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
-      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.12, t + i*0.08); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.08 + 0.35);
-      o.connect(g); g.connect(masterGain); o.start(t + i*0.08); o.stop(t + i*0.08 + 0.38);
+    [523.25, 659.25, 783.99, 1046.5, 1318.51].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = f;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.1, t + i*0.07); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.07 + 0.28);
+      o.connect(g); g.connect(outGain); o.start(t + i*0.07); o.stop(t + i*0.07 + 0.3);
     });
   } else if(type === 'tab'){
-    const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(800, t); o.frequency.exponentialRampToValueAtTime(1200, t + 0.05);
-    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-    o.connect(g); g.connect(masterGain); o.start(t); o.stop(t + 0.055);
+    [987.77, 1318.51].forEach((f, i) => {
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = f;
+      const g = audioCtx.createGain(); g.gain.setValueAtTime(0.06, t + i*0.035); g.gain.exponentialRampToValueAtTime(0.001, t + i*0.035 + 0.04);
+      o.connect(g); g.connect(outGain); o.start(t + i*0.035); o.stop(t + i*0.035 + 0.045);
+    });
   }
 }
 
 function playChime(kind){
   ensureAudio();
-  const t=audioCtx.currentTime;
-  const pairs = kind==='break' ? [660,880] : [523.25,784];
-  pairs.forEach((f,i)=>{
-    const o=audioCtx.createOscillator(); o.type='sine'; o.frequency.value=f;
-    const g=audioCtx.createGain();
-    g.gain.setValueAtTime(0, t+i*0.15);
-    g.gain.linearRampToValueAtTime(0.13, t+i*0.15+0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t+i*0.15+0.55);
-    o.connect(g); g.connect(masterGain);
-    o.start(t+i*0.15); o.stop(t+i*0.15+0.6);
+  const t = audioCtx.currentTime;
+  const outGain = getAlarmGainNode();
+  const notes = kind === 'break' ? [659.25, 880, 1046.50] : [523.25, 783.99, 1046.50];
+  notes.forEach((f, i) => {
+    const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(f, t + i*0.08);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.001, t + i*0.08);
+    g.gain.linearRampToValueAtTime(0.1, t + i*0.08 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + i*0.08 + 0.45);
+    o.connect(g); g.connect(outGain);
+    o.start(t + i*0.08); o.stop(t + i*0.08 + 0.5);
   });
 }
 let waveCtx, waveWidth=0, waveHeight=0;
@@ -2880,8 +2940,8 @@ function pomodoroStart(){
   ensureAudio();
   playUiSound('start');
   
-  const now = new Date();
-  const nowMs = now.getTime();
+  const nowMs = Date.now();
+  const now = new Date(nowMs);
   const end = new Date(nowMs + pomodoro.focusMin * 60000);
   const startStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
   const endStr = String(end.getHours()).padStart(2,'0') + ':' + String(end.getMinutes()).padStart(2,'0');
@@ -2919,82 +2979,100 @@ function pomodoroStart(){
   saveTimelineToStorage();
   renderPomodoroTimeline();
 
-  pomodoro.running=true;
-  pomodoro.lastTickTs = Date.now();
-  if(pomodoro.timerMode==='stopwatch'){
-    pomodoro.startTime = Date.now() - pomodoro.elapsedTimeMs;
-  } else {
-    pomodoro.endTime = Date.now() + pomodoro.remainingMs;
+  pomodoro.running = true;
+  pomodoro.lastTickTs = nowMs;
+  sessionBaseWorkMs = totalWorkMs;
+  sessionStartTs = nowMs;
+  if(pomodoro.isOvertime){
+    overtimeStartTs = nowMs - (pomodoro.overtimeSec * 1000);
   }
-  pomodoro.intervalId=setInterval(pomodoroTick, 100);
+
+  if(pomodoro.timerMode === 'stopwatch'){
+    pomodoro.startTime = nowMs - pomodoro.elapsedTimeMs;
+  } else {
+    pomodoro.endTime = nowMs + pomodoro.remainingMs;
+  }
+  pomodoro.intervalId = setInterval(pomodoroTick, 100);
   renderPomodoro();
 }
 function pomodoroPause(){
   if(!pomodoro.running) return;
-  pomodoro.running=false;
+  pomodoro.running = false;
   playUiSound('pause');
-  if(pomodoro.timerMode==='stopwatch'){
-    pomodoro.elapsedTimeMs = Date.now() - pomodoro.startTime;
+  const nowMs = Date.now();
+  if(pomodoro.sessionType === 'focus'){
+    totalWorkMs = sessionBaseWorkMs + (nowMs - sessionStartTs);
+    totalWorkSeconds = Math.floor(totalWorkMs / 1000);
+    sessionBaseWorkMs = totalWorkMs;
+  }
+  if(pomodoro.timerMode === 'stopwatch'){
+    pomodoro.elapsedTimeMs = nowMs - pomodoro.startTime;
   } else {
-    pomodoro.remainingMs = Math.max(0, pomodoro.endTime - Date.now());
+    pomodoro.remainingMs = Math.max(0, pomodoro.endTime - nowMs);
   }
   clearInterval(pomodoro.intervalId);
   renderPomodoro();
 }
 function pomodoroReset(){
   playUiSound('reset');
-  pomodoro.running=false;
-  pomodoro.isOvertime=false;
-  pomodoro.overtimeSec=0;
+  pomodoro.running = false;
+  pomodoro.isOvertime = false;
+  pomodoro.overtimeSec = 0;
   clearInterval(pomodoro.intervalId);
-  if(pomodoro.timerMode==='stopwatch'){
+  if(pomodoro.timerMode === 'stopwatch'){
     if(pomodoro.elapsedTimeMs > 5000 && typeof recordWorkMinutes === 'function'){
       recordWorkMinutes(Math.round(pomodoro.elapsedTimeMs / 60000));
     }
     pomodoro.elapsedTimeMs = 0;
   } else {
-    pomodoro.remainingMs=pomodoroTotalMs();
+    totalWorkMs = sessionBaseWorkMs;
+    totalWorkSeconds = Math.floor(totalWorkMs / 1000);
+    pomodoro.remainingMs = pomodoroTotalMs();
   }
   renderPomodoro();
 }
 function pomodoroTick(){
   const now = Date.now();
-  const delta = now - (pomodoro.lastTickTs || now);
   pomodoro.lastTickTs = now;
 
-  if(pomodoro.running && pomodoro.sessionType==='focus'){
-    totalWorkMs += delta;
+  if(pomodoro.running && pomodoro.sessionType === 'focus'){
+    totalWorkMs = sessionBaseWorkMs + (now - sessionStartTs);
     totalWorkSeconds = Math.floor(totalWorkMs / 1000);
   }
 
-  if(pomodoro.timerMode==='stopwatch'){
-    pomodoro.elapsedTimeMs = Date.now() - pomodoro.startTime;
+  if(pomodoro.timerMode === 'stopwatch'){
+    pomodoro.elapsedTimeMs = now - pomodoro.startTime;
     renderPomodoro();
     return;
   }
 
   if(pomodoro.isOvertime){
-    pomodoro.overtimeSec += (delta / 1000);
+    if(!overtimeStartTs) overtimeStartTs = now - (pomodoro.overtimeSec * 1000);
+    pomodoro.overtimeSec = (now - overtimeStartTs) / 1000;
     renderPomodoro();
     return;
   }
 
-  pomodoro.remainingMs=Math.max(0, pomodoro.endTime - now);
-  renderPomodoro();
-  if(pomodoro.remainingMs<=0){
+  pomodoro.remainingMs = Math.max(0, pomodoro.endTime - now);
+  if(pomodoro.remainingMs <= 0){
     pomodoro.remainingMs = 0;
     pomodoro.isOvertime = true;
+    overtimeStartTs = now;
     pomodoro.overtimeSec = 0;
     playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
     showToast('Etüt Süresi Doldu! Overtime (+00:00) Başladı.');
   }
+  renderPomodoro();
 }
 
 function handleFinishClick(){
   if(!pomodoro.isOvertime && !pomodoro.running && pomodoro.remainingMs > 0) return;
 
+  const wasDeepFocus = state.deepFocus;
+
   clearInterval(pomodoro.intervalId);
   pomodoro.running = false;
+  sessionBaseWorkMs = totalWorkMs;
 
   const totalElapsedSec = (pomodoro.focusMin * 60) + Math.floor(pomodoro.overtimeSec);
   const totalElapsedMins = Math.max(1, Math.round(totalElapsedSec / 60));
@@ -3002,12 +3080,14 @@ function handleFinishClick(){
   recordWorkMinutes(totalElapsedMins);
 
   let completedEtutName = 'Etüt';
+  let completedEtutIdx = null;
   if(pomodoroTimeline.length > 0){
     const activeItem = pomodoroTimeline[pomodoroTimeline.length - 1];
     activeItem.status = 'completed';
     activeItem.endTimeMs = Date.now();
     activeItem.elapsedSec = totalElapsedSec;
     completedEtutName = activeItem.name;
+    completedEtutIdx = activeItem.idx;
   }
 
   const completedCount = pomodoroTimeline.filter(t => t.status === 'completed').length;
@@ -3027,8 +3107,13 @@ function handleFinishClick(){
     status: 'pending'
   });
 
+  if(wasDeepFocus){
+    exitDeepFocus();
+    setMode('pomodoro');
+  }
+
   saveTimelineToStorage();
-  renderPomodoroTimeline();
+  renderPomodoroTimeline(completedEtutIdx);
   showToast(completedEtutName + ' Başarıyla Bitirildi! 🎉');
 
   playUiSound('finish');
@@ -3268,7 +3353,15 @@ function wireEvents(){
     });
   }
   if(dom.dfClockTypeSelect) dom.dfClockTypeSelect.addEventListener('change', ()=>{ state.dfClockType = dom.dfClockTypeSelect.value; renderDeepFocus(); });
-  if(dom.dfFontSelect) dom.dfFontSelect.addEventListener('change', ()=>{ state.dfFont = dom.dfFontSelect.value; applyDFCustomizations(); });
+  const handleFontChange = (val) => {
+    state.dfFont = val;
+    if(dom.dfFontSelect) dom.dfFontSelect.value = val;
+    if(dom.dfPomoFontSelect) dom.dfPomoFontSelect.value = val;
+    applyDFCustomizations();
+    renderDeepFocus();
+  };
+  if(dom.dfFontSelect) dom.dfFontSelect.addEventListener('change', ()=>{ handleFontChange(dom.dfFontSelect.value); });
+  if(dom.dfPomoFontSelect) dom.dfPomoFontSelect.addEventListener('change', ()=>{ handleFontChange(dom.dfPomoFontSelect.value); });
   if(dom.dfShowIconToggle) dom.dfShowIconToggle.addEventListener('change', ()=>{ state.dfShowIcon = dom.dfShowIconToggle.checked; applyDFCustomizations(); });
   if(dom.dfOnlyTimeToggle) dom.dfOnlyTimeToggle.addEventListener('change', ()=>{ state.dfOnlyTime = dom.dfOnlyTimeToggle.checked; applyDFCustomizations(); });
   if(dom.dfDigitalOnlyToggle) dom.dfDigitalOnlyToggle.addEventListener('change', ()=>{ state.dfDigitalOnly = dom.dfDigitalOnlyToggle.checked; applyDFCustomizations(); });
@@ -3441,10 +3534,32 @@ function wireEvents(){
       playAlarmSound(dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime');
     });
   }
+  if(dom.volumeSlider){
+    dom.volumeSlider.addEventListener('input', ()=>{
+      const val = parseFloat(dom.volumeSlider.value);
+      if(dom.dfVolumeSlider) dom.dfVolumeSlider.value = val;
+      if(ambientGain) ambientGain.gain.value = val;
+    });
+  }
   if(dom.dfVolumeSlider){
     dom.dfVolumeSlider.addEventListener('input', ()=>{
-      if(dom.volumeSlider) dom.volumeSlider.value = dom.dfVolumeSlider.value;
-      if(masterGain) masterGain.gain.value = parseFloat(dom.dfVolumeSlider.value);
+      const val = parseFloat(dom.dfVolumeSlider.value);
+      if(dom.volumeSlider) dom.volumeSlider.value = val;
+      if(ambientGain) ambientGain.gain.value = val;
+    });
+  }
+  if(dom.alarmVolumeSlider){
+    dom.alarmVolumeSlider.addEventListener('input', ()=>{
+      const val = parseFloat(dom.alarmVolumeSlider.value);
+      if(dom.dfAlarmVolumeSlider) dom.dfAlarmVolumeSlider.value = val;
+      if(alarmGain) alarmGain.gain.value = val;
+    });
+  }
+  if(dom.dfAlarmVolumeSlider){
+    dom.dfAlarmVolumeSlider.addEventListener('input', ()=>{
+      const val = parseFloat(dom.dfAlarmVolumeSlider.value);
+      if(dom.alarmVolumeSlider) dom.alarmVolumeSlider.value = val;
+      if(alarmGain) alarmGain.gain.value = val;
     });
   }
 
@@ -3475,7 +3590,6 @@ function wireEvents(){
   }
 
   document.querySelectorAll('.preset-btn').forEach(btn=>{ btn.addEventListener('click', ()=>selectPreset(btn.dataset.preset)); });
-  dom.volumeSlider.addEventListener('input', ()=>{ if(masterGain) masterGain.gain.value=parseFloat(dom.volumeSlider.value); });
   document.querySelectorAll('.profile-option').forEach(btn=>{ btn.addEventListener('click', ()=>applyProfile(btn.dataset.profile)); });
   document.querySelectorAll('.theme-swatch').forEach(btn=>{ btn.addEventListener('click', ()=>applyTheme(btn.dataset.theme)); });
   dom.customColorInput.addEventListener('input', ()=>applyTheme('custom',{customHex:dom.customColorInput.value}));
