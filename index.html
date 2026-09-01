@@ -2230,10 +2230,13 @@ const tabDeviceId = 'dev_' + Math.random().toString(36).substring(2, 10);
 function initFirebaseSync(){
   try {
     const firebaseConfig = {
-      apiKey: "AIzaSy-PomodoroSelmerShowAuthKey",
-      authDomain: "pomodoro-selmershow-default-rtdb.firebaseapp.com",
-      databaseURL: "https://pomodoro-selmershow-default-rtdb.firebaseio.com",
-      projectId: "pomodoro-selmershow-default-rtdb"
+      apiKey: "AIzaSyDRFwCUyZTQfar0-FInTlHVVf9xP4q5JVA",
+      authDomain: "pomodoro-app-1e1b6.firebaseapp.com",
+      databaseURL: "https://pomodoro-app-1e1b6-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pomodoro-app-1e1b6",
+      storageBucket: "pomodoro-app-1e1b6.firebasestorage.app",
+      messagingSenderId: "444414573906",
+      appId: "1:444414573906:web:3c6634f3deb44ea6c64e8b"
     };
     if(typeof firebase !== 'undefined' && firebase.apps){
       if(!firebase.apps.length){
