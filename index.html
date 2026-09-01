@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box; margin:0; padding:0;}
@@ -115,6 +116,13 @@ body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96
 #dateLocaleText{ font-size:.88rem; letter-spacing:.14em; font-weight:600; color:var(--text-0); transition:opacity .5s var(--ease); }
 #dateCycleText{ font-size:.78rem; letter-spacing:.16em; font-weight:700; color:var(--c1); text-shadow:0 0 12px rgba(var(--c1-rgb),.5); opacity:1; }
 .top-actions{display:flex; gap:10px;}
+.auth-status-dot{
+  position:absolute; top:2px; right:2px; width:8px; height:8px; border-radius:50%;
+  background:#ffaa00; border:1px solid var(--void-0); transition:background .3s, box-shadow .3s;
+}
+.auth-status-dot.online{ background:#39ff9e; box-shadow:0 0 8px #39ff9e; }
+.auth-status-dot.guest{ background:#ffaa00; box-shadow:none; }
+.auth-status-dot.offline{ background:#ff5555; box-shadow:0 0 8px #ff5555; }
 .icon-btn{
   width:40px; height:40px; border-radius:50%;
   border:1px solid var(--hairline-strong); background:rgba(255,255,255,.03);
@@ -1469,6 +1477,10 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
       <div id="dateCycleText">—</div>
     </div>
     <div class="top-actions">
+      <button class="icon-btn" id="authBtn" title="Hesap" aria-label="Hesap panelini aç" style="position:relative;">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span class="auth-status-dot" id="authStatusDot" title="Misafir Modu"></span>
+      </button>
       <button class="icon-btn" id="deepFocusBtn" title="Derin Odak" aria-label="Derin Odak modunu aç">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="8.5"></circle></svg>
       </button>
@@ -2041,6 +2053,83 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
   </div>
 </aside>
 
+<!-- ACCOUNT / AUTH MODAL -->
+<div class="pomo-modal-backdrop" id="authModalBackdrop">
+  <div class="pomo-modal" id="authModal" style="max-width:420px;">
+    <div class="pomo-modal-header">
+      <span id="authModalTitle">HESAP İŞLEMLERİ</span>
+      <button class="pomo-modal-close" id="authModalClose">&times;</button>
+    </div>
+
+    <!-- Logged in view -->
+    <div id="loggedInView" style="display:none; flex-direction:column; gap:16px;">
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--hairline); border-radius:var(--radius-m); padding:16px; text-align:center;">
+        <div style="font-size:0.7rem; color:var(--text-dimmer); font-family:'JetBrains Mono',monospace; margin-bottom:4px;">GİRİŞ YAPILAN HESAP</div>
+        <div id="userEmailDisplay" style="font-size:0.95rem; font-weight:700; color:var(--c1); font-family:'JetBrains Mono',monospace; word-break:break-all;">-</div>
+        <div id="userSyncStatus" style="font-size:0.68rem; color:var(--text-dim); margin-top:6px;">☁️ Bulut Senkronizasyonu Aktif</div>
+      </div>
+      <button class="pbtn pbtn-primary" id="logoutBtn" style="background:rgba(255,80,80,0.2); border:1px solid rgba(255,80,80,0.6); color:#ff6b6b; width:100%;">GÜVENLİ ÇIKIŞ YAP</button>
+    </div>
+
+    <!-- Logged out / guest view -->
+    <div id="loggedOutView" style="display:flex; flex-direction:column; gap:16px;">
+      <div class="pomo-type-selector">
+        <button class="pomo-type-btn active" id="authTabLogin">GİRİŞ YAP</button>
+        <button class="pomo-type-btn" id="authTabRegister">KAYIT OL</button>
+      </div>
+
+      <form id="authForm" style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <label for="authEmailInput" style="font-size:0.75rem; color:var(--text-dim);">E-posta Adresi:</label>
+          <input type="email" id="authEmailInput" required placeholder="ornek@email.com" style="background:rgba(10,13,26,0.8); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); color:var(--text-0); padding:10px 12px; font-size:0.85rem; outline:none;">
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <label for="authPasswordInput" style="font-size:0.75rem; color:var(--text-dim);">Şifre:</label>
+          <input type="password" id="authPasswordInput" required placeholder="••••••••" minlength="6" style="background:rgba(10,13,26,0.8); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); color:var(--text-0); padding:10px 12px; font-size:0.85rem; outline:none;">
+        </div>
+
+        <div id="authErrorMsg" style="display:none; font-size:0.75rem; color:#ff6b6b; background:rgba(255,80,80,0.1); border:1px solid rgba(255,80,80,0.3); border-radius:var(--radius-s); padding:8px 12px;"></div>
+        <div id="authSuccessMsg" style="display:none; font-size:0.75rem; color:#39ff9e; background:rgba(57,255,158,0.1); border:1px solid rgba(57,255,158,0.3); border-radius:var(--radius-s); padding:8px 12px;"></div>
+
+        <button type="submit" class="pbtn pbtn-primary" id="authSubmitBtn" style="width:100%; margin-top:4px;">GİRİŞ YAP</button>
+      </form>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem;">
+        <button id="forgotPasswordBtn" style="color:var(--text-dim); text-decoration:underline; cursor:pointer;">Şifremi Unuttum</button>
+        <span style="color:var(--text-dimmer);">Misafir modu aktif (sadece yerel)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MIGRATION CHOICE MODAL -->
+<div class="pomo-modal-backdrop" id="migrationModalBackdrop">
+  <div class="pomo-modal" id="migrationModal" style="max-width:440px;">
+    <div class="pomo-modal-header">
+      <span>VERİ SENKRONİZASYONU</span>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <p style="font-size:0.82rem; color:var(--text-dim); line-height:1.5;">
+        Bu cihazda yerel verileriniz var ve hesabınızda da kayıtlı bulut verisi bulundu. Verilerinizi nasıl senkronize etmek istersiniz?
+      </p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="save-day-option-label" id="migrationMergeBtn">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <span style="font-weight:700; color:var(--c1); font-size:0.85rem;">🔀 Verileri Birleştir (Tavsiye Edilen)</span>
+            <span style="font-size:0.72rem; color:var(--text-dim);">Bu cihazdaki ve buluttaki geçmiş verileri/toplam süreleri en yüksek değerlerle harmanlar. Hiçbir veri silinmez.</span>
+          </div>
+        </button>
+        <button class="save-day-option-label" id="migrationUseCloudBtn">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <span style="font-weight:700; color:var(--text-0); font-size:0.85rem;">☁️ Bulut Verisini Kullan</span>
+            <span style="font-size:0.72rem; color:var(--text-dim);">Bu cihazdaki verileri buluttaki hesap verilerinizle değiştirir.</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- SAVE DAY MODAL -->
 <div class="pomo-modal-backdrop" id="saveDayModalBackdrop">
   <div class="pomo-modal" id="saveDayModal" style="max-width:440px;">
@@ -2129,87 +2218,57 @@ let focusLevel=10, bpm=60, deepFocusStart=0, lastDigitalSecond=-1;
 let todayFocusMinutes = seedTodayMinutes();
 let CACHED_C1='#3fd0ff', CACHED_C2='#7b6cff', CACHED_C3='#ff5da2';
 
-// --- Firebase Database Real-time Integration & Clock Sync ---
+// --- Firebase Database Real-time Integration, Auth & Clock Sync ---
 let db = null;
+let auth = null;
+let currentUser = null;
 let serverTimeOffsetMs = 0;
+let userListeners = [];
+let isOnline = true;
+const tabDeviceId = 'dev_' + Math.random().toString(36).substring(2, 10);
 
 function initFirebaseSync(){
   try {
     const firebaseConfig = {
-      databaseURL: "https://pomodoro-selmershow-default-rtdb.firebaseio.com"
+      apiKey: "AIzaSyDRFwCUyZTQfar0-FInTlHVVf9xP4q5JVA",
+      authDomain: "pomodoro-app-1e1b6.firebaseapp.com",
+      databaseURL: "https://pomodoro-app-1e1b6-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pomodoro-app-1e1b6",
+      storageBucket: "pomodoro-app-1e1b6.firebasestorage.app",
+      messagingSenderId: "444414573906",
+      appId: "1:444414573906:web:3c6634f3deb44ea6c64e8b"
     };
     if(typeof firebase !== 'undefined' && firebase.apps){
       if(!firebase.apps.length){
         firebase.initializeApp(firebaseConfig);
       }
       db = firebase.database();
+      auth = firebase.auth();
 
-      // Server time offset synchronization
+      // Set auth persistence to LOCAL
+      auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(e => console.warn("Auth persistence error:", e));
+
+      // Connection state monitoring (.info/connected)
+      const connectedRef = db.ref(".info/connected");
+      connectedRef.on("value", (snap) => {
+        isOnline = snap.val() === true;
+        updateAuthStatusUI();
+      });
+
+      // Server time offset synchronization (.info/serverTimeOffset)
       const offsetRef = db.ref(".info/serverTimeOffset");
       offsetRef.on("value", (snap) => {
         serverTimeOffsetMs = snap.val() || 0;
       });
 
-      // Synchronize settings from Cloud in real-time
-      const settingsRef = db.ref("app_settings");
-      settingsRef.on("value", (snap) => {
-        const cloudSettings = snap.val();
-        if(cloudSettings){
-          localStorage.setItem('selmer_app_settings', JSON.stringify(cloudSettings));
-          loadSettingsFromStorage();
-        }
-      });
-
-      // Synchronize all study totals from Cloud
-      const studyTotalsRef = db.ref("study_totals");
-      studyTotalsRef.on("value", (snap) => {
-        const totals = snap.val();
-        if(totals && typeof totals === 'object'){
-          Object.keys(totals).forEach(key => {
-            if(totals[key] !== null && totals[key] !== undefined){
-              localStorage.setItem(key, totals[key]);
-            } else {
-              localStorage.removeItem(key);
-            }
-          });
-          const todayKey = getTodayStorageKey();
-          if(totals[todayKey] !== undefined){
-            todayFocusMinutes = parseInt(totals[todayKey], 10) || 0;
-          }
-          renderDataPanel();
-        }
-      });
-
-      // Synchronize session records from Cloud
-      const sessionRecordsRef = db.ref("session_records");
-      sessionRecordsRef.on("value", (snap) => {
-        const records = snap.val();
-        if(records && typeof records === 'object'){
-          Object.keys(records).forEach(isoKey => {
-            const rec = records[isoKey];
-            if(rec !== null && rec !== undefined){
-              localStorage.setItem('selmer_record_' + isoKey, JSON.stringify(rec));
-            } else {
-              localStorage.removeItem('selmer_record_' + isoKey);
-            }
-          });
-          renderDataPanel();
-        }
-      });
-
-      // Synchronize today's timeline from Cloud
-      const todayIsoKey = getTodayStorageKey().replace('selmer_focus_', '');
-      const timelineRef = db.ref("pomo_timeline/" + todayIsoKey);
-      timelineRef.on("value", (snap) => {
-        const cloudTimeline = snap.val();
-        if(Array.isArray(cloudTimeline)){
-          const todayKey = getTodayStorageKey() + '_timeline';
-          localStorage.setItem(todayKey, JSON.stringify(cloudTimeline));
-          pomodoroTimeline = cloudTimeline;
-          const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
-          focusIndex = completed.length + 1;
-          renderPomodoroTimeline();
-          renderPomodoro();
+      // Auth state listener
+      auth.onAuthStateChanged((user) => {
+        currentUser = user;
+        updateAuthStatusUI();
+        if(user){
+          setupUserListeners(user.uid);
+        } else {
+          detachUserListeners();
         }
       });
     }
@@ -2218,44 +2277,549 @@ function initFirebaseSync(){
   }
 }
 
+function getUserRef(path){
+  if(db && currentUser){
+    return db.ref("users/" + currentUser.uid + "/" + path);
+  }
+  return null;
+}
+
 function pushSettingsToCloud(settings){
   try {
-    if(db){
-      db.ref("app_settings").set(settings);
-    }
-  } catch(e){}
+    const ref = getUserRef("settings");
+    if(ref) ref.set(settings);
+  } catch(e){
+    console.warn("pushSettingsToCloud error:", e);
+  }
 }
 
 function pushStudyTotalToCloud(isoKey, mins){
   try {
-    if(db){
+    const ref = getUserRef("study_totals/selmer_focus_" + isoKey);
+    if(ref){
       if(mins === 0 || mins === null){
-        db.ref("study_totals/selmer_focus_" + isoKey).remove();
+        ref.remove();
       } else {
-        db.ref("study_totals/selmer_focus_" + isoKey).set(mins);
+        ref.set(mins);
       }
     }
-  } catch(e){}
+  } catch(e){
+    console.warn("pushStudyTotalToCloud error:", e);
+  }
 }
 
 function pushSessionRecordToCloud(isoKey, recordData){
   try {
-    if(db){
+    const ref = getUserRef("session_records/" + isoKey);
+    if(ref){
       if(recordData === null){
-        db.ref("session_records/" + isoKey).remove();
+        ref.remove();
       } else {
-        db.ref("session_records/" + isoKey).set(recordData);
+        ref.set(recordData);
       }
     }
-  } catch(e){}
+  } catch(e){
+    console.warn("pushSessionRecordToCloud error:", e);
+  }
 }
 
 function pushTimelineToCloud(isoKey, timelineData){
   try {
-    if(db){
-      db.ref("pomo_timeline/" + isoKey).set(timelineData);
+    const ref = getUserRef("pomo_timeline/" + isoKey);
+    if(ref) ref.set(timelineData);
+  } catch(e){
+    console.warn("pushTimelineToCloud error:", e);
+  }
+}
+
+function checkHasLocalData(){
+  for(let i=0; i<localStorage.length; i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith('selmer_')){
+      return true;
     }
-  } catch(e){}
+  }
+  return false;
+}
+
+function uploadAllLocalDataToCloud(uid){
+  if(!db) return;
+  const rawSettings = localStorage.getItem('selmer_app_settings');
+  if(rawSettings){
+    try { db.ref("users/" + uid + "/settings").set(JSON.parse(rawSettings)); } catch(e){}
+  }
+  for(let i=0; i<localStorage.length; i++){
+    const key = localStorage.key(i);
+    if(!key || !key.startsWith('selmer_')) continue;
+    if(key.startsWith('selmer_focus_') && !key.endsWith('_timeline')){
+      const mins = parseInt(localStorage.getItem(key) || '0', 10);
+      db.ref("users/" + uid + "/study_totals/" + key).set(mins);
+    } else if(key.startsWith('selmer_record_')){
+      const isoKey = key.replace('selmer_record_', '');
+      try {
+        const rec = JSON.parse(localStorage.getItem(key));
+        db.ref("users/" + uid + "/session_records/" + isoKey).set(rec);
+      } catch(e){}
+    } else if(key.endsWith('_timeline')){
+      const isoKey = key.replace('selmer_focus_', '').replace('_timeline', '');
+      try {
+        const timeline = JSON.parse(localStorage.getItem(key));
+        db.ref("users/" + uid + "/pomo_timeline/" + isoKey).set(timeline);
+      } catch(e){}
+    }
+  }
+}
+
+function downloadCloudDataToLocal(userData){
+  if(!userData) return;
+  if(userData.settings){
+    localStorage.setItem('selmer_app_settings', JSON.stringify(userData.settings));
+    loadSettingsFromStorage();
+  }
+  if(userData.study_totals && typeof userData.study_totals === 'object'){
+    Object.keys(userData.study_totals).forEach(k => {
+      localStorage.setItem(k, userData.study_totals[k]);
+    });
+    const todayKey = getTodayStorageKey();
+    if(userData.study_totals[todayKey] !== undefined){
+      todayFocusMinutes = parseInt(userData.study_totals[todayKey], 10) || 0;
+    }
+  }
+  if(userData.session_records && typeof userData.session_records === 'object'){
+    Object.keys(userData.session_records).forEach(isoKey => {
+      localStorage.setItem('selmer_record_' + isoKey, JSON.stringify(userData.session_records[isoKey]));
+    });
+  }
+  if(userData.pomo_timeline && typeof userData.pomo_timeline === 'object'){
+    const todayIsoKey = getTodayStorageKey().replace('selmer_focus_', '');
+    if(userData.pomo_timeline[todayIsoKey]){
+      const cloudTimeline = userData.pomo_timeline[todayIsoKey];
+      localStorage.setItem(getTodayStorageKey() + '_timeline', JSON.stringify(cloudTimeline));
+      pomodoroTimeline = cloudTimeline;
+      const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
+      focusIndex = completed.length + 1;
+      renderPomodoroTimeline();
+      renderPomodoro();
+    }
+  }
+  renderDataPanel();
+}
+
+function mergeLocalAndCloudData(uid, userData){
+  if(userData.settings){
+    localStorage.setItem('selmer_app_settings', JSON.stringify(userData.settings));
+    loadSettingsFromStorage();
+  }
+
+  const cloudTotals = userData.study_totals || {};
+  const allTotalKeys = new Set([...Object.keys(cloudTotals)]);
+  for(let i=0; i<localStorage.length; i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith('selmer_focus_') && !k.endsWith('_timeline')){
+      allTotalKeys.add(k);
+    }
+  }
+
+  allTotalKeys.forEach(key => {
+    const localVal = parseInt(localStorage.getItem(key) || '0', 10);
+    const cloudVal = parseInt(cloudTotals[key] || '0', 10);
+    const mergedVal = Math.max(localVal, cloudVal);
+    localStorage.setItem(key, mergedVal);
+    db.ref("users/" + uid + "/study_totals/" + key).set(mergedVal);
+    if(key === getTodayStorageKey()){
+      todayFocusMinutes = mergedVal;
+    }
+  });
+
+  const cloudRecords = userData.session_records || {};
+  const allRecordIsoKeys = new Set([...Object.keys(cloudRecords)]);
+  for(let i=0; i<localStorage.length; i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith('selmer_record_')){
+      allRecordIsoKeys.add(k.replace('selmer_record_', ''));
+    }
+  }
+
+  allRecordIsoKeys.forEach(isoKey => {
+    const cloudRec = cloudRecords[isoKey];
+    let localRec = null;
+    try { localRec = JSON.parse(localStorage.getItem('selmer_record_' + isoKey)); } catch(e){}
+
+    let chosenRec = cloudRec;
+    if(localRec && cloudRec){
+      chosenRec = (localRec.totalMinutes || 0) >= (cloudRec.totalMinutes || 0) ? localRec : cloudRec;
+    } else if(localRec){
+      chosenRec = localRec;
+    }
+
+    if(chosenRec){
+      localStorage.setItem('selmer_record_' + isoKey, JSON.stringify(chosenRec));
+      db.ref("users/" + uid + "/session_records/" + isoKey).set(chosenRec);
+    }
+  });
+
+  const todayIsoKey = getTodayStorageKey().replace('selmer_focus_', '');
+  const cloudTimeline = (userData.pomo_timeline && userData.pomo_timeline[todayIsoKey]) ? userData.pomo_timeline[todayIsoKey] : null;
+  let localTimeline = null;
+  try { localTimeline = JSON.parse(localStorage.getItem(getTodayStorageKey() + '_timeline')); } catch(e){}
+
+  const chosenTimeline = cloudTimeline || localTimeline;
+  if(chosenTimeline){
+    localStorage.setItem(getTodayStorageKey() + '_timeline', JSON.stringify(chosenTimeline));
+    db.ref("users/" + uid + "/pomo_timeline/" + todayIsoKey).set(chosenTimeline);
+    pomodoroTimeline = chosenTimeline;
+    const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
+    focusIndex = completed.length + 1;
+    renderPomodoroTimeline();
+    renderPomodoro();
+  }
+
+  renderDataPanel();
+}
+
+function openMigrationModal(uid, userData){
+  const modalBackdrop = document.getElementById('migrationModalBackdrop');
+  if(!modalBackdrop) return;
+  modalBackdrop.classList.add('open');
+
+  const mergeBtn = document.getElementById('migrationMergeBtn');
+  const useCloudBtn = document.getElementById('migrationUseCloudBtn');
+
+  const onMerge = () => {
+    localStorage.setItem('selmer_migrated_' + uid, 'true');
+    mergeLocalAndCloudData(uid, userData);
+    modalBackdrop.classList.remove('open');
+    startUserRealtimeSync(uid);
+    showToast('Veriler başarıyla birleştirildi!');
+    cleanup();
+  };
+
+  const onUseCloud = () => {
+    localStorage.setItem('selmer_migrated_' + uid, 'true');
+    downloadCloudDataToLocal(userData);
+    modalBackdrop.classList.remove('open');
+    startUserRealtimeSync(uid);
+    showToast('Bulut verisi yüklendi!');
+    cleanup();
+  };
+
+  function cleanup(){
+    if(mergeBtn) mergeBtn.removeEventListener('click', onMerge);
+    if(useCloudBtn) useCloudBtn.removeEventListener('click', onUseCloud);
+  }
+
+  if(mergeBtn) mergeBtn.addEventListener('click', onMerge);
+  if(useCloudBtn) useCloudBtn.addEventListener('click', onUseCloud);
+}
+
+function detachUserListeners(){
+  userListeners.forEach(ref => {
+    try { ref.off(); } catch(e){}
+  });
+  userListeners = [];
+}
+
+function setupUserListeners(uid){
+  detachUserListeners();
+  if(!db) return;
+
+  const migrationKey = 'selmer_migrated_' + uid;
+  const alreadyMigrated = localStorage.getItem(migrationKey) === 'true';
+
+  const userRootRef = db.ref("users/" + uid);
+
+  userRootRef.once("value", (snap) => {
+    const userData = snap.val();
+    const hasCloudData = userData && (userData.settings || userData.study_totals || userData.session_records || userData.pomo_timeline);
+    const hasLocalData = checkHasLocalData();
+
+    if(!alreadyMigrated && hasCloudData && hasLocalData){
+      openMigrationModal(uid, userData);
+    } else if(!hasCloudData && hasLocalData){
+      uploadAllLocalDataToCloud(uid);
+      localStorage.setItem(migrationKey, 'true');
+      startUserRealtimeSync(uid);
+    } else if(hasCloudData){
+      downloadCloudDataToLocal(userData);
+      localStorage.setItem(migrationKey, 'true');
+      startUserRealtimeSync(uid);
+    } else {
+      localStorage.setItem(migrationKey, 'true');
+      startUserRealtimeSync(uid);
+    }
+  });
+}
+
+function startUserRealtimeSync(uid){
+  if(!db) return;
+
+  const settingsRef = db.ref("users/" + uid + "/settings");
+  settingsRef.on("value", (snap) => {
+    const cloudSettings = snap.val();
+    if(cloudSettings){
+      localStorage.setItem('selmer_app_settings', JSON.stringify(cloudSettings));
+      loadSettingsFromStorage();
+    }
+  });
+  userListeners.push(settingsRef);
+
+  const totalsRef = db.ref("users/" + uid + "/study_totals");
+  totalsRef.on("value", (snap) => {
+    const totals = snap.val();
+    if(totals && typeof totals === 'object'){
+      Object.keys(totals).forEach(key => {
+        if(totals[key] !== null && totals[key] !== undefined){
+          localStorage.setItem(key, totals[key]);
+        }
+      });
+      const todayKey = getTodayStorageKey();
+      if(totals[todayKey] !== undefined){
+        todayFocusMinutes = parseInt(totals[todayKey], 10) || 0;
+      }
+      renderDataPanel();
+    }
+  });
+  userListeners.push(totalsRef);
+
+  const recordsRef = db.ref("users/" + uid + "/session_records");
+  recordsRef.on("value", (snap) => {
+    const records = snap.val();
+    if(records && typeof records === 'object'){
+      Object.keys(records).forEach(isoKey => {
+        if(records[isoKey] !== null && records[isoKey] !== undefined){
+          localStorage.setItem('selmer_record_' + isoKey, JSON.stringify(records[isoKey]));
+        }
+      });
+      renderDataPanel();
+    }
+  });
+  userListeners.push(recordsRef);
+
+  const todayIsoKey = getTodayStorageKey().replace('selmer_focus_', '');
+  const timelineRef = db.ref("users/" + uid + "/pomo_timeline/" + todayIsoKey);
+  timelineRef.on("value", (snap) => {
+    const cloudTimeline = snap.val();
+    if(Array.isArray(cloudTimeline)){
+      const todayKey = getTodayStorageKey() + '_timeline';
+      localStorage.setItem(todayKey, JSON.stringify(cloudTimeline));
+      pomodoroTimeline = cloudTimeline;
+      const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
+      focusIndex = completed.length + 1;
+      renderPomodoroTimeline();
+      renderPomodoro();
+    }
+  });
+  userListeners.push(timelineRef);
+
+  setupLiveSessionSync(uid);
+}
+
+let isApplyingRemoteLiveSession = false;
+let lastHeartbeatTs = 0;
+
+function pushLiveSessionToCloud(){
+  if(!db || !currentUser || isApplyingRemoteLiveSession) return;
+  try {
+    const nowServerMs = Date.now() + serverTimeOffsetMs;
+    const sessionData = {
+      sessionType: pomodoro.sessionType || 'focus',
+      running: !!pomodoro.running,
+      focusMin: pomodoro.focusMin || 25,
+      shortMin: pomodoro.shortMin || 5,
+      sessionStartTs: pomodoro.sessionStartTs ? (pomodoro.sessionStartTs + serverTimeOffsetMs) : 0,
+      sessionAccumulatedMs: pomodoro.sessionAccumulatedMs || 0,
+      totalMs: pomodoroTotalMs(),
+      isOvertime: !!pomodoro.isOvertime,
+      overtimeSec: pomodoro.overtimeSec || 0,
+      focusIndex: focusIndex || 1,
+      lastUpdatedTs: nowServerMs,
+      deviceId: tabDeviceId
+    };
+    db.ref("users/" + currentUser.uid + "/live_session").set(sessionData);
+    lastHeartbeatTs = Date.now();
+  } catch(e){
+    console.warn("pushLiveSessionToCloud error:", e);
+  }
+}
+
+function setupLiveSessionSync(uid){
+  if(!db) return;
+  const liveSessionRef = db.ref("users/" + uid + "/live_session");
+
+  liveSessionRef.on("value", (snap) => {
+    const remote = snap.val();
+    if(!remote || typeof remote !== 'object') return;
+    if(remote.deviceId === tabDeviceId) return; // Ignore own writes
+
+    isApplyingRemoteLiveSession = true;
+
+    const nowServerMs = Date.now() + serverTimeOffsetMs;
+    pomodoro.sessionType = remote.sessionType || 'focus';
+    pomodoro.focusMin = remote.focusMin || 25;
+    pomodoro.shortMin = remote.shortMin || 5;
+    pomodoro.isOvertime = !!remote.isOvertime;
+    pomodoro.overtimeSec = remote.overtimeSec || 0;
+    if(remote.focusIndex) focusIndex = remote.focusIndex;
+
+    const totalMs = remote.totalMs || pomodoroTotalMs();
+    let computedElapsed = remote.sessionAccumulatedMs || 0;
+    if(remote.running && remote.sessionStartTs > 0){
+      computedElapsed += Math.max(0, nowServerMs - remote.sessionStartTs);
+      pomodoro.sessionStartTs = Date.now() - Math.max(0, nowServerMs - remote.sessionStartTs);
+    } else {
+      pomodoro.sessionStartTs = 0;
+    }
+    pomodoro.sessionAccumulatedMs = remote.sessionAccumulatedMs || 0;
+
+    if(computedElapsed >= totalMs){
+      pomodoro.remainingMs = 0;
+      pomodoro.isOvertime = true;
+      pomodoro.overtimeSec = Math.floor((computedElapsed - totalMs) / 1000);
+    } else {
+      pomodoro.remainingMs = totalMs - computedElapsed;
+    }
+
+    const wasRunning = pomodoro.running;
+    pomodoro.running = !!remote.running;
+
+    if(pomodoro.running){
+      if(!wasRunning){
+        if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
+        pomodoro.intervalId = setInterval(pomodoroTick, 100);
+      }
+    } else {
+      if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
+    }
+
+    renderPomodoroTimeline();
+    renderPomodoro();
+
+    showToast('Sayaç başka bir cihazdan güncellendi');
+
+    setTimeout(() => { isApplyingRemoteLiveSession = false; }, 300);
+  });
+
+  userListeners.push(liveSessionRef);
+}
+
+function updateAuthStatusUI(){
+  const dot = document.getElementById('authStatusDot');
+  const loggedInView = document.getElementById('loggedInView');
+  const loggedOutView = document.getElementById('loggedOutView');
+  const userEmailDisplay = document.getElementById('userEmailDisplay');
+  const userSyncStatus = document.getElementById('userSyncStatus');
+
+  if(currentUser){
+    if(dot){
+      dot.className = 'auth-status-dot ' + (isOnline ? 'online' : 'offline');
+      dot.title = isOnline ? 'Çevrimiçi (' + currentUser.email + ')' : 'Çevrimdışı (Hesaplı)';
+    }
+    if(loggedInView) loggedInView.style.display = 'flex';
+    if(loggedOutView) loggedOutView.style.display = 'none';
+    if(userEmailDisplay) userEmailDisplay.textContent = currentUser.email;
+    if(userSyncStatus) userSyncStatus.textContent = isOnline ? '☁️ Bulut Senkronizasyonu Aktif' : '⚠️ Çevrimdışı Mod (Yerel Önbellek)';
+  } else {
+    if(dot){
+      dot.className = 'auth-status-dot ' + (isOnline ? 'guest' : 'offline');
+      dot.title = isOnline ? 'Misafir Modu' : 'Çevrimdışı Mod';
+    }
+    if(loggedInView) loggedInView.style.display = 'none';
+    if(loggedOutView) loggedOutView.style.display = 'flex';
+  }
+}
+
+function handleAuthSubmit(e){
+  e.preventDefault();
+  const emailInput = document.getElementById('authEmailInput');
+  const passInput = document.getElementById('authPasswordInput');
+  const email = emailInput ? emailInput.value.trim() : '';
+  const password = passInput ? passInput.value : '';
+  const errEl = document.getElementById('authErrorMsg');
+  const succEl = document.getElementById('authSuccessMsg');
+  const tabRegister = document.getElementById('authTabRegister');
+  const isRegister = tabRegister && tabRegister.classList.contains('active');
+
+  if(errEl) errEl.style.display = 'none';
+  if(succEl) succEl.style.display = 'none';
+
+  if(!auth){
+    if(errEl){ errEl.textContent = 'Firebase Kimlik Doğrulama başlatılamadı.'; errEl.style.display = 'block'; }
+    return;
+  }
+
+  if(isRegister){
+    auth.createUserWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        if(succEl){ succEl.textContent = 'Kayıt başarılı! Giriş yapıldı.'; succEl.style.display = 'block'; }
+        setTimeout(() => {
+          const authBackdrop = document.getElementById('authModalBackdrop');
+          if(authBackdrop) authBackdrop.classList.remove('open');
+        }, 1000);
+      })
+      .catch((error) => {
+        let msg = 'Kayıt sırasında bir hata oluştu.';
+        if(error.code === 'auth/email-already-in-use') msg = 'Bu e-posta adresi zaten kullanımda.';
+        else if(error.code === 'auth/invalid-email') msg = 'Geçersiz e-posta adresi.';
+        else if(error.code === 'auth/weak-password') msg = 'Şifre en az 6 karakter olmalıdır.';
+        if(errEl){ errEl.textContent = msg; errEl.style.display = 'block'; }
+      });
+  } else {
+    auth.signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        if(succEl){ succEl.textContent = 'Giriş başarılı!'; succEl.style.display = 'block'; }
+        setTimeout(() => {
+          const authBackdrop = document.getElementById('authModalBackdrop');
+          if(authBackdrop) authBackdrop.classList.remove('open');
+        }, 800);
+      })
+      .catch((error) => {
+        let msg = 'Giriş yapılırken bir hata oluştu.';
+        if(error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') msg = 'E-posta veya şifre hatalı.';
+        else if(error.code === 'auth/invalid-email') msg = 'Geçersiz e-posta adresi.';
+        if(errEl){ errEl.textContent = msg; errEl.style.display = 'block'; }
+      });
+  }
+}
+
+function handleForgotPassword(){
+  const emailInput = document.getElementById('authEmailInput');
+  const email = emailInput ? emailInput.value.trim() : '';
+  const errEl = document.getElementById('authErrorMsg');
+  const succEl = document.getElementById('authSuccessMsg');
+
+  if(errEl) errEl.style.display = 'none';
+  if(succEl) succEl.style.display = 'none';
+
+  if(!email){
+    if(errEl){ errEl.textContent = 'Lütfen e-posta adresinizi yukarıdaki alana giriniz.'; errEl.style.display = 'block'; }
+    return;
+  }
+
+  if(!auth) return;
+
+  auth.sendPasswordResetEmail(email)
+    .then(() => {
+      if(succEl){ succEl.textContent = 'Şifre sıfırlama e-postası gönderildi. Kutunuzu kontrol ediniz.'; succEl.style.display = 'block'; }
+    })
+    .catch((error) => {
+      let msg = 'E-posta gönderilemedi.';
+      if(error.code === 'auth/user-not-found') msg = 'Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı.';
+      else if(error.code === 'auth/invalid-email') msg = 'Geçersiz e-posta adresi.';
+      if(errEl){ errEl.textContent = msg; errEl.style.display = 'block'; }
+    });
+}
+
+function handleLogout(){
+  if(auth){
+    auth.signOut().then(() => {
+      detachUserListeners();
+      currentUser = null;
+      updateAuthStatusUI();
+      showToast('Çıkış yapıldı. Misafir moduna geçildi.');
+      const authBackdrop = document.getElementById('authModalBackdrop');
+      if(authBackdrop) authBackdrop.classList.remove('open');
+    });
+  }
 }
 
 function getSyncedNow(){
@@ -2278,7 +2842,8 @@ function cacheDom(){
    'focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'mode3dToggle','mode3dValue','focusDonutProgress','focusDonutLabel','todayMinutesLabel',
    'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
-   'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn','saveDayOpenBtn','saveDayModalBackdrop','saveDayModalClose','saveDayDateOptions','saveDayCancelBtn','saveDayConfirmBtn'
+   'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn','saveDayOpenBtn','saveDayModalBackdrop','saveDayModalClose','saveDayDateOptions','saveDayCancelBtn','saveDayConfirmBtn',
+   'authBtn','authStatusDot','authModalBackdrop','authModal','authModalClose','authModalTitle','loggedInView','loggedOutView','userEmailDisplay','userSyncStatus','logoutBtn','authTabLogin','authTabRegister','authForm','authEmailInput','authPasswordInput','authErrorMsg','authSuccessMsg','authSubmitBtn','forgotPasswordBtn'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -3449,6 +4014,8 @@ function pomodoroStart(){
   if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
   pomodoro.intervalId = setInterval(pomodoroTick, 100);
   renderPomodoro();
+
+  pushLiveSessionToCloud();
 }
 
 function pomodoroPause(){
@@ -3464,6 +4031,8 @@ function pomodoroPause(){
   playUiSound('pause');
   renderPomodoroTimeline();
   renderPomodoro();
+
+  pushLiveSessionToCloud();
 }
 
 function pomodoroReset(){
@@ -3482,6 +4051,8 @@ function pomodoroReset(){
   saveTimelineToStorage();
   renderPomodoroTimeline();
   renderPomodoro();
+
+  pushLiveSessionToCloud();
 }
 
 function pomodoroTick(){
@@ -3494,6 +4065,7 @@ function pomodoroTick(){
       pomodoro.isOvertime = true;
       playAlarmSound((dom.dfAlarmSelect && dom.dfAlarmSelect.value) || (dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime'));
       showToast('Etüt Süresi Doldu! Overtime (+00:00) Başladı.');
+      pushLiveSessionToCloud();
     }
     pomodoro.remainingMs = 0;
     pomodoro.overtimeSec = Math.floor((elapsedMs - targetMs) / 1000);
@@ -3501,6 +4073,11 @@ function pomodoroTick(){
     pomodoro.isOvertime = false;
     pomodoro.overtimeSec = 0;
     pomodoro.remainingMs = Math.max(0, targetMs - elapsedMs);
+  }
+
+  // Periodic heartbeat every 8 seconds when running
+  if(Date.now() - lastHeartbeatTs > 8000){
+    pushLiveSessionToCloud();
   }
 
   renderPomodoro();
@@ -3583,6 +4160,8 @@ function handleFinishClick(){
   // 10. Reset remaining time for next session
   pomodoro.remainingMs = pomodoroTotalMs();
   renderPomodoro();
+
+  pushLiveSessionToCloud();
 }
 
 function updateFocusLevel(){
@@ -4246,6 +4825,47 @@ function openSettingsDrawer(){ dom.settingsDrawer.classList.add('open'); dom.dra
 function closeSettingsDrawer(){ dom.settingsDrawer.classList.remove('open'); dom.drawerBackdrop.classList.remove('open'); }
 
 function wireEvents(){
+  if(dom.authBtn){
+    dom.authBtn.addEventListener('click', ()=>{
+      if(dom.authModalBackdrop) dom.authModalBackdrop.classList.add('open');
+    });
+  }
+  if(dom.authModalClose){
+    dom.authModalClose.addEventListener('click', ()=>{
+      if(dom.authModalBackdrop) dom.authModalBackdrop.classList.remove('open');
+    });
+  }
+  if(dom.authModalBackdrop){
+    dom.authModalBackdrop.addEventListener('click', (e)=>{
+      if(e.target === dom.authModalBackdrop) dom.authModalBackdrop.classList.remove('open');
+    });
+  }
+  if(dom.authTabLogin && dom.authTabRegister){
+    dom.authTabLogin.addEventListener('click', ()=>{
+      dom.authTabLogin.classList.add('active');
+      dom.authTabRegister.classList.remove('active');
+      if(dom.authSubmitBtn) dom.authSubmitBtn.textContent = 'GİRİŞ YAP';
+      if(dom.authErrorMsg) dom.authErrorMsg.style.display = 'none';
+      if(dom.authSuccessMsg) dom.authSuccessMsg.style.display = 'none';
+    });
+    dom.authTabRegister.addEventListener('click', ()=>{
+      dom.authTabRegister.classList.add('active');
+      dom.authTabLogin.classList.remove('active');
+      if(dom.authSubmitBtn) dom.authSubmitBtn.textContent = 'KAYIT OL';
+      if(dom.authErrorMsg) dom.authErrorMsg.style.display = 'none';
+      if(dom.authSuccessMsg) dom.authSuccessMsg.style.display = 'none';
+    });
+  }
+  if(dom.authForm){
+    dom.authForm.addEventListener('submit', handleAuthSubmit);
+  }
+  if(dom.forgotPasswordBtn){
+    dom.forgotPasswordBtn.addEventListener('click', handleForgotPassword);
+  }
+  if(dom.logoutBtn){
+    dom.logoutBtn.addEventListener('click', handleLogout);
+  }
+
   dom.deepFocusBtn.addEventListener('click', ()=> state.deepFocus?exitDeepFocus():enterDeepFocus());
   dom.exitDeepFocus.addEventListener('click', exitDeepFocus);
 
