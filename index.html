@@ -1230,6 +1230,39 @@ body.mode-pomodoro #soundPanel {
   transform: scale(0.92) translateY(16px);
   transition: all 0.35s var(--ease);
 }
+.analytics-modal {
+  width: min(92vw, 900px);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.analytics-modal::-webkit-scrollbar { width: 6px; }
+.analytics-modal::-webkit-scrollbar-thumb { background: rgba(var(--c1-rgb), 0.35); border-radius: 4px; }
+.open-analytics-btn {
+  margin-top: 14px;
+  width: 100%;
+  padding: 10px 18px;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--c1);
+  background: rgba(var(--c1-rgb), 0.15);
+  color: var(--text-0);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  box-shadow: 0 0 12px rgba(var(--c1-rgb), 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.open-analytics-btn:hover {
+  background: var(--c1);
+  color: var(--void-0);
+  box-shadow: 0 0 20px rgba(var(--c1-rgb), 0.6);
+  transform: translateY(-2px);
+}
 .pomo-modal-backdrop.open .pomo-modal { transform: scale(1) translateY(0); }
 .pomo-modal-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -1581,6 +1614,7 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
             <small id="pomoCompletedCount">0 Seans Tamamlandı</small>
           </div>
           <div class="pomo-timeline-track" id="pomoTimelineTrack"></div>
+          <button class="open-analytics-btn" id="openAnalyticsBtn">📊 AYLIK ANALİZ VE PERFORMANS</button>
         </div>
       </div>
     </div>
@@ -2018,36 +2052,35 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
         </div>
         <div class="donut-copy">
           <b id="todayMinutesLabel">0 dk</b>
-          Bugünkü odak süresi (simüle edilmiş temel + gerçek seanslar)
+          Bugünkü odak süresi
         </div>
       </div>
-      <div class="weekly-bars" id="weeklyBars"></div>
 
-      <!-- HISTORY MANAGEMENT (EDIT & DELETE LAST 2 DAYS ONLY) -->
-      <div class="history-section-card">
-        <div class="history-section-header">
-          <span>📜 ÇALIŞMA GEÇMİŞİ VE DÜZENLEME</span>
-          <small style="font-size:0.62rem; color:var(--text-dimmer); font-family:'JetBrains Mono',monospace;">Son 2 Gün Düzenlenebilir</small>
+      <!-- GÜN SIFIRLAMA AYARLARI -->
+      <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--hairline);">
+        <div class="settings-section-title" style="margin-bottom:12px;">Gün Sıfırlama Ayarları</div>
+        <div class="toggle-row" style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+          <div class="toggle-label" style="display:flex; flex-direction:column;">
+            <span style="font-size:0.8rem; font-weight:600;">Akıllı Gün Sınırı Kullan</span>
+            <small style="font-size:0.65rem; color:var(--text-dimmer);">00:00 - Sınır saati arası dünün devamı sayılır</small>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="smartDayBoundaryToggle" checked>
+            <span class="switch-track"></span>
+            <span class="switch-thumb"></span>
+          </label>
         </div>
-        <div class="history-list" id="historyListContainer"></div>
-      </div>
-
-      <!-- MONTHLY ANALYTICS CALENDAR -->
-      <div class="monthly-analytics-card">
-        <div class="monthly-analytics-header">
-          <span>📅 AYLIK ANALİZ VE PERFORMANS</span>
-          <span id="monthlyAnalyticsMonthName" style="color:var(--c1); font-size:0.7rem;">-</span>
+        <div class="toggle-row" id="dayBoundaryTimeRow" style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:0.8rem; font-weight:600;">Gün Sınırı Saati</span>
+          <select id="dayBoundaryTimeSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.75rem; outline:none; font-family:'JetBrains Mono',monospace;">
+            <option value="03:00">03:00</option>
+            <option value="04:00">04:00</option>
+            <option value="05:00">05:00</option>
+            <option value="06:00" selected>06:00</option>
+            <option value="07:00">07:00</option>
+            <option value="08:00">08:00</option>
+          </select>
         </div>
-        <div class="monthly-grid-days">
-          <div class="monthly-day-header">Pzt</div>
-          <div class="monthly-day-header">Sal</div>
-          <div class="monthly-day-header">Çar</div>
-          <div class="monthly-day-header">Per</div>
-          <div class="monthly-day-header">Cum</div>
-          <div class="monthly-day-header">Cmt</div>
-          <div class="monthly-day-header">Paz</div>
-        </div>
-        <div class="monthly-grid-days" id="monthlyAnalyticsGrid"></div>
       </div>
     </div>
   </div>
@@ -2130,6 +2163,72 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
   </div>
 </div>
 
+<!-- ANALYTICS MODAL -->
+<div class="pomo-modal-backdrop" id="analyticsModalBackdrop">
+  <div class="pomo-modal analytics-modal" id="analyticsModal">
+    <div class="pomo-modal-header">
+      <span>📊 AYLIK ANALİZ VE PERFORMANS</span>
+      <button class="pomo-modal-close" id="analyticsModalClose">&times;</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <!-- MONTHLY ANALYTICS CALENDAR -->
+      <div class="monthly-analytics-card" style="margin-top:0;">
+        <div class="monthly-analytics-header">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span>📅 AYLIK PERFORMANS TAKVİMİ</span>
+            <span id="monthlyAnalyticsMonthName" style="color:var(--c1); font-size:0.75rem;">-</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button class="icon-btn" id="prevMonthBtn" style="width:28px; height:28px; font-size:0.9rem;" title="Önceki Ay">‹</button>
+            <button class="icon-btn" id="nextMonthBtn" style="width:28px; height:28px; font-size:0.9rem;" title="Sonraki Ay">›</button>
+          </div>
+        </div>
+        <div class="monthly-grid-days">
+          <div class="monthly-day-header">Pzt</div>
+          <div class="monthly-day-header">Sal</div>
+          <div class="monthly-day-header">Çar</div>
+          <div class="monthly-day-header">Per</div>
+          <div class="monthly-day-header">Cum</div>
+          <div class="monthly-day-header">Cmt</div>
+          <div class="monthly-day-header">Paz</div>
+        </div>
+        <div class="monthly-grid-days" id="monthlyAnalyticsGrid"></div>
+      </div>
+
+      <!-- DAY DETAIL PANEL -->
+      <div id="analyticsDayDetailCard" style="display:none; background:rgba(10,14,28,0.85); border:1px solid var(--c1); border-radius:var(--radius-m); padding:14px 18px; font-family:'JetBrains Mono',monospace;">
+        <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--hairline); padding-bottom:6px; margin-bottom:10px;">
+          <span id="detailPanelDate" style="font-weight:700; color:var(--c1); font-size:0.8rem;">-</span>
+          <button id="closeDetailPanelBtn" style="color:var(--text-dim); cursor:pointer; font-size:1rem;">&times;</button>
+        </div>
+        <div style="display:flex; gap:16px; font-size:0.75rem; color:var(--text-0); margin-bottom:10px;">
+          <div>⏱ Toplam Süre: <b id="detailPanelTotalTime" style="color:var(--c1);">0 dk</b></div>
+          <div>🎯 Seans Sayısı: <b id="detailPanelSessionCount" style="color:var(--c1);">0</b></div>
+        </div>
+        <div id="detailPanelSessionsList" style="display:flex; flex-direction:column; gap:6px; max-height:160px; overflow-y:auto; font-size:0.7rem; color:var(--text-dim);"></div>
+      </div>
+
+      <!-- WEEKLY BARS CHART -->
+      <div class="history-section-card" style="margin-top:0;">
+        <div class="history-section-header">
+          <span>📊 HAFTALIK GRAFİK (SON 7 GÜN)</span>
+          <small style="font-size:0.62rem; color:var(--text-dimmer); font-family:'JetBrains Mono',monospace;">Çubuklara Tıklayarak Detay Görebilirsiniz</small>
+        </div>
+        <div class="weekly-bars" id="weeklyBars" style="height:110px;"></div>
+      </div>
+
+      <!-- HISTORY MANAGEMENT -->
+      <div class="history-section-card" style="margin-top:0;">
+        <div class="history-section-header">
+          <span>📜 ÇALIŞMA GEÇMİŞİ VE DÜZENLEME</span>
+          <small style="font-size:0.62rem; color:var(--text-dimmer); font-family:'JetBrains Mono',monospace;">Son 2 Gün Düzenlenebilir</small>
+        </div>
+        <div class="history-list" id="historyListContainer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- SAVE DAY MODAL -->
 <div class="pomo-modal-backdrop" id="saveDayModalBackdrop">
   <div class="pomo-modal" id="saveDayModal" style="max-width:440px;">
@@ -2138,11 +2237,15 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
       <button class="pomo-modal-close" id="saveDayModalClose">&times;</button>
     </div>
     <div class="pomo-config-body" style="gap:16px;">
-      <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
-        Mevcut çalışma verilerinizi kaydedeceğiniz tarihi seçiniz (Son 3 Gün):
+      <p style="font-size:0.85rem; color:var(--text-dim); margin:0;">
+        Mevcut çalışma verilerinizi kaydedeceğiniz tarihi seçiniz (Son 7 Gün):
       </p>
-      <div class="save-day-options" id="saveDayDateOptions" style="display:flex; flex-direction:column; gap:10px;">
-        <!-- Populated via JS -->
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label for="saveDayDatePicker" style="font-size:0.75rem; color:var(--text-dim);">Tarih Seçin:</label>
+        <input type="date" id="saveDayDatePicker" style="background:rgba(10,13,26,0.8); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); color:var(--text-0); padding:10px 12px; font-size:0.85rem; outline:none; font-family:'JetBrains Mono',monospace; width:100%;">
+      </div>
+      <div id="saveDaySummaryText" style="font-size:0.8rem; color:var(--c1); background:rgba(var(--c1-rgb),0.12); padding:10px; border-radius:var(--radius-s); border:1px solid rgba(var(--c1-rgb),0.3); font-family:'JetBrains Mono',monospace;">
+        Kaydedilecek Süre: 00s 00dk
       </div>
       <div style="display:flex; justify-flex:flex-end; gap:10px; margin-top:10px;">
         <button class="pomo-type-btn" id="saveDayCancelBtn">İptal</button>
@@ -2209,7 +2312,7 @@ const ASSETS = {
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PROFILE_META = { neon2:{ name:'NEON PULSE', theme:'cyberpunkBlue' }, y2026:{ name:'SOLAR FLARE', theme:'volcanicOrange' } };
-const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#3fd0ff' };
+const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#3fd0ff', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
 const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:25, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, isOvertime:false, overtimeSec:0, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:25*60*1000, intervalId:null, lastTickTs:0 };
 const SEC_R=78, SEC_C=2*Math.PI*SEC_R;
 const PRING_R=76, PRING_C=2*Math.PI*PRING_R;
@@ -2843,7 +2946,9 @@ function cacheDom(){
    'mode3dToggle','mode3dValue','focusDonutProgress','focusDonutLabel','todayMinutesLabel',
    'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
    'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn','saveDayOpenBtn','saveDayModalBackdrop','saveDayModalClose','saveDayDateOptions','saveDayCancelBtn','saveDayConfirmBtn',
-   'authBtn','authStatusDot','authModalBackdrop','authModal','authModalClose','authModalTitle','loggedInView','loggedOutView','userEmailDisplay','userSyncStatus','logoutBtn','authTabLogin','authTabRegister','authForm','authEmailInput','authPasswordInput','authErrorMsg','authSuccessMsg','authSubmitBtn','forgotPasswordBtn'
+   'authBtn','authStatusDot','authModalBackdrop','authModal','authModalClose','authModalTitle','loggedInView','loggedOutView','userEmailDisplay','userSyncStatus','logoutBtn','authTabLogin','authTabRegister','authForm','authEmailInput','authPasswordInput','authErrorMsg','authSuccessMsg','authSubmitBtn','forgotPasswordBtn',
+   'openAnalyticsBtn','analyticsModalBackdrop','analyticsModal','analyticsModalClose','prevMonthBtn','nextMonthBtn','monthlyAnalyticsMonthName','monthlyAnalyticsGrid','analyticsDayDetailCard','detailPanelDate','closeDetailPanelBtn','detailPanelTotalTime','detailPanelSessionCount','detailPanelSessionsList','smartDayBoundaryToggle','dayBoundaryTimeSelect',
+   'saveDayDatePicker','saveDaySummaryText'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -2910,14 +3015,23 @@ function getTotalWorkSeconds(){
 
 function checkDailyReset(){
   const todayKey = getTodayStorageKey() + '_timeline';
+  const activeDateObj = getActiveDateObj();
+  const activeDateStr = activeDateObj.toDateString();
   const savedDate = localStorage.getItem('selmer_last_active_date');
-  const todayStr = new Date().toDateString();
 
-  if(savedDate !== todayStr){
-    // Midnight reset
+  // Check long absence (24+ hours since last activity or last active timestamp)
+  const lastActiveTs = parseInt(localStorage.getItem('selmer_last_active_ts') || '0', 10);
+  const nowMs = Date.now();
+
+  if(lastActiveTs > 0 && (nowMs - lastActiveTs) >= 24 * 3600 * 1000){
+    handleLongAbsenceAutoAssign(lastActiveTs, nowMs);
+  }
+
+  if(savedDate !== activeDateStr){
     pomodoroTimeline = [];
     focusIndex = 1;
-    localStorage.setItem('selmer_last_active_date', todayStr);
+    localStorage.setItem('selmer_last_active_date', activeDateStr);
+    localStorage.setItem('selmer_last_active_ts', nowMs.toString());
     localStorage.setItem(todayKey, JSON.stringify([]));
   } else if(pomodoroTimeline.length === 0) {
     try {
@@ -2932,14 +3046,109 @@ function checkDailyReset(){
       }
     } catch(e){}
   }
+  localStorage.setItem('selmer_last_active_ts', Date.now().toString());
+}
+
+function handleLongAbsenceAutoAssign(lastActiveTs, nowMs){
+  // Check if there was an unclosed or active/pending session in pomodoroTimeline
+  let currentKey = getTodayStorageKey() + '_timeline';
+  let timeline = pomodoroTimeline;
+  if(!timeline || timeline.length === 0){
+    try {
+      const saved = localStorage.getItem(currentKey);
+      if(saved) timeline = JSON.parse(saved);
+    } catch(e){}
+  }
+
+  if(timeline && Array.isArray(timeline)){
+    let unclosed = timeline.find(t => t.status === 'active' || (t.status === 'pending' && t.startTimeMs));
+    if(unclosed){
+      const startMs = unclosed.startTimeMs || lastActiveTs;
+      const endMs = Math.min(nowMs, startMs + (unclosed.mins || 25) * 60000);
+      const elapsedSec = Math.max(60, Math.floor((endMs - startMs) / 1000));
+      const elapsedMins = Math.max(1, Math.round(elapsedSec / 60));
+
+      // Determine which date (based on day boundary) holds the majority of minutes
+      const startDateObj = getActiveDateObj(new Date(startMs));
+      const endDateObj = getActiveDateObj(new Date(endMs));
+
+      let targetDateObj = startDateObj;
+      if(startDateObj.getTime() !== endDateObj.getTime()){
+        // Find boundary timestamp
+        const bParts = (state.dayBoundaryTime || '06:00').split(':');
+        const bHour = parseInt(bParts[0], 10) || 6;
+        const bMin = parseInt(bParts[1], 10) || 0;
+
+        let boundaryDate = new Date(startDateObj);
+        boundaryDate.setDate(boundaryDate.getDate() + 1);
+        boundaryDate.setHours(bHour, bMin, 0, 0);
+
+        const minsBeforeBoundary = Math.max(0, (boundaryDate.getTime() - startMs) / 60000);
+        const minsAfterBoundary = Math.max(0, (endMs - boundaryDate.getTime()) / 60000);
+
+        if(minsAfterBoundary > minsBeforeBoundary){
+          targetDateObj = endDateObj;
+        }
+      }
+
+      const isoKey = targetDateObj.getFullYear() + '_' + String(targetDateObj.getMonth()+1).padStart(2,'0') + '_' + String(targetDateObj.getDate()).padStart(2,'0');
+      const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+      const dateDisplayStr = targetDateObj.getDate() + ' ' + monthNames[targetDateObj.getMonth()];
+
+      // Save to target day's study_totals and session_records
+      const storageKey = 'selmer_focus_' + isoKey;
+      const prevMins = parseInt(localStorage.getItem(storageKey) || '0', 10);
+      const newMins = prevMins + elapsedMins;
+      localStorage.setItem(storageKey, newMins);
+
+      unclosed.status = 'completed';
+      unclosed.endTimeMs = endMs;
+      unclosed.elapsedSec = elapsedSec;
+
+      const recordKey = 'selmer_record_' + isoKey;
+      let recData = null;
+      try { recData = JSON.parse(localStorage.getItem(recordKey)); } catch(e){}
+      if(!recData){
+        recData = { isoKey: isoKey, totalWorkSeconds: 0, totalMinutes: 0, sessionCount: 0, completedEtuts: [] };
+      }
+      recData.totalMinutes = (recData.totalMinutes || 0) + elapsedMins;
+      recData.totalWorkSeconds = (recData.totalWorkSeconds || 0) + elapsedSec;
+      recData.completedEtuts = recData.completedEtuts || [];
+      recData.completedEtuts.push(unclosed);
+      recData.sessionCount = recData.completedEtuts.length;
+
+      localStorage.setItem(recordKey, JSON.stringify(recData));
+
+      pushStudyTotalToCloud(isoKey, newMins);
+      pushSessionRecordToCloud(isoKey, recData);
+
+      // Show non-blocking toast with "Düzelt" link
+      setTimeout(() => {
+        showToastWithAction(
+          `${dateDisplayStr} tarihli ${elapsedMins} dk'lık çalışma verisi otomatik olarak o güne kaydedildi.`,
+          'Düzelt',
+          () => {
+            if(dom.analyticsModalBackdrop) dom.analyticsModalBackdrop.classList.add('open');
+            renderDataPanel();
+            const histEl = document.getElementById('historyListContainer');
+            if(histEl) histEl.scrollIntoView({ behavior: 'smooth' });
+          }
+        );
+      }, 1000);
+    }
+  }
+
+  localStorage.setItem('selmer_last_active_ts', nowMs.toString());
 }
 
 function saveTimelineToStorage(){
   try {
     const todayKey = getTodayStorageKey() + '_timeline';
     const isoKey = getTodayStorageKey().replace('selmer_focus_', '');
+    const activeDateStr = getActiveDateObj().toDateString();
     localStorage.setItem(todayKey, JSON.stringify(pomodoroTimeline));
-    localStorage.setItem('selmer_last_active_date', new Date().toDateString());
+    localStorage.setItem('selmer_last_active_date', activeDateStr);
+    localStorage.setItem('selmer_last_active_ts', Date.now().toString());
     if(typeof pushTimelineToCloud === 'function') pushTimelineToCloud(isoKey, pomodoroTimeline);
   } catch(e){}
 }
@@ -4307,43 +4516,49 @@ function getLast3Days(){
   return days;
 }
 
+function formatDateToInputString(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function openSaveDayModal(){
-  if(!dom.saveDayDateOptions) return;
-  dom.saveDayDateOptions.innerHTML = '';
+  const activeDateObj = getActiveDateObj();
+  const picker = dom.saveDayDatePicker;
 
-  const days = getLast3Days();
+  if(picker){
+    // Max date = active date (today or active day)
+    const maxStr = formatDateToInputString(activeDateObj);
+
+    // Min date = 6 days before active date (total 7 days range including active day)
+    const minDateObj = new Date(activeDateObj.getFullYear(), activeDateObj.getMonth(), activeDateObj.getDate() - 6);
+    const minStr = formatDateToInputString(minDateObj);
+
+    picker.max = maxStr;
+    picker.min = minStr;
+    picker.value = maxStr; // Default: active day
+  }
+
   const currentTotalSec = getTotalWorkSeconds();
-  const timeFormatted = formatHoursMinutesSeconds(currentTotalSec);
-
-  days.forEach((day, idx) => {
-    const label = document.createElement('label');
-    label.className = 'save-day-option-label' + (idx === 0 ? ' selected' : '');
-    label.innerHTML = `
-      <input type="radio" name="saveDayDate" value="${day.isoKey}" ${idx === 0 ? 'checked' : ''} style="accent-color:var(--c1);">
-      <div style="display:flex; flex-direction:column; gap:2px;">
-        <span style="font-weight:700; color:var(--text); font-size:0.9rem;">${day.tag} - ${day.dateDisplay}</span>
-        <span style="font-size:0.8rem; color:var(--text-muted);">Kaydedilecek Süre: ${timeFormatted}</span>
-      </div>
-    `;
-
-    label.addEventListener('click', () => {
-      document.querySelectorAll('.save-day-option-label').forEach(el => el.classList.remove('selected'));
-      label.classList.add('selected');
-    });
-
-    dom.saveDayDateOptions.appendChild(label);
-  });
+  if(dom.saveDaySummaryText){
+    dom.saveDaySummaryText.textContent = 'Kaydedilecek Süre: ' + formatHoursMinutesSeconds(currentTotalSec);
+  }
 
   if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.add('open');
 }
 
 function confirmSaveDay(){
-  const selectedRadio = document.querySelector('input[name="saveDayDate"]:checked');
-  if(!selectedRadio){
-    showToast('Lütfen bir tarih seçiniz!');
+  const picker = dom.saveDayDatePicker;
+  if(!picker || !picker.value){
+    showToast('Lütfen geçerli bir tarih seçiniz!');
     return;
   }
-  const isoKey = selectedRadio.value;
+
+  // Value is YYYY-MM-DD -> convert to YYYY_MM_DD
+  const selectedDateStr = picker.value;
+  const isoKey = selectedDateStr.replace(/-/g, '_');
+
   const totalSec = getTotalWorkSeconds();
   const mins = Math.round(totalSec / 60);
 
@@ -4371,14 +4586,12 @@ function confirmSaveDay(){
 
     if(isoKey === getTodayStorageKey().replace('selmer_focus_','')){
       todayFocusMinutes = newMins;
-      renderDataPanel();
     }
 
-    if(typeof renderMonthlyAnalytics === 'function') renderMonthlyAnalytics();
-    if(typeof renderHistoryList === 'function') renderHistoryList();
+    renderDataPanel();
   } catch(e){}
 
-  showToast('Veriler başarıyla bulut veri tabanına kaydedildi! 💾');
+  showToast('Veriler başarıyla kaydedildi! 💾');
   if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open');
 }
 
@@ -4412,7 +4625,9 @@ function saveSettingsToStorage(){
       customHex: state.customHex || (dom.customColorInput ? dom.customColorInput.value : '#3fd0ff'),
       soundPreset: currentPresetName || 'off',
       activeMode: state.mode || 'clock',
-      sessionType: pomodoro.sessionType || 'focus'
+      sessionType: pomodoro.sessionType || 'focus',
+      useSmartDayBoundary: state.useSmartDayBoundary,
+      dayBoundaryTime: state.dayBoundaryTime
     };
     localStorage.setItem('selmer_app_settings', JSON.stringify(settings));
     if(typeof pushSettingsToCloud === 'function') pushSettingsToCloud(settings);
@@ -4507,6 +4722,14 @@ function loadSettingsFromStorage(){
     if(s.soundPreset && s.soundPreset !== currentPresetName) {
       selectPreset(s.soundPreset, {skipSave: true});
     }
+    if(s.useSmartDayBoundary !== undefined) {
+      state.useSmartDayBoundary = !!s.useSmartDayBoundary;
+      if(dom.smartDayBoundaryToggle) dom.smartDayBoundaryToggle.checked = state.useSmartDayBoundary;
+    }
+    if(s.dayBoundaryTime) {
+      state.dayBoundaryTime = s.dayBoundaryTime;
+      if(dom.dayBoundaryTimeSelect) dom.dayBoundaryTimeSelect.value = s.dayBoundaryTime;
+    }
     if(!pomodoro.running){
       pomodoro.remainingMs = pomodoroTotalMs();
     }
@@ -4515,8 +4738,22 @@ function loadSettingsFromStorage(){
   } catch(e){}
 }
 
+function getActiveDateObj(now = getSyncedNow()){
+  if(state.useSmartDayBoundary && state.dayBoundaryTime){
+    const parts = state.dayBoundaryTime.split(':');
+    const bHour = parseInt(parts[0], 10) || 6;
+    const bMin = parseInt(parts[1], 10) || 0;
+    const bTotal = bHour * 60 + bMin;
+    const nowTotal = now.getHours() * 60 + now.getMinutes();
+    if(nowTotal < bTotal){
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    }
+  }
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
 function getTodayStorageKey(){
-  const d=new Date();
+  const d = getActiveDateObj();
   return 'selmer_focus_' + d.getFullYear() + '_' + String(d.getMonth()+1).padStart(2,'0') + '_' + String(d.getDate()).padStart(2,'0');
 }
 function seedTodayMinutes(){
@@ -4534,37 +4771,148 @@ function recordWorkMinutes(mins){
   } catch(e){}
   renderDataPanel();
 }
+function getDailyTargetMinutes(){
+  if(pomodoro.focusMin && pomodoro.sessionsBeforeLong){
+    return pomodoro.focusMin * pomodoro.sessionsBeforeLong;
+  }
+  return 240;
+}
+
 function formatHoursMinutes(totalMins){
   const h = Math.floor(totalMins / 60);
   const m = totalMins % 60;
   if(h > 0) return h + ' sa ' + m + ' dk';
   return m + ' dk';
 }
-function seededRand(seed){ const x=Math.sin(seed)*10000; return x-Math.floor(x); }
+
 function renderDonut(){
-  const pct=Math.max(0,Math.min(100, Math.round((todayFocusMinutes/180)*100)));
-  dom.focusDonutProgress.setAttribute('stroke-dashoffset', (DONUT_C*(1-pct/100)).toFixed(2));
-  dom.focusDonutLabel.textContent=pct+'%';
-  dom.todayMinutesLabel.textContent=formatHoursMinutes(todayFocusMinutes);
+  const targetMins = getDailyTargetMinutes();
+  const pct = Math.max(0, Math.min(100, Math.round((todayFocusMinutes / targetMins) * 100)));
+  dom.focusDonutProgress.setAttribute('stroke-dashoffset', (DONUT_C * (1 - pct / 100)).toFixed(2));
+  dom.focusDonutLabel.textContent = pct + '%';
+  dom.todayMinutesLabel.textContent = formatHoursMinutes(todayFocusMinutes);
 }
+
 function buildWeeklyBars(){
-  dom.weeklyBars.innerHTML='';
-  const days=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
-  const now=new Date();
-  const todayIdx=(now.getDay()+6)%7;
-  const daySeed=now.getFullYear()*400+(now.getMonth()+1)*35+now.getDate()-todayIdx;
-  let max=140;
-  const values=days.map((label,i)=> i===todayIdx ? todayFocusMinutes : Math.round(18+seededRand(daySeed+i*7.31)*115));
-  values.forEach(v=>{ if(v>max) max=v; });
-  days.forEach((label,i)=>{
-    const minutes=values[i];
-    const col=document.createElement('div'); col.className='wbar-col';
-    const bar=document.createElement('div'); bar.className='wbar'+(i===todayIdx?' today':''); bar.style.height='4%';
-    const lbl=document.createElement('div'); lbl.className='wbar-label'; lbl.textContent=label;
-    col.appendChild(bar); col.appendChild(lbl); dom.weeklyBars.appendChild(col);
-    requestAnimationFrame(()=>{ bar.style.transition='height .7s cubic-bezier(.16,.84,.44,1)'; bar.style.height=Math.max(4,(minutes/max)*100)+'%'; });
+  if(!dom.weeklyBars) return;
+  dom.weeklyBars.innerHTML = '';
+
+  const dayNamesShort = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+  const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+  const now = getSyncedNow();
+  const todayIsoKey = getTodayStorageKey().replace('selmer_focus_', '');
+
+  const days = [];
+  for(let i = 6; i >= 0; i--){
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const isoKey = d.getFullYear() + '_' + String(d.getMonth() + 1).padStart(2, '0') + '_' + String(d.getDate()).padStart(2, '0');
+    const storageKey = 'selmer_focus_' + isoKey;
+    const recordKey = 'selmer_record_' + isoKey;
+
+    let focusMins = parseInt(localStorage.getItem(storageKey) || '0', 10);
+    if(isoKey === todayIsoKey){
+      focusMins = Math.max(focusMins, todayFocusMinutes);
+    }
+
+    let sessionCount = 0;
+    let completedEtuts = [];
+    try {
+      const rec = localStorage.getItem(recordKey);
+      if(rec){
+        const parsed = JSON.parse(rec);
+        if(parsed.sessionCount) sessionCount = parsed.sessionCount;
+        if(parsed.completedEtuts && Array.isArray(parsed.completedEtuts)){
+          completedEtuts = parsed.completedEtuts;
+          sessionCount = Math.max(sessionCount, completedEtuts.length);
+        }
+      }
+    } catch(e){}
+
+    days.push({
+      date: d,
+      isoKey: isoKey,
+      dayLabel: dayNamesShort[d.getDay()],
+      fullDateStr: d.getDate() + ' ' + monthNames[d.getMonth()] + ' ' + d.getFullYear(),
+      focusMins: focusMins,
+      sessionCount: sessionCount,
+      completedEtuts: completedEtuts,
+      isToday: isoKey === todayIsoKey
+    });
+  }
+
+  const targetMins = getDailyTargetMinutes();
+  let maxMins = targetMins;
+  days.forEach(d => { if(d.focusMins > maxMins) maxMins = d.focusMins; });
+
+  days.forEach(day => {
+    const col = document.createElement('div');
+    col.className = 'wbar-col';
+    col.style.cursor = 'pointer';
+
+    const barValueLabel = document.createElement('div');
+    barValueLabel.style.cssText = 'font-size:0.58rem; color:var(--text-dim); font-family:"JetBrains Mono",monospace; font-weight:700; text-align:center; margin-bottom:2px;';
+    barValueLabel.textContent = day.focusMins > 0 ? (day.focusMins + 'm') : '0';
+
+    const bar = document.createElement('div');
+    bar.className = 'wbar' + (day.isToday ? ' today' : '');
+    bar.style.height = '4%';
+    bar.title = day.fullDateStr + ': ' + formatHoursMinutes(day.focusMins) + ' (' + day.sessionCount + ' seans)';
+
+    const lbl = document.createElement('div');
+    lbl.className = 'wbar-label';
+    lbl.textContent = day.dayLabel;
+
+    col.appendChild(barValueLabel);
+    col.appendChild(bar);
+    col.appendChild(lbl);
+
+    col.addEventListener('click', () => {
+      showDayDetailPanel(day.isoKey, day.fullDateStr, day.focusMins, day.sessionCount, day.completedEtuts);
+    });
+
+    dom.weeklyBars.appendChild(col);
+
+    requestAnimationFrame(() => {
+      bar.style.transition = 'height .7s cubic-bezier(.16,.84,.44,1)';
+      const heightPct = Math.max(4, Math.min(100, Math.round((day.focusMins / maxMins) * 100)));
+      bar.style.height = heightPct + '%';
+    });
   });
 }
+
+let calendarViewOffset = 0;
+
+function showDayDetailPanel(isoKey, dateStr, focusMins, sessionCount, completedEtuts){
+  const card = document.getElementById('analyticsDayDetailCard');
+  if(!card) return;
+  card.style.display = 'block';
+
+  if(dom.detailPanelDate) dom.detailPanelDate.textContent = dateStr;
+  if(dom.detailPanelTotalTime) dom.detailPanelTotalTime.textContent = formatHoursMinutes(focusMins);
+  if(dom.detailPanelSessionCount) dom.detailPanelSessionCount.textContent = sessionCount + ' Seans';
+
+  const list = document.getElementById('detailPanelSessionsList');
+  if(!list) return;
+  list.innerHTML = '';
+
+  if(completedEtuts && completedEtuts.length > 0){
+    completedEtuts.forEach(etut => {
+      const item = document.createElement('div');
+      item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:4px; border:1px solid var(--hairline);';
+      const durText = etut.elapsedSec ? Math.round(etut.elapsedSec / 60) + ' dk' : (etut.mins ? etut.mins + ' dk' : '');
+      item.innerHTML = `<span>${etut.name || 'Etüt'} · ${durText}</span> <span style="color:var(--c1);">${etut.timeSpan || ''}</span>`;
+      list.appendChild(item);
+    });
+  } else if(focusMins > 0) {
+    list.innerHTML = `<div style="color:var(--text-dimmer);">Kayıtlı detaylı seans saat aralığı bulunmuyor (Toplam: ${formatHoursMinutes(focusMins)}).</div>`;
+  } else {
+    list.innerHTML = `<div style="color:var(--text-dimmer);">Bu tarihte çalışma verisi yok.</div>`;
+  }
+
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 function renderMonthlyAnalytics(){
   const grid = document.getElementById('monthlyAnalyticsGrid');
   const monthNameEl = document.getElementById('monthlyAnalyticsMonthName');
@@ -4572,11 +4920,17 @@ function renderMonthlyAnalytics(){
   grid.innerHTML = '';
 
   const now = getSyncedNow();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  const displayDate = new Date(now.getFullYear(), now.getMonth() + calendarViewOffset, 1);
+  const year = displayDate.getFullYear();
+  const month = displayDate.getMonth();
 
   const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
   if(monthNameEl) monthNameEl.textContent = monthNames[month] + ' ' + year;
+
+  if(dom.nextMonthBtn) {
+    dom.nextMonthBtn.style.opacity = calendarViewOffset >= 0 ? '0.3' : '1';
+    dom.nextMonthBtn.style.cursor = calendarViewOffset >= 0 ? 'not-allowed' : 'pointer';
+  }
 
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
@@ -4591,7 +4945,8 @@ function renderMonthlyAnalytics(){
     grid.appendChild(emptyCell);
   }
 
-  const todayDate = now.getDate();
+  const todayIsoKey = getTodayStorageKey().replace('selmer_focus_', '');
+  const dailyTargetMins = getDailyTargetMinutes();
 
   for(let day = 1; day <= daysInMonth; day++){
     const isoKey = year + '_' + String(month + 1).padStart(2, '0') + '_' + String(day).padStart(2, '0');
@@ -4599,23 +4954,40 @@ function renderMonthlyAnalytics(){
     const recordKey = 'selmer_record_' + isoKey;
 
     let focusMins = parseInt(localStorage.getItem(storageKey) || '0', 10);
+    if(isoKey === todayIsoKey){
+      focusMins = Math.max(focusMins, todayFocusMinutes);
+    }
+
     let sessionCount = 0;
+    let completedEtuts = [];
 
     try {
       const rec = localStorage.getItem(recordKey);
       if(rec){
         const parsed = JSON.parse(rec);
         if(parsed.sessionCount) sessionCount = parsed.sessionCount;
-        if(parsed.completedEtuts) sessionCount = Math.max(sessionCount, parsed.completedEtuts.length);
+        if(parsed.completedEtuts && Array.isArray(parsed.completedEtuts)) {
+          completedEtuts = parsed.completedEtuts;
+          sessionCount = Math.max(sessionCount, completedEtuts.length);
+        }
       }
     } catch(e){}
 
-    const isToday = (day === todayDate);
-    const hasData = focusMins > 0 || sessionCount > 0;
-
+    const isToday = (isoKey === todayIsoKey);
     const cell = document.createElement('div');
-    cell.className = 'monthly-cell' + (hasData ? ' has-data' : '') + (isToday ? ' today' : '');
+    cell.className = 'monthly-cell' + (isToday ? ' today' : '');
     cell.textContent = day;
+
+    if(focusMins > 0) {
+      cell.classList.add('has-data');
+      const ratio = Math.min(1.0, focusMins / dailyTargetMins);
+      const opacity = (0.2 + ratio * 0.7).toFixed(2);
+      cell.style.backgroundColor = `rgba(var(--c1-rgb), ${opacity})`;
+      cell.style.borderColor = `rgba(var(--c1-rgb), ${Math.min(1.0, parseFloat(opacity) + 0.2).toFixed(2)})`;
+      if(ratio >= 0.7) {
+        cell.style.color = '#fff';
+      }
+    }
 
     const timeFormatted = formatHoursMinutes(focusMins);
 
@@ -4626,8 +4998,13 @@ function renderMonthlyAnalytics(){
       <div class="tooltip-info">⏱ Toplam Süre: <b>${timeFormatted}</b></div>
       <div class="tooltip-info">🎯 Etüt Sayısı: <b>${sessionCount} Seans</b></div>
     `;
-
     cell.appendChild(tooltip);
+
+    const fullDateStr = day + ' ' + monthNames[month] + ' ' + year;
+    cell.addEventListener('click', () => {
+      showDayDetailPanel(isoKey, fullDateStr, focusMins, sessionCount, completedEtuts);
+    });
+
     grid.appendChild(cell);
   }
 }
@@ -4776,6 +5153,24 @@ function showToast(text){
   setTimeout(()=>{ el.classList.add('hide'); setTimeout(()=>el.remove(),400); }, 3400);
 }
 
+function showToastWithAction(text, actionText, actionCallback){
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.pointerEvents = 'auto';
+  el.innerHTML = `<span class="dot"></span><span>${text}</span> <a href="#" class="toast-action" style="color:var(--c1); font-weight:700; text-decoration:underline; margin-left:8px;">${actionText}</a>`;
+  const actionBtn = el.querySelector('.toast-action');
+  if(actionBtn){
+    actionBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if(actionCallback) actionCallback();
+      el.classList.add('hide');
+      setTimeout(() => el.remove(), 400);
+    });
+  }
+  dom.toastContainer.appendChild(el);
+  setTimeout(()=>{ el.classList.add('hide'); setTimeout(()=>el.remove(),400); }, 6000);
+}
+
 let mouseNX=0, mouseNY=0, curNX=0, curNY=0;
 function onMouseMove(e){ mouseNX=(e.clientX/window.innerWidth)*2-1; mouseNY=(e.clientY/window.innerHeight)*2-1; }
 function applyMode3D(on, opts){
@@ -4825,6 +5220,43 @@ function openSettingsDrawer(){ dom.settingsDrawer.classList.add('open'); dom.dra
 function closeSettingsDrawer(){ dom.settingsDrawer.classList.remove('open'); dom.drawerBackdrop.classList.remove('open'); }
 
 function wireEvents(){
+  if(dom.openAnalyticsBtn){
+    dom.openAnalyticsBtn.addEventListener('click', ()=>{
+      if(dom.analyticsModalBackdrop) dom.analyticsModalBackdrop.classList.add('open');
+      renderDataPanel();
+    });
+  }
+  if(dom.analyticsModalClose){
+    dom.analyticsModalClose.addEventListener('click', ()=>{
+      if(dom.analyticsModalBackdrop) dom.analyticsModalBackdrop.classList.remove('open');
+    });
+  }
+  if(dom.analyticsModalBackdrop){
+    dom.analyticsModalBackdrop.addEventListener('click', (e)=>{
+      if(e.target === dom.analyticsModalBackdrop) dom.analyticsModalBackdrop.classList.remove('open');
+    });
+  }
+  if(dom.prevMonthBtn){
+    dom.prevMonthBtn.addEventListener('click', ()=>{
+      calendarViewOffset--;
+      renderMonthlyAnalytics();
+    });
+  }
+  if(dom.nextMonthBtn){
+    dom.nextMonthBtn.addEventListener('click', ()=>{
+      if(calendarViewOffset < 0){
+        calendarViewOffset++;
+        renderMonthlyAnalytics();
+      }
+    });
+  }
+  if(dom.closeDetailPanelBtn){
+    dom.closeDetailPanelBtn.addEventListener('click', ()=>{
+      const card = document.getElementById('analyticsDayDetailCard');
+      if(card) card.style.display = 'none';
+    });
+  }
+
   if(dom.authBtn){
     dom.authBtn.addEventListener('click', ()=>{
       if(dom.authModalBackdrop) dom.authModalBackdrop.classList.add('open');
@@ -5194,6 +5626,21 @@ function wireEvents(){
   if(dom.clockOnlyToggle) dom.clockOnlyToggle.addEventListener('change', ()=>{ state.clockOnlyMode = dom.clockOnlyToggle.checked; applyMainPageCustomizations();
   applyDFCustomizations(); saveSettingsToStorage(); });
 
+  if(dom.smartDayBoundaryToggle){
+    dom.smartDayBoundaryToggle.addEventListener('change', ()=>{
+      state.useSmartDayBoundary = dom.smartDayBoundaryToggle.checked;
+      saveSettingsToStorage();
+      renderDataPanel();
+    });
+  }
+  if(dom.dayBoundaryTimeSelect){
+    dom.dayBoundaryTimeSelect.addEventListener('change', ()=>{
+      state.dayBoundaryTime = dom.dayBoundaryTimeSelect.value;
+      saveSettingsToStorage();
+      renderDataPanel();
+    });
+  }
+
   dom.mode3dToggle.addEventListener('change', ()=>applyMode3D(dom.mode3dToggle.checked));
   window.addEventListener('mousemove', onMouseMove);
   window.addEventListener('resize', ()=>{ setupEkg(); setupWave(); setupBg(); });
@@ -5230,6 +5677,7 @@ function init(){
   buildTicks();
   setupRings();
   loadSettingsFromStorage();
+  checkDailyReset();
   applyProfile(state.profile, {skipSave: true, skipTheme: true});
   applyMode3D(state.mode3D, {skipSave: true});
   wireEvents();
