@@ -18,7 +18,6 @@ body{
   font-family:'Rajdhani',sans-serif;
   background:#05060d;
   color:#eef2ff;
-  overflow-x:hidden;
   min-height:100vh;
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
@@ -91,17 +90,17 @@ body.screen-shake {
 #app{
   position:relative; z-index:2; min-height:100vh;
   display:flex; flex-direction:column; align-items:center;
-  padding:22px 20px 40px;
+  padding:22px 12px 40px;
   transition:opacity .6s var(--ease), transform .6s var(--ease), filter .6s var(--ease);
 }
 body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96); filter:blur(6px); }
 
 .topbar{
   width:100%; max-width:1280px;
-  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
   margin-bottom:clamp(18px, 4vh, 46px);
 }
-.brand-block{display:flex; flex-direction:column; gap:2px;}
+.brand-block{display:flex; flex-direction:column; gap:2px; flex-shrink:0;}
 .brand{
   font-family:'Orbitron', sans-serif; font-weight:800; font-size:clamp(1rem,2.4vw,1.35rem);
   letter-spacing:.32em; color:var(--text-0);
@@ -112,10 +111,10 @@ body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96
   font-family:'JetBrains Mono', monospace; font-size:.6rem; letter-spacing:.24em;
   color:var(--text-dimmer); text-transform:uppercase;
 }
-.date-cluster{ text-align:center; display:flex; flex-direction:column; gap:4px; font-family:'JetBrains Mono', monospace; flex:1; align-items:center; }
+.date-cluster{ text-align:center; display:flex; flex-direction:column; gap:4px; font-family:'JetBrains Mono', monospace; flex:1; align-items:center; min-width:0; }
 #dateLocaleText{ font-size:.88rem; letter-spacing:.14em; font-weight:600; color:var(--text-0); transition:opacity .5s var(--ease); }
 #dateCycleText{ font-size:.78rem; letter-spacing:.16em; font-weight:700; color:var(--c1); text-shadow:0 0 12px rgba(var(--c1-rgb),.5); opacity:1; }
-.top-actions{display:flex; gap:10px;}
+.top-actions{display:flex; gap:10px; flex-shrink:0;}
 .auth-status-dot{
   position:absolute; top:2px; right:2px; width:8px; height:8px; border-radius:50%;
   background:#ffaa00; border:1px solid var(--void-0); transition:background .3s, box-shadow .3s;
@@ -210,7 +209,7 @@ body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96
   font-variant-numeric:tabular-nums; margin-bottom:6px;
 }
 .ekg-strip{
-  position:relative; width:min(92vw, 560px); height:64px;
+  position:relative; width:min(100%, 560px); height:64px;
   border:1px solid var(--hairline); border-radius:var(--radius-m);
   background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01));
   overflow:hidden; margin-bottom:clamp(18px,3vh,30px);
@@ -408,7 +407,7 @@ body.deep-focus-active .deep-focus-overlay{opacity:1; visibility:visible; pointe
 @media (max-width:720px){
   .brand-eyebrow{display:none;}
   .panels.has-pomodoro{grid-template-columns:1fr;}
-  .settings-drawer{width:100vw;}
+  .settings-drawer{width:100%;}
   .date-cluster #dateCycleText{display:none;}
 }
 @media (max-width:420px){
@@ -560,18 +559,18 @@ body[data-mode3d="off"] .ring-cluster{ perspective:none; }
 .monthly-grid-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: 5px;
   text-align: center;
 }
 .monthly-day-header {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   color: var(--text-dimmer);
   text-transform: uppercase;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
 }
 .monthly-cell {
-  aspect-ratio: 1/1;
+  height: 36px;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -579,7 +578,7 @@ body[data-mode3d="off"] .ring-cluster{ perspective:none; }
   align-items: center;
   justify-content: center;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--text-dim);
   position: relative;
   cursor: pointer;
@@ -742,6 +741,78 @@ body.mode-pomodoro #soundPanel {
   gap: 6px;
   position: relative;
 }
+.save-day-selector {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+.save-day-option-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 12px;
+  border-radius: var(--radius-m);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--hairline-strong);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  font-family: 'Rajdhani', sans-serif;
+  position: relative;
+}
+.save-day-option-btn:hover:not(.locked):not(:disabled) {
+  border-color: var(--c1);
+  background: rgba(var(--c1-rgb), 0.12);
+  color: var(--text-0);
+  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(var(--c1-rgb), 0.25);
+}
+.save-day-option-btn.selected {
+  border-color: var(--c1);
+  background: rgba(var(--c1-rgb), 0.2);
+  color: var(--text-0);
+  box-shadow: 0 0 20px rgba(var(--c1-rgb), 0.4);
+}
+.save-day-option-btn.locked {
+  opacity: 0.55;
+  border-color: var(--hairline);
+  background: rgba(255, 255, 255, 0.015);
+  cursor: not-allowed;
+  transform: none !important;
+}
+.save-day-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+}
+.save-day-date-str {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+.save-day-status-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+.save-day-status-badge.available {
+  background: rgba(var(--c1-rgb), 0.2);
+  color: var(--c1);
+  border: 1px solid rgba(var(--c1-rgb), 0.4);
+}
+.save-day-status-badge.saved {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-dimmer);
+  border: 1px solid var(--hairline);
+}
+
 .save-day-btn {
   margin-top: 10px;
   background: rgba(var(--c1-rgb), 0.2);
@@ -1231,9 +1302,19 @@ body.mode-pomodoro #soundPanel {
   transition: all 0.35s var(--ease);
 }
 .analytics-modal {
-  width: min(92vw, 900px);
-  max-height: 90vh;
+  width: min(94vw, 1150px);
+  max-height: 92vh;
   overflow-y: auto;
+}
+.analytics-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 860px) {
+  .analytics-bottom-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .analytics-modal::-webkit-scrollbar { width: 6px; }
 .analytics-modal::-webkit-scrollbar-thumb { background: rgba(var(--c1-rgb), 0.35); border-radius: 4px; }
@@ -1510,6 +1591,9 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
       <div id="dateCycleText">—</div>
     </div>
     <div class="top-actions">
+      <button class="icon-btn" id="analyticsBtn" title="Aylık Analiz" aria-label="Aylık Analiz panelini aç">
+        <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
       <button class="icon-btn" id="authBtn" title="Hesap" aria-label="Hesap panelini aç" style="position:relative;">
         <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         <span class="auth-status-dot" id="authStatusDot" title="Misafir Modu"></span>
@@ -1614,7 +1698,6 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
             <small id="pomoCompletedCount">0 Seans Tamamlandı</small>
           </div>
           <div class="pomo-timeline-track" id="pomoTimelineTrack"></div>
-          <button class="open-analytics-btn" id="openAnalyticsBtn">📊 AYLIK ANALİZ VE PERFORMANS</button>
         </div>
       </div>
     </div>
@@ -2208,22 +2291,25 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
         <div id="detailPanelSessionsList" style="display:flex; flex-direction:column; gap:6px; max-height:160px; overflow-y:auto; font-size:0.7rem; color:var(--text-dim);"></div>
       </div>
 
-      <!-- WEEKLY BARS CHART -->
-      <div class="history-section-card" style="margin-top:0;">
-        <div class="history-section-header">
-          <span>📊 HAFTALIK GRAFİK (SON 7 GÜN)</span>
-          <small style="font-size:0.62rem; color:var(--text-dimmer); font-family:'JetBrains Mono',monospace;">Çubuklara Tıklayarak Detay Görebilirsiniz</small>
+      <!-- BOTTOM GRID: WEEKLY BARS & HISTORY SIDE BY SIDE -->
+      <div class="analytics-bottom-grid">
+        <!-- WEEKLY BARS CHART -->
+        <div class="history-section-card" style="margin-top:0;">
+          <div class="history-section-header">
+            <span>📊 HAFTALIK GRAFİK (SON 7 GÜN)</span>
+            <small style="font-size:0.62rem; color:var(--text-dimmer); font-family:'JetBrains Mono',monospace;">Çubuklara Tıklayarak Detay Görebilirsiniz</small>
+          </div>
+          <div class="weekly-bars" id="weeklyBars" style="height:140px;"></div>
         </div>
-        <div class="weekly-bars" id="weeklyBars" style="height:110px;"></div>
-      </div>
 
-      <!-- HISTORY MANAGEMENT -->
-      <div class="history-section-card" style="margin-top:0;">
-        <div class="history-section-header">
-          <span>📜 ÇALIŞMA GEÇMİŞİ VE DÜZENLEME</span>
-          <small style="font-size:0.62rem; color:var(--text-dimmer); font-family:'JetBrains Mono',monospace;">Son 2 Gün Düzenlenebilir</small>
+        <!-- HISTORY MANAGEMENT -->
+        <div class="history-section-card" style="margin-top:0;">
+          <div class="history-section-header">
+            <span>📜 ÇALIŞMA GEÇMİŞİ VE DÜZENLEME</span>
+            <small style="font-size:0.62rem; color:var(--text-dimmer); font-family:'JetBrains Mono',monospace;">Son 2 Gün Düzenlenebilir</small>
+          </div>
+          <div class="history-list" id="historyListContainer" style="max-height:200px;"></div>
         </div>
-        <div class="history-list" id="historyListContainer"></div>
       </div>
     </div>
   </div>
@@ -2231,20 +2317,31 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
 
 <!-- SAVE DAY MODAL -->
 <div class="pomo-modal-backdrop" id="saveDayModalBackdrop">
-  <div class="pomo-modal" id="saveDayModal" style="max-width:440px;">
+  <div class="pomo-modal" id="saveDayModal" style="max-width:460px;">
     <div class="pomo-modal-header">
       <span>💾 GÜNÜ KAYDET</span>
       <button class="pomo-modal-close" id="saveDayModalClose">&times;</button>
     </div>
     <div class="pomo-config-body" style="gap:16px;">
-      <p style="font-size:0.85rem; color:var(--text-dim); margin:0;">
-        Mevcut çalışma verilerinizi kaydedeceğiniz tarihi seçiniz (Son 7 Gün):
+      <p style="font-size:0.82rem; color:var(--text-dim); margin:0;">
+        Mevcut çalışma verilerinizi kaydedeceğiniz günü seçiniz:
       </p>
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <label for="saveDayDatePicker" style="font-size:0.75rem; color:var(--text-dim);">Tarih Seçin:</label>
-        <input type="date" id="saveDayDatePicker" style="background:rgba(10,13,26,0.8); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); color:var(--text-0); padding:10px 12px; font-size:0.85rem; outline:none; font-family:'JetBrains Mono',monospace; width:100%;">
+
+      <div class="save-day-selector">
+        <button class="save-day-option-btn" id="saveDayOptToday" data-target="today">
+          <span class="save-day-title">BUGÜN</span>
+          <span class="save-day-date-str" id="saveDayDateStrToday">-</span>
+          <span class="save-day-status-badge" id="saveDayStatusToday">-</span>
+        </button>
+
+        <button class="save-day-option-btn" id="saveDayOptYesterday" data-target="yesterday">
+          <span class="save-day-title">DÜN</span>
+          <span class="save-day-date-str" id="saveDayDateStrYesterday">-</span>
+          <span class="save-day-status-badge" id="saveDayStatusYesterday">-</span>
+        </button>
       </div>
-      <div id="saveDaySummaryText" style="font-size:0.8rem; color:var(--c1); background:rgba(var(--c1-rgb),0.12); padding:10px; border-radius:var(--radius-s); border:1px solid rgba(var(--c1-rgb),0.3); font-family:'JetBrains Mono',monospace;">
+
+      <div id="saveDaySummaryText" style="font-size:0.8rem; color:var(--c1); background:rgba(var(--c1-rgb),0.12); padding:10px; border-radius:var(--radius-s); border:1px solid rgba(var(--c1-rgb),0.3); font-family:'JetBrains Mono',monospace; text-align:center;">
         Kaydedilecek Süre: 00s 00dk
       </div>
       <div style="display:flex; justify-flex:flex-end; gap:10px; margin-top:10px;">
@@ -2947,8 +3044,8 @@ function cacheDom(){
    'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
    'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn','saveDayOpenBtn','saveDayModalBackdrop','saveDayModalClose','saveDayDateOptions','saveDayCancelBtn','saveDayConfirmBtn',
    'authBtn','authStatusDot','authModalBackdrop','authModal','authModalClose','authModalTitle','loggedInView','loggedOutView','userEmailDisplay','userSyncStatus','logoutBtn','authTabLogin','authTabRegister','authForm','authEmailInput','authPasswordInput','authErrorMsg','authSuccessMsg','authSubmitBtn','forgotPasswordBtn',
-   'openAnalyticsBtn','analyticsModalBackdrop','analyticsModal','analyticsModalClose','prevMonthBtn','nextMonthBtn','monthlyAnalyticsMonthName','monthlyAnalyticsGrid','analyticsDayDetailCard','detailPanelDate','closeDetailPanelBtn','detailPanelTotalTime','detailPanelSessionCount','detailPanelSessionsList','smartDayBoundaryToggle','dayBoundaryTimeSelect',
-   'saveDayDatePicker','saveDaySummaryText'
+   'analyticsBtn','analyticsModalBackdrop','analyticsModal','analyticsModalClose','prevMonthBtn','nextMonthBtn','monthlyAnalyticsMonthName','monthlyAnalyticsGrid','analyticsDayDetailCard','detailPanelDate','closeDetailPanelBtn','detailPanelTotalTime','detailPanelSessionCount','detailPanelSessionsList','smartDayBoundaryToggle','dayBoundaryTimeSelect',
+   'saveDayOptToday','saveDayOptYesterday','saveDayDateStrToday','saveDayDateStrYesterday','saveDayStatusToday','saveDayStatusYesterday','saveDaySummaryText'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -4523,21 +4620,74 @@ function formatDateToInputString(d){
   return `${y}-${m}-${day}`;
 }
 
+let selectedSaveDayTarget = 'today';
+
+function getSaveDayDateObjs(){
+  const todayObj = getActiveDateObj();
+  const yesterdayObj = new Date(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate() - 1);
+  return { todayObj, yesterdayObj };
+}
+
+function getIsoKeyFromDateObj(d){
+  return d.getFullYear() + '_' + String(d.getMonth()+1).padStart(2,'0') + '_' + String(d.getDate()).padStart(2,'0');
+}
+
 function openSaveDayModal(){
-  const activeDateObj = getActiveDateObj();
-  const picker = dom.saveDayDatePicker;
+  const { todayObj, yesterdayObj } = getSaveDayDateObjs();
+  const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
-  if(picker){
-    // Max date = active date (today or active day)
-    const maxStr = formatDateToInputString(activeDateObj);
+  const todayIso = getIsoKeyFromDateObj(todayObj);
+  const yesterdayIso = getIsoKeyFromDateObj(yesterdayObj);
 
-    // Min date = 6 days before active date (total 7 days range including active day)
-    const minDateObj = new Date(activeDateObj.getFullYear(), activeDateObj.getMonth(), activeDateObj.getDate() - 6);
-    const minStr = formatDateToInputString(minDateObj);
+  const todayStr = todayObj.getDate() + ' ' + monthNames[todayObj.getMonth()];
+  const yesterdayStr = yesterdayObj.getDate() + ' ' + monthNames[yesterdayObj.getMonth()];
 
-    picker.max = maxStr;
-    picker.min = minStr;
-    picker.value = maxStr; // Default: active day
+  if(dom.saveDayDateStrToday) dom.saveDayDateStrToday.textContent = todayStr;
+  if(dom.saveDayDateStrYesterday) dom.saveDayDateStrYesterday.textContent = yesterdayStr;
+
+  // Check if saved already
+  const todayRecord = localStorage.getItem('selmer_record_' + todayIso);
+  const yesterdayRecord = localStorage.getItem('selmer_record_' + yesterdayIso);
+
+  const isTodaySaved = !!todayRecord;
+  const isYesterdaySaved = !!yesterdayRecord;
+
+  const optToday = dom.saveDayOptToday;
+  const optYesterday = dom.saveDayOptYesterday;
+  const statusToday = dom.saveDayStatusToday;
+  const statusYesterday = dom.saveDayStatusYesterday;
+
+  if(statusToday){
+    statusToday.textContent = isTodaySaved ? '🔒 Kilitli (Kaydedildi)' : 'Seçilebilir';
+    statusToday.className = 'save-day-status-badge ' + (isTodaySaved ? 'saved' : 'available');
+  }
+  if(statusYesterday){
+    statusYesterday.textContent = isYesterdaySaved ? '🔒 Kilitli (Kaydedildi)' : 'Seçilebilir';
+    statusYesterday.className = 'save-day-status-badge ' + (isYesterdaySaved ? 'saved' : 'available');
+  }
+
+  if(optToday){
+    optToday.classList.toggle('locked', isTodaySaved);
+    optToday.disabled = isTodaySaved;
+  }
+  if(optYesterday){
+    optYesterday.classList.toggle('locked', isYesterdaySaved);
+    optYesterday.disabled = isYesterdaySaved;
+  }
+
+  // Auto-select first available option
+  if(!isTodaySaved){
+    selectSaveDayTarget('today');
+  } else if(!isYesterdaySaved){
+    selectSaveDayTarget('yesterday');
+  } else {
+    selectedSaveDayTarget = null;
+    if(optToday) optToday.classList.remove('selected');
+    if(optYesterday) optYesterday.classList.remove('selected');
+    if(dom.saveDayConfirmBtn){
+      dom.saveDayConfirmBtn.disabled = true;
+      dom.saveDayConfirmBtn.style.opacity = '0.5';
+    }
   }
 
   const currentTotalSec = getTotalWorkSeconds();
@@ -4548,16 +4698,29 @@ function openSaveDayModal(){
   if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.add('open');
 }
 
+function selectSaveDayTarget(target){
+  selectedSaveDayTarget = target;
+  const optToday = dom.saveDayOptToday;
+  const optYesterday = dom.saveDayOptYesterday;
+
+  if(optToday) optToday.classList.toggle('selected', target === 'today');
+  if(optYesterday) optYesterday.classList.toggle('selected', target === 'yesterday');
+
+  if(dom.saveDayConfirmBtn){
+    dom.saveDayConfirmBtn.disabled = false;
+    dom.saveDayConfirmBtn.style.opacity = '1';
+  }
+}
+
 function confirmSaveDay(){
-  const picker = dom.saveDayDatePicker;
-  if(!picker || !picker.value){
-    showToast('Lütfen geçerli bir tarih seçiniz!');
+  if(!selectedSaveDayTarget){
+    showToast('Bugün ve Dün verileri zaten kaydedilmiş!');
     return;
   }
 
-  // Value is YYYY-MM-DD -> convert to YYYY_MM_DD
-  const selectedDateStr = picker.value;
-  const isoKey = selectedDateStr.replace(/-/g, '_');
+  const { todayObj, yesterdayObj } = getSaveDayDateObjs();
+  const targetObj = selectedSaveDayTarget === 'today' ? todayObj : yesterdayObj;
+  const isoKey = getIsoKeyFromDateObj(targetObj);
 
   const totalSec = getTotalWorkSeconds();
   const mins = Math.round(totalSec / 60);
@@ -4591,7 +4754,8 @@ function confirmSaveDay(){
     renderDataPanel();
   } catch(e){}
 
-  showToast('Veriler başarıyla kaydedildi! 💾');
+  const labelStr = selectedSaveDayTarget === 'today' ? 'Bugün' : 'Dün';
+  showToast(`${labelStr} için veriler başarıyla kaydedildi! 💾`);
   if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open');
 }
 
@@ -5220,8 +5384,8 @@ function openSettingsDrawer(){ dom.settingsDrawer.classList.add('open'); dom.dra
 function closeSettingsDrawer(){ dom.settingsDrawer.classList.remove('open'); dom.drawerBackdrop.classList.remove('open'); }
 
 function wireEvents(){
-  if(dom.openAnalyticsBtn){
-    dom.openAnalyticsBtn.addEventListener('click', ()=>{
+  if(dom.analyticsBtn){
+    dom.analyticsBtn.addEventListener('click', ()=>{
       if(dom.analyticsModalBackdrop) dom.analyticsModalBackdrop.classList.add('open');
       renderDataPanel();
     });
@@ -5570,6 +5734,8 @@ function wireEvents(){
   }
   if(dom.saveDayOpenBtn) dom.saveDayOpenBtn.addEventListener('click', openSaveDayModal);
   if(dom.saveDayModalClose) dom.saveDayModalClose.addEventListener('click', ()=>{ if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open'); });
+  if(dom.saveDayOptToday) dom.saveDayOptToday.addEventListener('click', ()=> selectSaveDayTarget('today'));
+  if(dom.saveDayOptYesterday) dom.saveDayOptYesterday.addEventListener('click', ()=> selectSaveDayTarget('yesterday'));
   if(dom.saveDayCancelBtn) dom.saveDayCancelBtn.addEventListener('click', ()=>{ if(dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open'); });
   if(dom.saveDayConfirmBtn) dom.saveDayConfirmBtn.addEventListener('click', confirmSaveDay);
   if(dom.saveDayModalBackdrop){
