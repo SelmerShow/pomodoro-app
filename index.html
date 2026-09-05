@@ -133,7 +133,7 @@ body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96
 .icon-btn:active{transform:translateY(0);}
 .icon-btn.is-on{border-color:rgba(var(--c1-rgb),.75); box-shadow:0 0 16px rgba(var(--c1-rgb),.45); background:rgba(var(--c1-rgb),.12);}
 
-.cockpit{ width:100%; max-width:1280px; display:flex; flex-direction:column; align-items:center; perspective:1400px; }
+.cockpit{ width:100%; max-width:1280px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; perspective:1400px; }
 .ring-cluster{
   position:relative; width:clamp(230px, 32vw, 372px); aspect-ratio:1/1;
   transform-style:preserve-3d; transform:rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
@@ -672,21 +672,32 @@ body.clock-only-mode .ekg-strip { opacity: 0 !important; pointer-events: none !i
 }
 
 .df-custom-panel {
-  position: absolute; bottom: 72px; right: 26px; width: 280px;
-  background: rgba(10, 14, 28, 0.94); border: 1px solid var(--hairline-strong); border-radius: var(--radius-m);
-  padding: 16px; backdrop-filter: blur(20px);
-  box-shadow: 0 12px 36px rgba(0,0,0,0.6), 0 0 20px rgba(var(--c1-rgb),0.15);
+  position: absolute; bottom: 72px; right: 26px; width: 440px; max-width: 90vw;
+  background: rgba(10, 14, 28, 0.96); border: 1px solid var(--hairline-strong); border-radius: var(--radius-m);
+  padding: 18px 20px; backdrop-filter: blur(24px);
+  box-shadow: 0 16px 42px rgba(0,0,0,0.7), 0 0 24px rgba(var(--c1-rgb),0.2);
   z-index: 43; opacity: 0; visibility: hidden; transform: translateY(12px) scale(0.96);
   transition: all 0.3s var(--ease);
 }
 .df-custom-panel.open { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
 
-.df-custom-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--hairline); }
-.df-custom-header span { font-family: 'Orbitron', sans-serif; font-size: 0.68rem; letter-spacing: 0.18em; font-weight: 700; color: var(--text-0); }
-.df-custom-close { font-size: 1.2rem; color: var(--text-dim); cursor: pointer; line-height: 1; padding: 2px 6px; }
+.df-custom-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--hairline); }
+.df-custom-header span { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; letter-spacing: 0.18em; font-weight: 700; color: var(--text-0); }
+.df-custom-close { font-size: 1.3rem; color: var(--text-dim); cursor: pointer; line-height: 1; padding: 2px 6px; }
 .df-custom-close:hover { color: var(--c1); }
 
-.df-toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 0.75rem; color: var(--text-dim); }
+.df-tab-nav { display: flex; gap: 6px; border-bottom: 1px solid var(--hairline); padding-bottom: 8px; margin-bottom: 12px; overflow-x: auto; flex-wrap: wrap; }
+.df-tab-btn { background: rgba(255,255,255,0.04); border: 1px solid var(--hairline); border-radius: var(--radius-s); color: var(--text-dim); padding: 6px 12px; font-size: 0.72rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+.df-tab-btn:hover { color: var(--text-0); border-color: var(--hairline-strong); background: rgba(255,255,255,0.08); }
+.df-tab-btn.active { color: var(--c1); border-color: var(--c1); background: rgba(var(--c1-rgb), 0.15); }
+
+.df-tab-content { display: none !important; }
+.df-tab-content.active { display: flex !important; flex-direction: column; gap: 12px; }
+
+.df-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 0.78rem; color: var(--text-dim); padding: 2px 0; }
+.df-control-label { font-size: 0.76rem; color: var(--text-0); font-weight: 500; }
+.df-control-input-wrap { display: flex; align-items: center; gap: 8px; }
+.df-slider-value { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--c1); min-width: 42px; text-align: right; }
 .df-section-title { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; color: var(--text-dimmer); text-transform: uppercase; margin: 14px 0 8px; }
 .df-swatches { display: flex; gap: 8px; align-items: center; }
 .df-swatch { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid transparent; cursor: pointer; transition: transform 0.2s; }
@@ -1672,10 +1683,15 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
             <canvas class="pomo-wave-canvas" id="pomoWaveCanvas"></canvas>
             <canvas class="pomo-particles-canvas" id="pomoParticlesCanvas"></canvas>
             <svg viewBox="0 0 220 220">
+              <defs>
+                <mask id="pomoDottedMask">
+                  <circle cx="110" cy="110" r="98" fill="none" stroke="#ffffff" stroke-width="12" stroke-dasharray="0 615.75" transform="rotate(-90 110 110)" id="pomoDottedMaskCircle"></circle>
+                </mask>
+              </defs>
               <circle class="pring-track" cx="110" cy="110" r="98"></circle>
               <circle class="pring-progress" id="pomoBigProgress" cx="110" cy="110" r="98" transform="rotate(-90 110 110)"></circle>
               <circle class="pring-dotted-track" cx="110" cy="110" r="98" transform="rotate(-90 110 110)"></circle>
-              <circle class="pring-dotted" id="pomoDottedProgress" cx="110" cy="110" r="98" transform="rotate(-90 110 110)"></circle>
+              <circle class="pring-dotted" id="pomoDottedProgress" cx="110" cy="110" r="98" transform="rotate(-90 110 110)" mask="url(#pomoDottedMask)"></circle>
             </svg>
             <div class="pomo-big-center">
               <span class="pomo-badge" id="pomoSessionBadge">1. ETÜT</span>
@@ -1773,16 +1789,28 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
       <span>ODAK ÖZELLEŞTİRME</span>
       <button class="df-custom-close" id="dfCustomClose">&times;</button>
     </div>
-    <div class="df-custom-body">
-      <div id="dfClockSettings">
-        <div class="df-toggle-row">
-          <span>Saat Tipi</span>
-          <select id="dfClockTypeSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
-            <option value="24h">24 Saat (14:25:08)</option>
-            <option value="12h">12 Saat (02:25:08 PM)</option>
-            <option value="minimal">Minimal (14:25)</option>
-          </select>
-        </div>
+
+    <!-- TAB BUTTONS -->
+    <div class="df-tab-nav" id="dfTabNav">
+      <button class="df-tab-btn active" data-tab="dfTabAppearance">Görünüm</button>
+      <button class="df-tab-btn" data-tab="dfTabSound">Ses & Bildirim</button>
+      <button class="df-tab-btn" data-tab="dfTabCelebration">Kutlama Efektleri</button>
+      <button class="df-tab-btn" data-tab="dfTabColor">Renk & Atmosfer</button>
+    </div>
+
+    <div class="df-custom-body" style="display:flex; flex-direction:column; gap:12px;">
+
+      <!-- TAB 1: GÖRÜNÜM -->
+      <div class="df-tab-content active" id="dfTabAppearance">
+        <div id="dfClockSettings" style="display:flex; flex-direction:column; gap:12px;">
+          <div class="df-toggle-row">
+            <span class="df-control-label">Saat Tipi</span>
+            <select id="dfClockTypeSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:6px 10px; font-size:0.75rem; outline:none;">
+              <option value="24h">24 Saat (14:25:08)</option>
+              <option value="12h">12 Saat (02:25:08 PM)</option>
+              <option value="minimal">Minimal (14:25)</option>
+            </select>
+          </div>
         <div class="df-toggle-row">
           <span>Saat Yazı Tipi (Font)</span>
           <select id="dfFontSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
@@ -1828,11 +1856,10 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
       </div>
       
       
-      <div id="dfPomoSettings" style="display:none;">
-        <div class="df-section-title">Pomodoro Görünümü</div>
+        <div id="dfPomoSettings" style="display:none; flex-direction:column; gap:12px;">
         <div class="df-toggle-row">
-          <span>Yazı Tipi (Font)</span>
-          <select id="dfPomoFontSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+            <span class="df-control-label">Yazı Tipi (Font)</span>
+            <select id="dfPomoFontSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:6px 10px; font-size:0.75rem; outline:none;">
             <option value="'Orbitron', sans-serif">Orbitron (Modern Futuristic)</option>
             <option value="'JetBrains Mono', monospace">JetBrains Mono (Digital Mono)</option>
             <option value="'Rajdhani', sans-serif">Rajdhani (Tech Clean)</option>
@@ -1841,8 +1868,8 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
           </select>
         </div>
         <div class="df-toggle-row">
-          <span>Sayaç İlerleme Görseli</span>
-          <select id="dfPomoProgressStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+            <span class="df-control-label">Sayaç İlerleme Görseli</span>
+            <select id="dfPomoProgressStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:6px 10px; font-size:0.75rem; outline:none;">
             <option value="ring">Dairesel Çizgi (Circular Ring)</option>
             <option value="linear">Yatay İlerleme Çubuğu (Linear Bar)</option>
             <option value="wave">Arka Plan Dalga (Wave Liquid)</option>
@@ -1854,15 +1881,15 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
           </select>
         </div>
         <div class="df-toggle-row">
-          <span>Gösterim Modu</span>
-          <select id="dfPomoViewModeSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+            <span class="df-control-label">Gösterim Modu</span>
+            <select id="dfPomoViewModeSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:6px 10px; font-size:0.75rem; outline:none;">
             <option value="both">İkisini de Göster</option>
             <option value="countdown">Sadece Geri Sayım</option>
             <option value="total">Sadece Toplam Çalışma</option>
           </select>
         </div>
         <div class="df-toggle-row">
-          <span>Rozeti Göster (1. ETÜT)</span>
+            <span class="df-control-label">Rozeti Göster (1. ETÜT)</span>
           <label class="switch">
             <input type="checkbox" id="dfPomoShowIconToggle" checked>
             <span class="switch-track"></span>
@@ -1870,7 +1897,7 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
           </label>
         </div>
         <div class="df-toggle-row">
-          <span>Seans Etiketini Göster</span>
+            <span class="df-control-label">Seans Etiketini Göster</span>
           <label class="switch">
             <input type="checkbox" id="dfPomoShowLabelToggle" checked>
             <span class="switch-track"></span>
@@ -1879,26 +1906,51 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
         </div>
       </div>
 
-
-      <div class="df-section-title">Görünüm & Boyut (Büyütme)</div>
-      <div class="df-toggle-row">
-        <span>Büyütme / Ölçek</span>
-        <input type="range" id="dfScaleSlider" min="0.7" max="1.5" step="0.05" value="1" style="width:110px;">
-      </div>
-      <div class="df-toggle-row">
-        <span>Arka Plan Atmosferi</span>
-        <select id="dfAtmosphereSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
-          <option value="void">Orijinal Void (Karanlık Siyah)</option>
-          <option value="space">Deep Space (Derin Kozmik)</option>
-          <option value="matrix">Bio Matrix (Siber Yeşil)</option>
-          <option value="volcanic">Volcanic Red (Kırmızı Kor)</option>
-          <option value="amethyst">Amethyst Mist (Ametist Mor)</option>
-        </select>
+        <div class="df-toggle-row">
+          <span class="df-control-label">Büyütme / Ölçek</span>
+          <div class="df-control-input-wrap">
+            <input type="range" id="dfScaleSlider" min="0.7" max="1.5" step="0.05" value="1" style="width:120px;">
+            <span class="df-slider-value" id="dfScaleVal">1.0x</span>
+          </div>
+        </div>
       </div>
 
-      <div class="df-section-title">Kutlama Efektleri</div>
+      <!-- TAB 2: SES & BİLDİRİM -->
+      <div class="df-tab-content" id="dfTabSound">
       <div class="df-toggle-row">
-        <span>Bitirince Efekt Patlat</span>
+          <span class="df-control-label">Zil Sesi Melodisi</span>
+          <select id="dfAlarmSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:6px 10px; font-size:0.75rem; outline:none;">
+            <option value="chime">Siber Melodi</option>
+            <option value="beep">Dijital Bip</option>
+            <option value="gong">Zen Gong</option>
+            <option value="bell">Klasik Zil</option>
+            <option value="synth">Bio Sentetik</option>
+          </select>
+      </div>
+      <div class="df-toggle-row">
+          <span class="df-control-label">Zil Sesi Testi</span>
+          <button id="dfAlarmTestBtn" style="padding:6px 12px; border-radius:var(--radius-s); border:1px solid var(--hairline-strong); background:rgba(255,255,255,0.08); font-size:0.75rem; color:var(--text-0); cursor:pointer;">🔔 Dinle</button>
+        </div>
+        <div class="df-toggle-row">
+          <span class="df-control-label">Ortam Sesi Seviyesi</span>
+          <div class="df-control-input-wrap">
+            <input type="range" id="dfVolumeSlider" min="0" max="1" step="0.01" value="0.55" style="width:120px;">
+            <span class="df-slider-value" id="dfVolumeVal">%55</span>
+          </div>
+        </div>
+        <div class="df-toggle-row">
+          <span class="df-control-label">Zil & Alarm Seviyesi</span>
+          <div class="df-control-input-wrap">
+            <input type="range" id="dfAlarmVolumeSlider" min="0" max="1" step="0.01" value="0.70" style="width:120px;">
+            <span class="df-slider-value" id="dfAlarmVolumeVal">%70</span>
+          </div>
+      </div>
+      </div>
+
+      <!-- TAB 3: KUTLAMA EFEKTLERİ -->
+      <div class="df-tab-content" id="dfTabCelebration">
+      <div class="df-toggle-row">
+          <span class="df-control-label">Bitirince Efekt Patlat</span>
         <label class="switch">
           <input type="checkbox" id="dfCelebrationToggle" checked>
           <span class="switch-track"></span>
@@ -1906,37 +1958,28 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
         </label>
       </div>
       <div class="df-toggle-row">
-        <span>Efekt Stili</span>
-        <select id="dfCelebrationStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+          <span class="df-control-label">Efekt Stili</span>
+          <select id="dfCelebrationStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:6px 10px; font-size:0.75rem; outline:none;">
           <option value="all">Tüm Efektler (Konfeti + Şimşek + Sarsıntı)</option>
           <option value="confetti">Sadece Konfeti Patlaması</option>
           <option value="lightning">Sadece Şimşek & Şok Dalgası</option>
           <option value="shake">Sadece Ekran Titretme</option>
         </select>
       </div>
+      </div>
 
-      <div class="df-section-title">Ses ve Bildirim</div>
+      <!-- TAB 4: RENK & ATMOSFER -->
+      <div class="df-tab-content" id="dfTabColor">
       <div class="df-toggle-row">
-        <span>Zil Sesi Melodisi</span>
-        <select id="dfAlarmSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
-          <option value="chime">Siber Melodi</option>
-          <option value="beep">Dijital Bip</option>
-          <option value="gong">Zen Gong</option>
-          <option value="bell">Klasik Zil</option>
-          <option value="synth">Bio Sentetik</option>
+          <span class="df-control-label">Arka Plan Atmosferi</span>
+          <select id="dfAtmosphereSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:6px 10px; font-size:0.75rem; outline:none;">
+            <option value="void">Orijinal Void (Karanlık Siyah)</option>
+            <option value="space">Deep Space (Derin Kozmik)</option>
+            <option value="matrix">Bio Matrix (Siber Yeşil)</option>
+            <option value="volcanic">Volcanic Red (Kırmızı Kor)</option>
+            <option value="amethyst">Amethyst Mist (Ametist Mor)</option>
         </select>
       </div>
-      <div class="df-toggle-row">
-        <span>Zil Sesi Testi</span>
-        <button id="dfAlarmTestBtn" style="padding:4px 10px; border-radius:var(--radius-s); border:1px solid var(--hairline-strong); background:rgba(255,255,255,0.08); font-size:0.75rem;">🔔 Dinle</button>
-      </div>
-      <div class="df-toggle-row">
-        <span>Ortam Sesi Seviyesi</span>
-        <input type="range" id="dfVolumeSlider" min="0" max="1" step="0.01" value="0.55" style="width:110px;">
-      </div>
-      <div class="df-toggle-row">
-        <span>Zil & Alarm Seviyesi</span>
-        <input type="range" id="dfAlarmVolumeSlider" min="0" max="1" step="0.01" value="0.70" style="width:110px;">
       </div>
 
       <div class="df-section-title">Hızlı Renk Paleti</div>
@@ -2310,6 +2353,25 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
           </div>
           <div class="history-list" id="historyListContainer" style="max-height:200px;"></div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE HISTORY CONFIRMATION MODAL -->
+<div class="pomo-modal-backdrop" id="deleteHistoryModalBackdrop">
+  <div class="pomo-modal" id="deleteHistoryModal" style="max-width:420px;">
+    <div class="pomo-modal-header">
+      <span>🗑 VERİ SİLME ONAYI</span>
+      <button class="pomo-modal-close" id="deleteHistoryModalClose">&times;</button>
+    </div>
+    <div class="pomo-config-body" style="gap:16px;">
+      <p style="font-size:0.85rem; color:var(--text-0); margin:0; line-height:1.5;" id="deleteHistoryModalMsg">
+        Bu veriyi kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+      </p>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">
+        <button class="history-btn" id="deleteHistoryCancelBtn">Vazgeç</button>
+        <button class="history-btn delete-btn" id="deleteHistoryConfirmBtn" style="background:#ff5555; color:#fff; border-color:#ff5555;">Sil</button>
       </div>
     </div>
   </div>
@@ -2928,6 +2990,28 @@ function updateAuthStatusUI(){
   }
 }
 
+function getAuthErrorMessage(errorCode){
+  switch(errorCode){
+    case 'auth/user-not-found':
+      return "Bu e-posta adresiyle kayıtlı bir hesap bulunamadı. Hesabınız yoksa 'Kayıt Ol' sekmesinden oluşturabilirsiniz.";
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential':
+      return "Şifreniz hatalı. Lütfen tekrar deneyin veya 'Şifremi Unuttum'u kullanın.";
+    case 'auth/invalid-email':
+      return "Geçerli bir e-posta adresi girin (örn. adiniz@gmail.com).";
+    case 'auth/email-already-in-use':
+      return "Bu e-posta adresiyle zaten bir hesap var. Giriş yapmayı deneyin.";
+    case 'auth/weak-password':
+      return "Şifreniz en az 6 karakter olmalı.";
+    case 'auth/too-many-requests':
+      return "Çok fazla başarısız deneme yapıldı. Lütfen birkaç dakika sonra tekrar deneyin.";
+    case 'auth/network-request-failed':
+      return "İnternet bağlantınızı kontrol edin.";
+    default:
+      return "Bir şeyler ters gitti, lütfen tekrar deneyin.";
+  }
+}
+
 function handleAuthSubmit(e){
   e.preventDefault();
   const emailInput = document.getElementById('authEmailInput');
@@ -2957,11 +3041,7 @@ function handleAuthSubmit(e){
         }, 1000);
       })
       .catch((error) => {
-        let msg = 'Kayıt sırasında bir hata oluştu.';
-        if(error.code === 'auth/email-already-in-use') msg = 'Bu e-posta adresi zaten kullanımda.';
-        else if(error.code === 'auth/invalid-email') msg = 'Geçersiz e-posta adresi.';
-        else if(error.code === 'auth/weak-password') msg = 'Şifre en az 6 karakter olmalıdır.';
-        if(errEl){ errEl.textContent = msg; errEl.style.display = 'block'; }
+        if(errEl){ errEl.textContent = getAuthErrorMessage(error.code); errEl.style.display = 'block'; }
       });
   } else {
     auth.signInWithEmailAndPassword(email, password)
@@ -2973,10 +3053,7 @@ function handleAuthSubmit(e){
         }, 800);
       })
       .catch((error) => {
-        let msg = 'Giriş yapılırken bir hata oluştu.';
-        if(error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') msg = 'E-posta veya şifre hatalı.';
-        else if(error.code === 'auth/invalid-email') msg = 'Geçersiz e-posta adresi.';
-        if(errEl){ errEl.textContent = msg; errEl.style.display = 'block'; }
+        if(errEl){ errEl.textContent = getAuthErrorMessage(error.code); errEl.style.display = 'block'; }
       });
   }
 }
@@ -3045,7 +3122,8 @@ function cacheDom(){
    'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn','saveDayOpenBtn','saveDayModalBackdrop','saveDayModalClose','saveDayDateOptions','saveDayCancelBtn','saveDayConfirmBtn',
    'authBtn','authStatusDot','authModalBackdrop','authModal','authModalClose','authModalTitle','loggedInView','loggedOutView','userEmailDisplay','userSyncStatus','logoutBtn','authTabLogin','authTabRegister','authForm','authEmailInput','authPasswordInput','authErrorMsg','authSuccessMsg','authSubmitBtn','forgotPasswordBtn',
    'analyticsBtn','analyticsModalBackdrop','analyticsModal','analyticsModalClose','prevMonthBtn','nextMonthBtn','monthlyAnalyticsMonthName','monthlyAnalyticsGrid','analyticsDayDetailCard','detailPanelDate','closeDetailPanelBtn','detailPanelTotalTime','detailPanelSessionCount','detailPanelSessionsList','smartDayBoundaryToggle','dayBoundaryTimeSelect',
-   'saveDayOptToday','saveDayOptYesterday','saveDayDateStrToday','saveDayDateStrYesterday','saveDayStatusToday','saveDayStatusYesterday','saveDaySummaryText'
+   'saveDayOptToday','saveDayOptYesterday','saveDayDateStrToday','saveDayDateStrYesterday','saveDayStatusToday','saveDayStatusYesterday','saveDaySummaryText',
+   'deleteHistoryModalBackdrop','deleteHistoryModalClose','deleteHistoryCancelBtn','deleteHistoryConfirmBtn','deleteHistoryModalMsg'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -4145,9 +4223,14 @@ function drawPomoVisuals(ts, frac){
   // 4. Dotted Neon Radial Circle
   if(dom.pomoDottedProgress){
     const PRING_BIG_C = 2 * Math.PI * 98;
+    const filledLen = (PRING_BIG_C * frac).toFixed(2);
     const dashOffset = (PRING_BIG_C * (1 - frac)).toFixed(2);
-    dom.pomoDottedProgress.setAttribute('stroke-dasharray', '8 10');
-    dom.pomoDottedProgress.setAttribute('stroke-dashoffset', dashOffset);
+    if(dom.pomoDottedMaskCircle){
+      dom.pomoDottedMaskCircle.setAttribute('stroke-dasharray', `${filledLen} ${PRING_BIG_C}`);
+    } else {
+      dom.pomoDottedProgress.setAttribute('stroke-dasharray', '8 10');
+      dom.pomoDottedProgress.setAttribute('stroke-dashoffset', dashOffset);
+    }
   }
 
   // 5. Border Glow Walk Rotation
@@ -4540,13 +4623,19 @@ function renderDeepFocus(){
     if(state.dfPomoViewMode === 'total'){
       dom.dfTime.textContent = formatHoursMinutesSeconds(totalSec);
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
+      if(dom.pomoSessionBadge) dom.pomoSessionBadge.style.display = 'none';
+      if(dom.dfSessionLabel) dom.dfSessionLabel.style.display = 'none';
     } else if(state.dfPomoViewMode === 'countdown'){
       dom.dfTime.textContent = timeDisplayStr;
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
+      if(dom.pomoSessionBadge && state.dfPomoShowIcon) dom.pomoSessionBadge.style.display = '';
+      if(dom.dfSessionLabel && state.dfPomoShowLabel) dom.dfSessionLabel.style.display = '';
     } else {
       // both
       dom.dfTime.textContent = timeDisplayStr;
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'block';
+      if(dom.pomoSessionBadge && state.dfPomoShowIcon) dom.pomoSessionBadge.style.display = '';
+      if(dom.dfSessionLabel && state.dfPomoShowLabel) dom.dfSessionLabel.style.display = '';
     }
   } else {
     if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
@@ -5193,6 +5282,46 @@ function isDateWithinLast2Days(isoKey){
   return diffDays >= 0 && diffDays <= 1;
 }
 
+let pendingDeleteTargetKey = null;
+
+function openDeleteHistoryModal(isoKey, dateStr){
+  pendingDeleteTargetKey = isoKey;
+  if(dom.deleteHistoryModalMsg){
+    dom.deleteHistoryModalMsg.textContent = `${dateStr} tarihli veriyi kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`;
+  }
+  if(dom.deleteHistoryModalBackdrop) dom.deleteHistoryModalBackdrop.classList.add('open');
+}
+
+function closeDeleteHistoryModal(){
+  pendingDeleteTargetKey = null;
+  if(dom.deleteHistoryModalBackdrop) dom.deleteHistoryModalBackdrop.classList.remove('open');
+}
+
+function confirmDeleteHistory(){
+  if(!pendingDeleteTargetKey) return;
+  const isoKey = pendingDeleteTargetKey;
+
+  localStorage.removeItem('selmer_focus_' + isoKey);
+  localStorage.removeItem('selmer_record_' + isoKey);
+  localStorage.removeItem('selmer_focus_' + isoKey + '_timeline');
+
+  pushStudyTotalToCloud(isoKey, null);
+  pushSessionRecordToCloud(isoKey, null);
+  if(currentUser && auth.currentUser){
+    try {
+      db.ref(`users/${currentUser.uid}/pomo_timeline/${isoKey}`).remove();
+    } catch(e){}
+  }
+
+  if(isoKey === getTodayStorageKey().replace('selmer_focus_','')){
+    todayFocusMinutes = 0;
+  }
+
+  closeDeleteHistoryModal();
+  renderDataPanel();
+  showToast('Tarihli veri başarıyla silindi! 🗑');
+}
+
 function renderHistoryList(){
   const container = document.getElementById('historyListContainer');
   if(!container) return;
@@ -5241,66 +5370,46 @@ function renderHistoryList(){
         <span class="history-meta">⏱ ${formatHoursMinutes(focusMins)} · 🎯 ${sessionCount} Seans</span>
       </div>
       <div class="history-actions">
-        ${editable ? `
-          <button class="history-btn edit-btn" data-isokey="${isoKey}">✏️ Düzenle</button>
-          <button class="history-btn delete-btn" data-isokey="${isoKey}">🗑 Sil</button>
-        ` : `
-          <span class="history-locked-badge">🔒 Kilitli</span>
-        `}
+        ${editable ? `<button class="history-btn edit-btn" data-isokey="${isoKey}">✏️ Düzenle</button>` : ''}
+        <button class="history-btn delete-btn" data-isokey="${isoKey}">🗑 Sil</button>
       </div>
     `;
 
-    if(editable){
-      const editBtn = card.querySelector('.edit-btn');
-      const deleteBtn = card.querySelector('.delete-btn');
+    const editBtn = card.querySelector('.edit-btn');
+    const deleteBtn = card.querySelector('.delete-btn');
 
-      if(editBtn){
-        editBtn.addEventListener('click', () => {
-          const newMinsStr = prompt(dateStr + ' için yeni çalışma süresini dakika olarak giriniz:', focusMins);
-          if(newMinsStr !== null){
-            const newMins = parseInt(newMinsStr, 10);
-            if(!isNaN(newMins) && newMins >= 0){
-              localStorage.setItem('selmer_focus_' + isoKey, newMins);
+    if(editBtn){
+      editBtn.addEventListener('click', () => {
+        const newMinsStr = prompt(dateStr + ' için yeni çalışma süresini dakika olarak giriniz:', focusMins);
+        if(newMinsStr !== null){
+          const newMins = parseInt(newMinsStr, 10);
+          if(!isNaN(newMins) && newMins >= 0){
+            localStorage.setItem('selmer_focus_' + isoKey, newMins);
 
-              const updatedRecord = recordData || { isoKey, totalWorkSeconds: newMins * 60, completedEtuts: [] };
-              updatedRecord.totalMinutes = newMins;
-              updatedRecord.updatedAt = new Date().toISOString();
-              localStorage.setItem('selmer_record_' + isoKey, JSON.stringify(updatedRecord));
+            const updatedRecord = recordData || { isoKey, totalWorkSeconds: newMins * 60, completedEtuts: [] };
+            updatedRecord.totalMinutes = newMins;
+            updatedRecord.updatedAt = new Date().toISOString();
+            localStorage.setItem('selmer_record_' + isoKey, JSON.stringify(updatedRecord));
 
-              pushStudyTotalToCloud(isoKey, newMins);
-              pushSessionRecordToCloud(isoKey, updatedRecord);
-
-              if(isoKey === getTodayStorageKey().replace('selmer_focus_','')){
-                todayFocusMinutes = newMins;
-              }
-
-              renderDataPanel();
-              renderHistoryList();
-              showToast('Çalışma geçmişi güncellendi! ✏️');
-            }
-          }
-        });
-      }
-
-      if(deleteBtn){
-        deleteBtn.addEventListener('click', () => {
-          if(confirm(dateStr + ' tarihine ait çalışma kaydını silmek istediğinize emin misiniz?')){
-            localStorage.removeItem('selmer_focus_' + isoKey);
-            localStorage.removeItem('selmer_record_' + isoKey);
-
-            pushStudyTotalToCloud(isoKey, 0);
-            pushSessionRecordToCloud(isoKey, null);
+            pushStudyTotalToCloud(isoKey, newMins);
+            pushSessionRecordToCloud(isoKey, updatedRecord);
 
             if(isoKey === getTodayStorageKey().replace('selmer_focus_','')){
-              todayFocusMinutes = 0;
+              todayFocusMinutes = newMins;
             }
 
             renderDataPanel();
             renderHistoryList();
-            showToast('Kayıt başarıyla silindi! 🗑');
+            showToast('Çalışma geçmişi güncellendi! ✏️');
           }
-        });
-      }
+        }
+      });
+    }
+
+    if(deleteBtn){
+      deleteBtn.addEventListener('click', () => {
+        openDeleteHistoryModal(isoKey, dateStr);
+      });
     }
 
     container.appendChild(card);
@@ -5310,6 +5419,10 @@ function renderHistoryList(){
 function renderDataPanel(){ renderDonut(); buildWeeklyBars(); renderMonthlyAnalytics(); renderHistoryList(); }
 
 function showToast(text){
+  if(dom.toastContainer){
+    const existing = Array.from(dom.toastContainer.children).find(c => c.textContent.trim() === text.trim());
+    if(existing) return;
+  }
   const el=document.createElement('div');
   el.className='toast';
   el.innerHTML='<span class="dot"></span><span>'+text+'</span>';
@@ -5476,6 +5589,22 @@ function wireEvents(){
     dom.dfCustomClose.addEventListener('click', ()=>{
       dom.dfCustomPanel.classList.remove('open');
       dom.dfCustomizeBtn.classList.remove('active');
+    });
+  }
+
+  if(dom.dfTabNav){
+    dom.dfTabNav.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.df-tab-btn');
+      if(!btn) return;
+      const targetId = btn.getAttribute('data-tab');
+      if(!targetId) return;
+
+      dom.dfTabNav.querySelectorAll('.df-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.querySelectorAll('.df-tab-content').forEach(content => {
+        content.classList.toggle('active', content.id === targetId);
+      });
     });
   }
   if(dom.dfClockTypeSelect) dom.dfClockTypeSelect.addEventListener('change', ()=>{ state.dfClockType = dom.dfClockTypeSelect.value; renderDeepFocus(); saveSettingsToStorage(); });
@@ -5704,16 +5833,18 @@ function wireEvents(){
       const val = parseFloat(dom.alarmVolumeSlider.value);
       if(dom.dfAlarmVolumeSlider) dom.dfAlarmVolumeSlider.value = val;
       if(alarmGain) alarmGain.gain.value = val;
-      saveSettingsToStorage();
+      if(dom.dfVolumeVal) dom.dfVolumeVal.textContent = `%${Math.round(val * 100)}`;
     });
+    dom.dfVolumeSlider.addEventListener('change', saveSettingsToStorage);
   }
   if(dom.dfAlarmVolumeSlider){
     dom.dfAlarmVolumeSlider.addEventListener('input', ()=>{
       const val = parseFloat(dom.dfAlarmVolumeSlider.value);
       if(dom.alarmVolumeSlider) dom.alarmVolumeSlider.value = val;
       if(alarmGain) alarmGain.gain.value = val;
-      saveSettingsToStorage();
+      if(dom.dfAlarmVolumeVal) dom.dfAlarmVolumeVal.textContent = `%${Math.round(val * 100)}`;
     });
+    dom.dfAlarmVolumeSlider.addEventListener('change', saveSettingsToStorage);
   }
 
   if(dom.dfScaleSlider){
@@ -5721,8 +5852,9 @@ function wireEvents(){
       const val = parseFloat(dom.dfScaleSlider.value) || 1.0;
       state.dfScale = val;
       if(dom.dfScaleWrapper) dom.dfScaleWrapper.style.transform = `scale(${val})`;
-      saveSettingsToStorage();
+      if(dom.dfScaleVal) dom.dfScaleVal.textContent = `${val.toFixed(2)}x`;
     });
+    dom.dfScaleSlider.addEventListener('change', saveSettingsToStorage);
   }
   if(dom.dfAtmosphereSelect){
     dom.dfAtmosphereSelect.addEventListener('change', ()=>{
@@ -5741,6 +5873,15 @@ function wireEvents(){
   if(dom.saveDayModalBackdrop){
     dom.saveDayModalBackdrop.addEventListener('click', (e)=>{
       if(e.target === dom.saveDayModalBackdrop) dom.saveDayModalBackdrop.classList.remove('open');
+    });
+  }
+
+  if(dom.deleteHistoryModalClose) dom.deleteHistoryModalClose.addEventListener('click', closeDeleteHistoryModal);
+  if(dom.deleteHistoryCancelBtn) dom.deleteHistoryCancelBtn.addEventListener('click', closeDeleteHistoryModal);
+  if(dom.deleteHistoryConfirmBtn) dom.deleteHistoryConfirmBtn.addEventListener('click', confirmDeleteHistory);
+  if(dom.deleteHistoryModalBackdrop){
+    dom.deleteHistoryModalBackdrop.addEventListener('click', (e)=>{
+      if(e.target === dom.deleteHistoryModalBackdrop) closeDeleteHistoryModal();
     });
   }
 
