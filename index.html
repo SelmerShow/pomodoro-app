@@ -3123,7 +3123,8 @@ function cacheDom(){
    'authBtn','authStatusDot','authModalBackdrop','authModal','authModalClose','authModalTitle','loggedInView','loggedOutView','userEmailDisplay','userSyncStatus','logoutBtn','authTabLogin','authTabRegister','authForm','authEmailInput','authPasswordInput','authErrorMsg','authSuccessMsg','authSubmitBtn','forgotPasswordBtn',
    'analyticsBtn','analyticsModalBackdrop','analyticsModal','analyticsModalClose','prevMonthBtn','nextMonthBtn','monthlyAnalyticsMonthName','monthlyAnalyticsGrid','analyticsDayDetailCard','detailPanelDate','closeDetailPanelBtn','detailPanelTotalTime','detailPanelSessionCount','detailPanelSessionsList','smartDayBoundaryToggle','dayBoundaryTimeSelect',
    'saveDayOptToday','saveDayOptYesterday','saveDayDateStrToday','saveDayDateStrYesterday','saveDayStatusToday','saveDayStatusYesterday','saveDaySummaryText',
-   'deleteHistoryModalBackdrop','deleteHistoryModalClose','deleteHistoryCancelBtn','deleteHistoryConfirmBtn','deleteHistoryModalMsg'
+   'deleteHistoryModalBackdrop','deleteHistoryModalClose','deleteHistoryCancelBtn','deleteHistoryConfirmBtn','deleteHistoryModalMsg',
+   'dfTabNav','pomoDottedMaskCircle'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -4920,7 +4921,7 @@ function loadSettingsFromStorage(){
     if(s.dfPomoShowIcon !== undefined) state.dfPomoShowIcon = !!s.dfPomoShowIcon;
     if(s.dfPomoShowLabel !== undefined) state.dfPomoShowLabel = !!s.dfPomoShowLabel;
     if(s.dfPomoShowRing !== undefined) state.dfPomoShowRing = !!s.dfPomoShowRing;
-    if(s.progressStyle) applyProgressStyle(s.progressStyle, {skipSave: true});
+    applyProgressStyle(s.progressStyle || 'ring', {skipSave: true});
     if(s.enableCelebration !== undefined) {
       state.enableCelebration = !!s.enableCelebration;
       if(dom.mainCelebrationToggle) dom.mainCelebrationToggle.checked = state.enableCelebration;
