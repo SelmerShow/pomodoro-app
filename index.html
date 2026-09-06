@@ -5476,9 +5476,18 @@ function setMode(mode, opts){
     el.style.transform = 'scale(0.97)';
   });
 
-  setTimeout(() => {
+  let handled = false;
+  const onDone = () => {
+    if(handled) return;
+    handled = true;
+
     if(dom.pomodoroWorkspace) dom.pomodoroWorkspace.style.display = (isPomo ? 'flex' : 'none');
-    if(isPomo) renderPomodoroTimeline();
+    if(isPomo){
+      renderPomodoroTimeline();
+      renderPomodoro();
+    } else {
+      renderClock();
+    }
 
     requestAnimationFrame(() => {
       targets.forEach(el => {
@@ -5486,7 +5495,14 @@ function setMode(mode, opts){
         el.style.transform = 'scale(1)';
       });
     });
-  }, 120);
+  };
+
+  if(targets.length > 0){
+    targets[0].addEventListener('transitionend', onDone, {once: true});
+    setTimeout(onDone, 380);
+  } else {
+    onDone();
+  }
 
   if(state.deepFocus){
     enterDeepFocus();
