@@ -3561,9 +3561,9 @@ function applyProfile(profileKey, opts){
   opts = opts||{};
   state.profile = profileKey;
   document.body.setAttribute('data-profile', profileKey);
-  dom.avatarImg.src = ASSETS[profileKey];
+  if(dom.avatarImg) dom.avatarImg.src = ASSETS[profileKey];
   document.querySelectorAll('.profile-option').forEach(btn=>{ btn.classList.toggle('selected', btn.dataset.profile===profileKey); });
-  dom.profileCaption.textContent = PROFILE_META[profileKey].name;
+  if(dom.profileCaption) dom.profileCaption.textContent = PROFILE_META[profileKey].name;
   if(!opts.skipTheme) applyTheme(PROFILE_META[profileKey].theme, opts);
   if(!opts.skipSave) saveSettingsToStorage();
 }
@@ -3635,7 +3635,7 @@ function updateDateCluster(){
   const yks2027Target = new Date('2027-06-19T00:00:00');
   const diffMs = yks2027Target - now;
   const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-  dom.dateCycleText.textContent = 'YKS 2027 · ' + daysLeft + ' GÜN KALDI';
+  if(dom.dateCycleText) dom.dateCycleText.textContent = 'YKS 2027 · ' + daysLeft + ' GÜN KALDI';
 }
 
 function setupEkg(){}
