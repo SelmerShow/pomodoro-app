@@ -691,8 +691,27 @@ body.clock-only-mode .ekg-strip { opacity: 0 !important; pointer-events: none !i
 .df-tab-btn:hover { color: var(--text-0); border-color: var(--hairline-strong); background: rgba(255,255,255,0.08); }
 .df-tab-btn.active { color: var(--c1); border-color: var(--c1); background: rgba(var(--c1-rgb), 0.15); }
 
-.df-tab-content { display: none !important; }
-.df-tab-content.active { display: flex !important; flex-direction: column; gap: 12px; }
+.df-tab-content {
+  display: none !important;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.28s var(--ease), transform 0.28s var(--ease);
+}
+.df-tab-content.active {
+  display: flex !important;
+  flex-direction: column;
+  gap: 12px;
+  animation: dfTabFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dfTabFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mode-transition-view {
+  transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
 .df-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 0.78rem; color: var(--text-dim); padding: 2px 0; }
 .df-control-label { font-size: 0.76rem; color: var(--text-0); font-weight: 500; }
@@ -713,7 +732,11 @@ body.df-only-time .df-session-label, body.df-only-time .df-focus { display: none
 body.mode-pomodoro #ringCluster,
 body.mode-pomodoro .digital-time,
 body.mode-pomodoro .ekg-strip,
-body.mode-pomodoro #soundPanel {
+body.mode-pomodoro #soundPanel,
+body.mode-pomodoro .pulse-field,
+body.mode-pomodoro .avatar-pulse,
+body.mode-pomodoro .avatar-glow,
+body.mode-pomodoro .avatar-ring {
   display: none !important;
 }
 
@@ -1651,13 +1674,6 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
     </div>
 
     <div class="digital-time" id="digitalTime">00:00:00</div>
-
-    <div class="ekg-strip">
-      <canvas id="ekgCanvas"></canvas>
-      <div class="ekg-meta" style="justify-content:center;">
-        <span class="profile-caption" id="profileCaption">NEON PULSE</span>
-      </div>
-    </div>
 
     
     <!-- POMODORO WORKSPACE VIEW -->
@@ -2996,6 +3012,7 @@ function getAuthErrorMessage(errorCode){
       return "Bu e-posta adresiyle kayıtlı bir hesap bulunamadı. Hesabınız yoksa 'Kayıt Ol' sekmesinden oluşturabilirsiniz.";
     case 'auth/wrong-password':
     case 'auth/invalid-credential':
+    case 'auth/invalid-login-credentials':
       return "Şifreniz hatalı. Lütfen tekrar deneyin veya 'Şifremi Unuttum'u kullanın.";
     case 'auth/invalid-email':
       return "Geçerli bir e-posta adresi girin (örn. adiniz@gmail.com).";
@@ -3041,6 +3058,7 @@ function handleAuthSubmit(e){
         }, 1000);
       })
       .catch((error) => {
+        console.error('AUTH ERROR CODE:', error.code, error.message);
         if(errEl){ errEl.textContent = getAuthErrorMessage(error.code); errEl.style.display = 'block'; }
       });
   } else {
@@ -3053,6 +3071,7 @@ function handleAuthSubmit(e){
         }, 800);
       })
       .catch((error) => {
+        console.error('AUTH ERROR CODE:', error.code, error.message);
         if(errEl){ errEl.textContent = getAuthErrorMessage(error.code); errEl.style.display = 'block'; }
       });
   }
@@ -3619,47 +3638,9 @@ function updateDateCluster(){
   dom.dateCycleText.textContent = 'YKS 2027 · ' + daysLeft + ' GÜN KALDI';
 }
 
-let ekgCtx, ekgBuffer=[], ekgPhase=0, ekgWidth=0, ekgHeight=0;
-function setupEkg(){
-  const canvas=dom.ekgCanvas;
-  const rect=canvas.parentElement.getBoundingClientRect();
-  const dpr=Math.min(window.devicePixelRatio||1,2);
-  ekgWidth=Math.max(1,Math.floor(rect.width)); ekgHeight=Math.max(1,Math.floor(rect.height));
-  canvas.width=ekgWidth*dpr; canvas.height=ekgHeight*dpr;
-  ekgCtx=canvas.getContext('2d');
-  ekgCtx.setTransform(dpr,0,0,dpr,0,0);
-  ekgBuffer=new Array(ekgWidth).fill(0);
-}
-function ekgWaveShape(phase){
-  if(phase<0.08) return 0.05*Math.sin(phase/0.08*Math.PI);
-  if(phase<0.13) return 0;
-  if(phase<0.155) return -0.12*((phase-0.13)/0.025);
-  if(phase<0.185) return -0.12+1.1*((phase-0.155)/0.03);
-  if(phase<0.215) return 0.98-1.28*((phase-0.185)/0.03);
-  if(phase<0.25) return -0.3+0.3*((phase-0.215)/0.035);
-  if(phase<0.4) return 0;
-  if(phase<0.56) return 0.16*Math.sin(((phase-0.4)/0.16)*Math.PI);
-  return 0;
-}
-function stepEkg(dt){
-  const beatDur=60/bpm;
-  ekgPhase+=dt/beatDur;
-  if(ekgPhase>=1) ekgPhase-=1;
-  ekgBuffer.push(ekgWaveShape(ekgPhase));
-  if(ekgBuffer.length>ekgWidth) ekgBuffer.shift();
-}
-function drawEkg(){
-  if(!ekgCtx||!ekgWidth) return;
-  ekgCtx.clearRect(0,0,ekgWidth,ekgHeight);
-  ekgCtx.strokeStyle='rgba(255,255,255,0.045)'; ekgCtx.lineWidth=1;
-  for(let x=0;x<ekgWidth;x+=24){ ekgCtx.beginPath(); ekgCtx.moveTo(x,0); ekgCtx.lineTo(x,ekgHeight); ekgCtx.stroke(); }
-  for(let y=0;y<ekgHeight;y+=16){ ekgCtx.beginPath(); ekgCtx.moveTo(0,y); ekgCtx.lineTo(ekgWidth,y); ekgCtx.stroke(); }
-  const midY=ekgHeight*0.58, amp=ekgHeight*0.42;
-  ekgCtx.strokeStyle=CACHED_C1; ekgCtx.lineWidth=1.8; ekgCtx.shadowColor=CACHED_C1; ekgCtx.shadowBlur=8;
-  ekgCtx.beginPath();
-  for(let i=0;i<ekgBuffer.length;i++){ const x=i, y=midY-ekgBuffer[i]*amp; i===0?ekgCtx.moveTo(x,y):ekgCtx.lineTo(x,y); }
-  ekgCtx.stroke(); ekgCtx.shadowBlur=0;
-}
+function setupEkg(){}
+function stepEkg(dt){}
+function drawEkg(){}
 
 let celebCtx, celebWidth=0, celebHeight=0, confettiList=[], lightningFlash=0, shockwaveRadius=0;
 
@@ -5485,9 +5466,27 @@ function setMode(mode, opts){
   state.mode=mode;
   document.querySelectorAll('#modeTabs button').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
   
-  document.body.classList.toggle('mode-pomodoro', mode==='pomodoro');
-  if(dom.pomodoroWorkspace) dom.pomodoroWorkspace.style.display = (mode==='pomodoro' ? 'flex' : 'none');
-  if(mode==='pomodoro') renderPomodoroTimeline();
+  const isPomo = (mode === 'pomodoro');
+  document.body.classList.toggle('mode-pomodoro', isPomo);
+
+  const targets = [dom.pomodoroWorkspace, dom.ringCluster, document.querySelector('.digital-time')].filter(Boolean);
+  targets.forEach(el => {
+    el.classList.add('mode-transition-view');
+    el.style.opacity = '0';
+    el.style.transform = 'scale(0.97)';
+  });
+
+  setTimeout(() => {
+    if(dom.pomodoroWorkspace) dom.pomodoroWorkspace.style.display = (isPomo ? 'flex' : 'none');
+    if(isPomo) renderPomodoroTimeline();
+
+    requestAnimationFrame(() => {
+      targets.forEach(el => {
+        el.style.opacity = '1';
+        el.style.transform = 'scale(1)';
+      });
+    });
+  }, 120);
 
   if(state.deepFocus){
     enterDeepFocus();
@@ -5985,6 +5984,7 @@ function init(){
   buildTicks();
   setupRings();
   loadSettingsFromStorage();
+  applyProgressStyle(state.progressStyle || 'ring', {skipSave: true});
   checkDailyReset();
   applyProfile(state.profile, {skipSave: true, skipTheme: true});
   applyMode3D(state.mode3D, {skipSave: true});
