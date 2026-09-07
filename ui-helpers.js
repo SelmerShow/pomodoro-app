@@ -715,19 +715,8 @@ function handleSaveDayAction(){
     return;
   }
 
-  const currentHour = new Date().getHours();
-  // 06:00 to 21:00 requires confirmation modal
-  const needsConfirmation = (currentHour >= 6 && currentHour < 21);
-
-  if(needsConfirmation){
-    openSaveDayModal();
-  } else {
-    // 21:00 to 06:00 direct save & reset without modal
-    let autoTarget = 'today';
-    if(todayRecord && !yesterdayRecord) autoTarget = 'yesterday';
-    selectedSaveDayTarget = autoTarget;
-    confirmSaveDay();
-  }
+  // Her zaman kullaniciya secim penceresini goster
+  openSaveDayModal();
 }
 
 function openSaveDayModal(){
