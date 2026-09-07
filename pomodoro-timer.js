@@ -400,16 +400,10 @@ function drawPomoVisuals(ts, frac){
   }
 
   // 4. Dotted Neon Radial Circle
-  if(dom.pomoDottedProgress){
-    const PRING_BIG_C = 2 * Math.PI * 98;
+  if(dom.pomoDottedMaskCircle){
+    const PRING_BIG_C = 2 * Math.PI * 98; // 615.752
     const filledLen = (PRING_BIG_C * frac).toFixed(2);
-    const dashOffset = (PRING_BIG_C * (1 - frac)).toFixed(2);
-    if(dom.pomoDottedMaskCircle){
-      dom.pomoDottedMaskCircle.setAttribute('stroke-dasharray', `${filledLen} ${PRING_BIG_C}`);
-    } else {
-      dom.pomoDottedProgress.setAttribute('stroke-dasharray', '8 10');
-      dom.pomoDottedProgress.setAttribute('stroke-dashoffset', dashOffset);
-    }
+    dom.pomoDottedMaskCircle.setAttribute('stroke-dasharray', `${filledLen} ${PRING_BIG_C}`);
   }
 
   // 5. Border Glow Walk Rotation
