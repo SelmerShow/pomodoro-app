@@ -118,20 +118,24 @@ function renderDeepFocus(){
     }
 
     if(state.dfPomoViewMode === 'total'){
-      dom.dfTime.textContent = formatHoursMinutesSeconds(totalSec);
+      // Directly update the active big timer display with total work time
+      if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.textContent = formatHoursMinutesSeconds(totalSec);
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
       if(dom.pomoSessionBadge) dom.pomoSessionBadge.style.display = 'none';
+      if(dom.pomoStatusSub) dom.pomoStatusSub.style.display = 'none';
       if(dom.dfSessionLabel) dom.dfSessionLabel.style.display = 'none';
     } else if(state.dfPomoViewMode === 'countdown'){
-      dom.dfTime.textContent = timeDisplayStr;
+      if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.textContent = timeDisplayStr;
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
       if(dom.pomoSessionBadge && state.dfPomoShowIcon) dom.pomoSessionBadge.style.display = '';
+      if(dom.pomoStatusSub && state.dfPomoShowLabel) dom.pomoStatusSub.style.display = '';
       if(dom.dfSessionLabel && state.dfPomoShowLabel) dom.dfSessionLabel.style.display = '';
     } else {
       // both
-      dom.dfTime.textContent = timeDisplayStr;
+      if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.textContent = timeDisplayStr;
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'block';
       if(dom.pomoSessionBadge && state.dfPomoShowIcon) dom.pomoSessionBadge.style.display = '';
+      if(dom.pomoStatusSub && state.dfPomoShowLabel) dom.pomoStatusSub.style.display = '';
       if(dom.dfSessionLabel && state.dfPomoShowLabel) dom.dfSessionLabel.style.display = '';
     }
   } else {

@@ -1016,11 +1016,18 @@ body.mode-pomodoro .avatar-ring {
 .pomo-big-time {
   font-family: 'Orbitron', sans-serif;
   font-weight: 800;
-  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-size: clamp(2.1rem, 4.4vw, 3.1rem);
+  letter-spacing: -0.02em;
   color: var(--text-0);
   text-shadow: 0 0 24px rgba(var(--c1-rgb), 0.5);
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  white-space: nowrap;
+}
+
+/* Reduced size when overtime prefix is active */
+.pomo-big-time.is-overtime {
+  font-size: clamp(1.75rem, 3.8vw, 2.6rem) !important;
 }
 .pomo-status-sub {
   font-family: 'JetBrains Mono', monospace;
@@ -1263,14 +1270,24 @@ body.mode-pomodoro .avatar-ring {
   animation: nodeCompletePulse 1.2s var(--ease) forwards !important;
 }
 .pomo-node.active {
-  border-color: var(--c1);
-  background: linear-gradient(90deg, rgba(var(--c1-rgb), 0.25), rgba(10, 14, 28, 0.95));
-  box-shadow: 0 0 24px rgba(var(--c1-rgb), 0.4);
-  animation: nodePulse 2s ease-in-out infinite;
+  border-color: rgba(var(--c1-rgb), 0.75) !important;
+  background: linear-gradient(90deg, rgba(var(--c1-rgb), 0.14), rgba(10, 14, 28, 0.95)) !important;
+  box-shadow: inset 0 0 14px rgba(var(--c1-rgb), 0.1), 0 2px 12px rgba(var(--c1-rgb), 0.18) !important;
+  position: relative;
+  overflow: hidden;
+  animation: none !important;
 }
-@keyframes nodePulse {
-  0%, 100% { box-shadow: 0 0 16px rgba(var(--c1-rgb), 0.3); }
-  50% { box-shadow: 0 0 28px rgba(var(--c1-rgb), 0.6); }
+
+.pomo-node.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10%;
+  bottom: 10%;
+  width: 3px;
+  background: var(--c1);
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 10px var(--c1), 0 0 4px var(--c1);
 }
 
 .pomo-node-info {
@@ -1438,7 +1455,12 @@ body.mode-pomodoro .avatar-ring {
 .progress-style-linear .pring-progress,
 .progress-style-linear .pomo-big-ring-wrap > svg { display: none !important; }
 
-.progress-style-dotted #pomoBigProgress,
+/* Hide both progress and track circle in dotted mode so ONLY the 40 canvas capsules are visible */
+.progress-style-dotted .pring-track,
+.progress-style-dotted #pomoBigProgress {
+  display: none !important;
+}
+
 .progress-style-wave #pomoBigProgress,
 .progress-style-particles #pomoBigProgress,
 .progress-style-arc #pomoBigProgress,
@@ -1461,7 +1483,12 @@ body.mode-pomodoro .avatar-ring {
 
 /* Deep Focus Pomodoro typography & badge scaling */
 body.deep-focus-active.mode-pomodoro #pomoBigTimeLabel {
-  font-size: clamp(3.8rem, 9vw, 5.5rem) !important;
+  font-size: clamp(2.9rem, 7.5vw, 4.6rem) !important;
+  letter-spacing: -0.02em;
+}
+
+body.deep-focus-active.mode-pomodoro #pomoBigTimeLabel.is-overtime {
+  font-size: clamp(2.3rem, 6.2vw, 3.8rem) !important;
 }
 body.deep-focus-active.mode-pomodoro .pomo-badge {
   font-size: 0.9rem !important;

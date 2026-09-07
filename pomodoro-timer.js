@@ -385,7 +385,10 @@ function renderPomodoro(ts, force){
   drawPomoVisuals(ts || performance.now(), elapsedFrac);
 
   if(dom.pomodoroTimeLabel) dom.pomodoroTimeLabel.textContent = timeStr;
-  if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.textContent = timeStr;
+  if(dom.pomoBigTimeLabel){
+    dom.pomoBigTimeLabel.classList.toggle('is-overtime', !!pomodoro.isOvertime);
+    dom.pomoBigTimeLabel.textContent = timeStr;
+  }
 
   const typeName = pomodoro.sessionType === 'focus' ? (focusIndex + '. ETÜT') : 'MOLA';
   if(dom.pomoSessionBadge) dom.pomoSessionBadge.textContent = typeName;
