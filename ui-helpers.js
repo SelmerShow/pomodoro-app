@@ -130,6 +130,7 @@ function stepEkg(dt){}
 function drawEkg(){}
 
 let celebCtx, celebWidth=0, celebHeight=0, confettiList=[], lightningFlash=0, shockwaveRadius=0;
+let celebWasActive = false;
 
 function setupCelebrationCanvas(){
   const canvas = dom.celebrationCanvas;
@@ -188,6 +189,15 @@ function triggerCelebrationEffects(){
 
 function drawCelebrations(dt){
   if(!celebCtx || !celebWidth) return;
+  const isActive = (confettiList.length > 0 || lightningFlash > 0 || shockwaveRadius > 0);
+  if(!isActive){
+    if(celebWasActive){
+      celebCtx.clearRect(0, 0, celebWidth, celebHeight);
+      celebWasActive = false;
+    }
+    return;
+  }
+  celebWasActive = true;
   celebCtx.clearRect(0, 0, celebWidth, celebHeight);
 
   if(lightningFlash > 0){
@@ -245,22 +255,40 @@ function setupBg(){
   particles=[];
   for(let i=0;i<count;i++){
     particles.push({ x:Math.random()*bgWidth, y:Math.random()*bgHeight, r:Math.random()*1.4+0.4,
-      vy:Math.random()*0.06+0.015, phase:Math.random()*Math.PI*2, speed:Math.random()*0.6+0.3 });
+      vy:Math.random()*0.06+0.015, phase:Math.random()*Math.PI*2, speed:Math.random()*0.6+0.3,
+      useC2: Math.random() < 0.5 });
   }
 }
 let streakTimer=3+Math.random()*6, streak=null;
 function drawBg(t, dt){
   if(!bgCtx) return;
   bgCtx.clearRect(0,0,bgWidth,bgHeight);
-  particles.forEach(p=>{
-    p.y-=p.vy;
-    if(p.y<-4){ p.y=bgHeight+4; p.x=Math.random()*bgWidth; }
-    const tw=0.35+0.65*Math.abs(Math.sin(t*0.001*p.speed+p.phase));
-    bgCtx.globalAlpha=tw*0.65;
-    bgCtx.fillStyle=Math.random()<0.5?CACHED_C1:CACHED_C2;
-    bgCtx.beginPath(); bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2); bgCtx.fill();
-  });
-  bgCtx.globalAlpha=1;
+
+  if(particles.length > 0){
+    bgCtx.globalAlpha = 0.5;
+    bgCtx.fillStyle = CACHED_C1;
+    bgCtx.beginPath();
+    particles.forEach(p=>{
+      p.y-=p.vy;
+      if(p.y<-4){ p.y=bgHeight+4; p.x=Math.random()*bgWidth; }
+      if(!p.useC2){
+        bgCtx.moveTo(p.x + p.r, p.y);
+        bgCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      }
+    });
+    bgCtx.fill();
+
+    bgCtx.fillStyle = CACHED_C2;
+    bgCtx.beginPath();
+    particles.forEach(p=>{
+      if(p.useC2){
+        bgCtx.moveTo(p.x + p.r, p.y);
+        bgCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      }
+    });
+    bgCtx.fill();
+    bgCtx.globalAlpha = 1;
+  }
   if(!prefersReducedMotion){
     streakTimer-=dt;
     if(streakTimer<=0 && !streak){
@@ -585,13 +613,22 @@ function setupWave(){
   }
 }
 
+let waveWasActive = false;
 function drawWave(t){
   if(!waveCtx) return;
+  if(currentPresetName === 'off'){
+    if(waveWasActive){
+      waveCtx.clearRect(0, 0, waveWidth, waveHeight);
+      waveWasActive = false;
+    }
+    return;
+  }
+  waveWasActive = true;
   waveCtx.clearRect(0,0,waveWidth,waveHeight);
   waveCtx.strokeStyle=CACHED_C1; waveCtx.lineWidth=1.6; waveCtx.shadowColor=CACHED_C1; waveCtx.shadowBlur=6;
   waveCtx.beginPath();
   const mid=waveHeight/2;
-  if(analyser && currentPresetName!=='off'){
+  if(analyser){
     analyser.getByteTimeDomainData(analyserData);
     const step=waveWidth/analyserData.length;
     for(let i=0;i<analyserData.length;i++){
@@ -1900,8 +1937,10 @@ function frame(ts){
   if(document.hidden) return;
   const dt=Math.min(0.05, (ts-(lastFrameTs||ts))/1000);
   lastFrameTs=ts;
-  renderClock();
-  if(state.mode==='pomodoro') renderPomodoro(ts);
+  if(state.mode !== 'pomodoro' || state.deepFocus){
+    renderClock();
+  }
+  if(state.mode==='pomodoro' && (pomodoro.running || pomoNeedsRender)) renderPomodoro(ts);
   if(state.deepFocus) renderDeepFocus();
   updateParallax();
   stepEkg(dt);
