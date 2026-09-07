@@ -65,7 +65,6 @@ function enterDeepFocus(){
   dom.deepFocusBtn.classList.add('is-on');
   if(state.mode === 'pomodoro'){
     if(dom.pomoBigRingWrap && dom.dfMount){
-      if(dom.pomoBorderGlowBox) dom.dfMount.appendChild(dom.pomoBorderGlowBox);
       dom.dfMount.appendChild(dom.pomoBigRingWrap);
     }
   } else {
@@ -77,6 +76,7 @@ function enterDeepFocus(){
       }
     }
   }
+  if(typeof TimerVisuals !== 'undefined') TimerVisuals.resize();
   deepFocusStart=Date.now();
   closeSettingsDrawer();
   renderDeepFocus();
@@ -89,11 +89,11 @@ function exitDeepFocus(){
   const pomoRingCard = document.querySelector('.pomo-ring-card');
   if(pomoRingCard && dom.pomoBigRingWrap){
     const actionRow = pomoRingCard.querySelector('.pomo-action-row');
-    if(dom.pomoBorderGlowBox) pomoRingCard.insertBefore(dom.pomoBorderGlowBox, actionRow || null);
     if(actionRow) pomoRingCard.insertBefore(dom.pomoBigRingWrap, actionRow);
     else pomoRingCard.appendChild(dom.pomoBigRingWrap);
   }
   if(dom.layerFront && dom.avatarRing) dom.layerFront.appendChild(dom.avatarRing);
+  if(typeof TimerVisuals !== 'undefined') TimerVisuals.resize();
 }
 
 function renderDeepFocus(){
