@@ -700,6 +700,12 @@ function handleFinishClick(){
     activeItem.status = 'completed';
     activeItem.endTimeMs = Date.now();
     activeItem.elapsedSec = totalElapsedSec;
+    activeItem.mins = Math.max(1, Math.round(totalElapsedSec / 60));
+
+    const startD = new Date(activeItem.startTimeMs || (activeItem.endTimeMs - totalElapsedSec * 1000));
+    const endD = new Date(activeItem.endTimeMs);
+    activeItem.timeSpan = String(startD.getHours()).padStart(2,'0') + ':' + String(startD.getMinutes()).padStart(2,'0') + ' - ' + String(endD.getHours()).padStart(2,'0') + ':' + String(endD.getMinutes()).padStart(2,'0');
+
     completedEtutName = activeItem.name;
     completedEtutIdx = activeItem.idx;
   }
