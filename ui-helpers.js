@@ -809,16 +809,16 @@ function confirmSaveDay(){
   const targetObj = selectedSaveDayTarget === 'today' ? todayObj : yesterdayObj;
   const isoKey = getIsoKeyFromDateObj(targetObj);
 
-  const totalSec = getTotalWorkSeconds();
-  const mins = Math.round(totalSec / 60);
+  const completedSessions = pomodoroTimeline.filter(t => t.status === 'completed');
+  const totalSec = completedSessions.reduce((acc, t) => acc + (typeof t.elapsedSec === 'number' ? t.elapsedSec : 0), 0) + Math.floor(getCurrentSessionElapsedMs() / 1000);
+  const mins = Math.max(0, Math.round(totalSec / 60));
 
   try {
     const storageKey = 'selmer_focus_' + isoKey;
     const prevMins = parseInt(localStorage.getItem(storageKey) || '0', 10);
-    const newMins = prevMins + mins;
+    const newMins = selectedSaveDayTarget === 'today' ? mins : (prevMins + mins);
     localStorage.setItem(storageKey, newMins);
 
-    const completedSessions = pomodoroTimeline.filter(t => t.status === 'completed');
     const recordKey = 'selmer_record_' + isoKey;
     const recordData = {
       isoKey: isoKey,
@@ -1070,15 +1070,18 @@ function buildWeeklyBars(){
   if(!dom.weeklyBars) return;
   dom.weeklyBars.innerHTML = '';
 
-  const dayNamesShort = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+  const dayLabels = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
   const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
-  const now = getSyncedNow();
+  const activeDate = getActiveDateObj();
   const todayIsoKey = getTodayStorageKey().replace('selmer_focus_', '');
 
+  const dayOfWeek = (activeDate.getDay() + 6) % 7; // 0 = Mon, 1 = Tue, ..., 6 = Sun
+  const mondayDate = new Date(activeDate.getFullYear(), activeDate.getMonth(), activeDate.getDate() - dayOfWeek);
+
   const days = [];
-  for(let i = 6; i >= 0; i--){
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+  for(let i = 0; i < 7; i++){
+    const d = new Date(mondayDate.getFullYear(), mondayDate.getMonth(), mondayDate.getDate() + i);
     const isoKey = d.getFullYear() + '_' + String(d.getMonth() + 1).padStart(2, '0') + '_' + String(d.getDate()).padStart(2, '0');
     const storageKey = 'selmer_focus_' + isoKey;
     const recordKey = 'selmer_record_' + isoKey;
@@ -1105,7 +1108,7 @@ function buildWeeklyBars(){
     days.push({
       date: d,
       isoKey: isoKey,
-      dayLabel: dayNamesShort[d.getDay()],
+      dayLabel: dayLabels[i],
       fullDateStr: d.getDate() + ' ' + monthNames[d.getMonth()] + ' ' + d.getFullYear(),
       focusMins: focusMins,
       sessionCount: sessionCount,
@@ -1162,7 +1165,11 @@ function showDayDetailPanel(isoKey, dateStr, focusMins, sessionCount, completedE
   card.style.display = 'block';
 
   if(dom.detailPanelDate) dom.detailPanelDate.textContent = dateStr;
-  if(dom.detailPanelTotalTime) dom.detailPanelTotalTime.textContent = formatHoursMinutes(focusMins);
+
+  const computedSumMins = (completedEtuts && completedEtuts.length > 0)
+    ? Math.round(completedEtuts.reduce((acc, e) => acc + (e.elapsedSec || (e.mins * 60)), 0) / 60)
+    : focusMins;
+  if(dom.detailPanelTotalTime) dom.detailPanelTotalTime.textContent = formatHoursMinutes(computedSumMins);
   if(dom.detailPanelSessionCount) dom.detailPanelSessionCount.textContent = sessionCount + ' Seans';
 
   const list = document.getElementById('detailPanelSessionsList');
