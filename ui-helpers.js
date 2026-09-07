@@ -5,7 +5,7 @@ const ASSETS = {
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PROFILE_META = { neon2:{ name:'NEON PULSE', theme:'cyberpunkBlue' }, y2026:{ name:'SOLAR FLARE', theme:'volcanicOrange' } };
-const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#3fd0ff', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
+const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, neonGlow:true, uiScale:1.0, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#3fd0ff', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
 const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:25, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, isOvertime:false, overtimeSec:0, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:25*60*1000, intervalId:null, lastTickTs:0 };
 const SEC_R=78, SEC_C=2*Math.PI*SEC_R;
 const PRING_R=76, PRING_C=2*Math.PI*PRING_R;
@@ -33,7 +33,7 @@ function cacheDom(){
    'profileThumbNeon2','profileThumbY2026','themeSwatches','customColorInput',
    'focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'mode3dToggle','mode3dValue','todayMinutesLabel',
-   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
+   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','neonGlowToggle','uiScaleSlider','uiScaleValue','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoRadialFill','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
    'pomoLinearBarWrap','pomoLinearBarFill','pomoWaveCanvas','pomoParticlesCanvas','pomoDottedProgress','pomoBorderGlowBox','pomoBorderGlowLine','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn','saveDayOpenBtn','saveDayModalBackdrop','saveDayModalClose','saveDayDateOptions','saveDayCancelBtn','saveDayConfirmBtn',
    'authBtn','authStatusDot','authModalBackdrop','authModal','authModalClose','authModalTitle','loggedInView','loggedOutView','userEmailDisplay','userSyncStatus','logoutBtn','authTabLogin','authTabRegister','authForm','authEmailInput','authPasswordInput','authErrorMsg','authSuccessMsg','authSubmitBtn','forgotPasswordBtn',
    'analyticsBtn','analyticsModalBackdrop','analyticsModal','analyticsModalClose','prevMonthBtn','nextMonthBtn','monthlyAnalyticsMonthName','monthlyAnalyticsGrid','analyticsDayDetailCard','detailPanelDate','closeDetailPanelBtn','detailPanelTotalTime','detailPanelSessionCount','detailPanelSessionsList','smartDayBoundaryToggle','dayBoundaryTimeSelect',
@@ -86,8 +86,19 @@ function refreshColorCache(){
 function applyMainPageCustomizations(){
   document.body.classList.toggle('no-heart-pulse', !state.showHeartPulse);
   document.body.classList.toggle('clock-only-mode', !!state.clockOnlyMode);
+  document.body.classList.toggle('no-neon-glow', !state.neonGlow);
   if(dom.heartPulseToggle) dom.heartPulseToggle.checked = !!state.showHeartPulse;
   if(dom.clockOnlyToggle) dom.clockOnlyToggle.checked = !!state.clockOnlyMode;
+  if(dom.neonGlowToggle) dom.neonGlowToggle.checked = !!state.neonGlow;
+}
+
+function applyUiScale(scaleVal, opts){
+  opts = opts || {};
+  state.uiScale = scaleVal;
+  document.body.style.zoom = scaleVal;
+  if(dom.uiScaleValue) dom.uiScaleValue.textContent = `%${Math.round(scaleVal * 100)}`;
+  if(dom.uiScaleSlider) dom.uiScaleSlider.value = scaleVal;
+  if(!opts.skipSave) saveSettingsToStorage();
 }
 
 function applyTheme(themeName, opts){
@@ -876,6 +887,8 @@ function saveSettingsToStorage(){
       mode3D: state.mode3D,
       showHeartPulse: state.showHeartPulse,
       clockOnlyMode: state.clockOnlyMode,
+      neonGlow: state.neonGlow !== undefined ? state.neonGlow : true,
+      uiScale: state.uiScale !== undefined ? state.uiScale : 1.0,
       dfShowIcon: state.dfShowIcon,
       dfOnlyTime: state.dfOnlyTime,
       dfDigitalOnly: state.dfDigitalOnly,
@@ -929,6 +942,8 @@ function loadSettingsFromStorage(){
     if(s.mode3D !== undefined) applyMode3D(!!s.mode3D, {skipSave: true});
     if(s.showHeartPulse !== undefined) state.showHeartPulse = !!s.showHeartPulse;
     if(s.clockOnlyMode !== undefined) state.clockOnlyMode = !!s.clockOnlyMode;
+    if(s.neonGlow !== undefined) state.neonGlow = !!s.neonGlow;
+    if(s.uiScale !== undefined) applyUiScale(parseFloat(s.uiScale), {skipSave: true});
     if(s.dfShowIcon !== undefined) state.dfShowIcon = !!s.dfShowIcon;
     if(s.dfOnlyTime !== undefined) state.dfOnlyTime = !!s.dfOnlyTime;
     if(s.dfDigitalOnly !== undefined) state.dfDigitalOnly = !!s.dfDigitalOnly;
@@ -1904,6 +1919,19 @@ function wireEvents(){
   applyDFCustomizations(); saveSettingsToStorage(); });
   if(dom.clockOnlyToggle) dom.clockOnlyToggle.addEventListener('change', ()=>{ state.clockOnlyMode = dom.clockOnlyToggle.checked; applyMainPageCustomizations();
   applyDFCustomizations(); saveSettingsToStorage(); });
+
+  if(dom.neonGlowToggle){
+    dom.neonGlowToggle.addEventListener('change', ()=>{
+      state.neonGlow = dom.neonGlowToggle.checked;
+      applyMainPageCustomizations();
+      saveSettingsToStorage();
+    });
+  }
+  if(dom.uiScaleSlider){
+    dom.uiScaleSlider.addEventListener('input', ()=>{
+      applyUiScale(parseFloat(dom.uiScaleSlider.value));
+    });
+  }
 
   if(dom.smartDayBoundaryToggle){
     dom.smartDayBoundaryToggle.addEventListener('change', ()=>{

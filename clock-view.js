@@ -100,45 +100,33 @@ function updateParallax(){
 
 function setMode(mode, opts){
   opts = opts || {};
-  state.mode=mode;
+  const prevMode = state.mode;
+  state.mode = mode;
   document.querySelectorAll('#modeTabs button').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
 
   const isPomo = (mode === 'pomodoro');
   document.body.classList.toggle('mode-pomodoro', isPomo);
 
-  const targets = [dom.pomodoroWorkspace, dom.ringCluster, document.querySelector('.digital-time')].filter(Boolean);
-  targets.forEach(el => {
-    el.classList.add('mode-transition-view');
-    el.style.opacity = '0';
-    el.style.transform = 'scale(0.97)';
-  });
-
-  let handled = false;
-  const onDone = () => {
-    if(handled) return;
-    handled = true;
-
-    if(dom.pomodoroWorkspace) dom.pomodoroWorkspace.style.display = (isPomo ? 'flex' : 'none');
-    if(isPomo){
-      renderPomodoroTimeline();
-      renderPomodoro();
-    } else {
-      renderClock();
+  if(isPomo){
+    if(dom.pomodoroWorkspace){
+      dom.pomodoroWorkspace.style.display = 'flex';
+      dom.pomodoroWorkspace.classList.remove('slide-in-left', 'slide-in-right');
+      void dom.pomodoroWorkspace.offsetWidth;
+      dom.pomodoroWorkspace.classList.add('slide-in-left');
     }
-
-    requestAnimationFrame(() => {
-      targets.forEach(el => {
-        el.style.opacity = '1';
-        el.style.transform = 'scale(1)';
-      });
-    });
-  };
-
-  if(targets.length > 0){
-    targets[0].addEventListener('transitionend', onDone, {once: true});
-    setTimeout(onDone, 380);
+    renderPomodoroTimeline();
+    renderPomodoro();
   } else {
-    onDone();
+    if(dom.pomodoroWorkspace){
+      dom.pomodoroWorkspace.style.display = 'none';
+    }
+    const targets = [dom.ringCluster, dom.digitalTime || document.querySelector('.digital-time')].filter(Boolean);
+    targets.forEach(el => {
+      el.classList.remove('slide-in-left', 'slide-in-right');
+      void el.offsetWidth;
+      el.classList.add('slide-in-right');
+    });
+    renderClock();
   }
 
   if(state.deepFocus){

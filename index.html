@@ -550,6 +550,17 @@
       <div class="settings-section-title">Ana Sayfa Özelleştirme</div>
       <div class="toggle-row" style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
         <div class="toggle-label" style="display:flex; flex-direction:column;">
+          <span style="font-size:0.8rem; font-weight:600;">Neon Parlamaları (Glow)</span>
+          <small style="font-size:0.65rem; color:var(--text-dimmer);">Metin, halka ve kartlardaki neon ışımasını kapatır</small>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="neonGlowToggle" checked>
+          <span class="switch-track"></span>
+          <span class="switch-thumb"></span>
+        </label>
+      </div>
+      <div class="toggle-row" style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+        <div class="toggle-label" style="display:flex; flex-direction:column;">
           <span style="font-size:0.8rem; font-weight:600;">Kalp & Nabız Animasyonu</span>
           <small style="font-size:0.65rem; color:var(--text-dimmer);">Nabız animasyonu ve ışık glow efekti</small>
         </div>
@@ -569,6 +580,13 @@
           <span class="switch-track"></span>
           <span class="switch-thumb"></span>
         </label>
+      </div>
+      <div class="range-row" style="margin-top:14px;">
+        <div class="range-row-head">
+          <span>Arayüz Ölçeği (UI Zoom)</span>
+          <b id="uiScaleValue">%100</b>
+        </div>
+        <input type="range" id="uiScaleSlider" min="0.85" max="1.30" step="0.05" value="1.0">
       </div>
     </div>
 
