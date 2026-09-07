@@ -6,7 +6,8 @@ function applyDFCustomizations(){
     document.body.classList.toggle('df-pomo-hide-ring', !state.dfPomoShowRing);
   } else {
     document.body.classList.remove('df-pomo-hide-icon', 'df-pomo-hide-label', 'df-pomo-hide-ring');
-    document.body.classList.toggle('df-hide-icon', !state.dfShowIcon);
+    const hideIcon = !state.dfShowIcon || !!state.clockOnlyMode || !!state.dfDigitalOnly;
+    document.body.classList.toggle('df-hide-icon', hideIcon);
     document.body.classList.toggle('df-only-time', !!state.dfOnlyTime);
     document.body.classList.toggle('df-digital-only', !!state.dfDigitalOnly);
   }
@@ -68,7 +69,13 @@ function enterDeepFocus(){
       dom.dfMount.appendChild(dom.pomoBigRingWrap);
     }
   } else {
-    if(dom.dfMount && dom.avatarRing) dom.dfMount.appendChild(dom.avatarRing);
+    if(dom.dfMount){
+      if(state.clockOnlyMode || !state.dfShowIcon || state.dfDigitalOnly){
+        dom.dfMount.innerHTML = '';
+      } else if(dom.avatarRing){
+        dom.dfMount.appendChild(dom.avatarRing);
+      }
+    }
   }
   deepFocusStart=Date.now();
   closeSettingsDrawer();

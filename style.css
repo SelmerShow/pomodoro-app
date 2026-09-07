@@ -436,6 +436,8 @@ body[data-mode3d="off"] .ring-cluster{ perspective:none; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  width: 100%;
   transition: transform 0.3s var(--ease);
   transform-origin: center center;
 }
@@ -718,8 +720,26 @@ body.clock-only-mode .ekg-strip { opacity: 0 !important; pointer-events: none !i
 .df-swatch { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid transparent; cursor: pointer; transition: transform 0.2s; }
 .df-swatch:hover { transform: scale(1.15); border-color: var(--text-0); }
 
-body.df-hide-icon .df-mount, body.df-digital-only .df-mount { display: none !important; }
-body.df-hide-icon .df-time, body.df-digital-only .df-time { font-size: clamp(5rem, 16vw, 10rem) !important; margin-top: 0 !important; }
+/* Collapse and remove phantom df-mount completely when icon is disabled or in clock-only mode */
+body.df-hide-icon .df-mount,
+body.df-digital-only .df-mount,
+body.clock-only-mode .df-mount,
+.df-mount:empty {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* When mount is hidden, scale and center the digital clock cleanly */
+body.df-hide-icon .df-time,
+body.df-digital-only .df-time,
+body.clock-only-mode .df-time {
+  font-size: clamp(5rem, 15vw, 9.5rem) !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
 body.df-pomo-hide-icon #pomoSessionBadge, body.df-pomo-hide-icon .pomo-badge { display: none !important; }
 body.df-only-time .df-session-label, body.df-only-time .df-focus { display: none !important; }
 
