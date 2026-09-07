@@ -1446,17 +1446,39 @@ body.mode-pomodoro .avatar-ring {
 .progress-style-particles .pring-progress { opacity: 0.25 !important; }
 
 .pring-dotted-track {
-  fill: none; stroke: rgba(255,255,255,0.12); stroke-width: 6; stroke-dasharray: 6 10;
-  display: none; transform-origin: 110px 110px;
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 6;
+  stroke-dasharray: 4 11.3938;
+  stroke-linecap: round;
+  display: none;
 }
+
 .pring-dotted {
-  fill: none; stroke: var(--c1); stroke-width: 6; stroke-dasharray: 6 10; stroke-linecap: round;
-  display: none; transform-origin: 110px 110px;
+  fill: none;
+  stroke: var(--c1);
+  stroke-width: 6;
+  stroke-dasharray: 4 11.3938;
+  stroke-linecap: round;
+  display: none;
+  filter: drop-shadow(0 0 6px var(--c1));
 }
+
+#pomoDottedMaskCircle {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 24;
+  stroke-linecap: butt;
+}
+
 .progress-style-dotted .pring-dotted-track,
-.progress-style-dotted .pring-dotted { display: block !important; }
+.progress-style-dotted .pring-dotted {
+  display: block !important;
+}
 .progress-style-dotted .pring-track,
-.progress-style-dotted .pring-progress { display: none !important; }
+.progress-style-dotted .pring-progress {
+  display: none !important;
+}
 
 .border-glow-box {
   position: absolute; inset: -12px; border-radius: var(--radius-l); pointer-events: none;
