@@ -85,7 +85,7 @@ body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96
 .topbar{
   width:100%; max-width:1280px;
   display:flex; align-items:center; justify-content:space-between; gap:8px;
-  margin-bottom:clamp(18px, 4vh, 46px);
+  margin-bottom: 14px !important;
 }
 .brand-block{display:flex; flex-direction:column; gap:2px; flex-shrink:0;}
 .brand{
@@ -120,7 +120,12 @@ body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96
 .icon-btn:active{transform:translateY(0);}
 .icon-btn.is-on{border-color:rgba(var(--c1-rgb),.75); box-shadow:0 0 16px rgba(var(--c1-rgb),.45); background:rgba(var(--c1-rgb),.12);}
 
-.cockpit{ width:100%; max-width:1280px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; perspective:1400px; }
+.cockpit{
+  width:100%; max-width:1280px; display:flex; flex-direction:column; align-items:center;
+  justify-content: flex-start !important;
+  padding-top: clamp(8px, 1.8vh, 20px) !important;
+  flex:1; perspective:1400px;
+}
 .ring-cluster{
   position:relative; width:clamp(230px, 32vw, 372px); aspect-ratio:1/1;
   transform-style:preserve-3d; transform:rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
@@ -212,7 +217,11 @@ body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96
 
 .mode-tabs{
   display:flex; gap:6px; padding:5px; border-radius:999px;
-  border:1px solid var(--hairline); background:rgba(255,255,255,.02); margin-bottom:22px;
+  border:1px solid var(--hairline); background:rgba(255,255,255,.02);
+  margin: 0 auto 16px !important;
+  flex-shrink: 0 !important;
+  position: relative;
+  z-index: 10;
 }
 .mode-tabs button{
   font-family:'Rajdhani',sans-serif; font-weight:600; font-size:.78rem; letter-spacing:.12em;
@@ -719,7 +728,6 @@ body.df-only-time .df-session-label, body.df-only-time .df-focus { display: none
 body.mode-pomodoro #ringCluster,
 body.mode-pomodoro .digital-time,
 body.mode-pomodoro .ekg-strip,
-body.mode-pomodoro #soundPanel,
 body.mode-pomodoro .pulse-field,
 body.mode-pomodoro .avatar-pulse,
 body.mode-pomodoro .avatar-glow,
@@ -1594,4 +1602,49 @@ body.df-pomo-hide-ring .border-glow-box { display: none !important; }
   padding: 0;
   pointer-events: none;
   overflow: hidden;
+}
+
+/* Neon Glow Toggle Rules */
+body.no-neon-glow * {
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+body.no-neon-glow .avatar-glow {
+  display: none !important;
+}
+body.no-neon-glow .pulse-field {
+  opacity: 0.1 !important;
+}
+
+/* Directional Slide Transition Animations */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translate3d(-60px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translate3d(60px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.slide-in-left {
+  animation: slideInFromLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  will-change: transform, opacity;
+}
+
+.slide-in-right {
+  animation: slideInFromRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  will-change: transform, opacity;
 }

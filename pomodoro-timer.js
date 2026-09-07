@@ -536,6 +536,7 @@ function _oldRenderPomodoro(){
   dom.pomodoroStartPause.textContent=pomodoro.running?'DURAKLAT':'BAŞLAT';
 }
 function renderSessionDots(){
+  if(!dom.sessionDots) return;
   dom.sessionDots.innerHTML='';
   const n=pomodoro.sessionsBeforeLong;
   const filled=pomodoro.sessionsCompleted % n;
