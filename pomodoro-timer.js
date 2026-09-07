@@ -297,10 +297,13 @@ function applyProgressStyle(styleName, opts){
 
 function drawPomoVisuals(ts, frac){
   if(dom.pomoLinearBarFill){
-    dom.pomoLinearBarFill.style.width = (frac * 100).toFixed(1) + '%';
+    const isDeplete = state.progressDirection === 'deplete';
+    const fillPct = isDeplete ? (1 - frac) * 100 : frac * 100;
+    dom.pomoLinearBarFill.style.width = fillPct.toFixed(1) + '%';
   }
   if(typeof TimerVisuals !== 'undefined'){
-    TimerVisuals.render(ts, pomodoro.isOvertime ? 0 : (pomodoro.remainingMs / pomodoroTotalMs()), frac);
+    const remFrac = pomodoro.isOvertime ? 0 : (pomodoro.remainingMs / pomodoroTotalMs());
+    TimerVisuals.render(ts, remFrac, frac);
   }
 }
 
@@ -367,7 +370,9 @@ function renderPomodoro(ts, force){
     totalWorkSec
   };
 
-  const dashOffset = (PRING_BIG_C * elapsedFrac).toFixed(2);
+  const isDeplete = state.progressDirection === 'deplete';
+  const svgOffsetFrac = isDeplete ? elapsedFrac : (1 - elapsedFrac);
+  const dashOffset = (PRING_BIG_C * svgOffsetFrac).toFixed(2);
 
   if(dom.pomoBigProgress){
     dom.pomoBigProgress.setAttribute('stroke-dasharray', PRING_BIG_C.toFixed(2));

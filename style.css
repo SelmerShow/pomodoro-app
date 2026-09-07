@@ -1438,12 +1438,18 @@ body.mode-pomodoro .avatar-ring {
 .progress-style-linear .pring-progress,
 .progress-style-linear .pomo-big-ring-wrap > svg { display: none !important; }
 
-.progress-style-dotted .pring-progress,
-.progress-style-wave .pring-progress,
-.progress-style-particles .pring-progress,
-.progress-style-arc .pring-progress,
-.progress-style-fill .pring-progress {
-  opacity: 0.15 !important;
+.progress-style-dotted #pomoBigProgress,
+.progress-style-wave #pomoBigProgress,
+.progress-style-particles #pomoBigProgress,
+.progress-style-arc #pomoBigProgress,
+.progress-style-fill #pomoBigProgress,
+.progress-style-linear #pomoBigProgress,
+.progress-style-minimal #pomoBigProgress {
+  display: none !important;
+}
+
+.progress-style-ring #pomoBigProgress {
+  display: block !important;
 }
 
 .progress-style-minimal .pring-track,
@@ -1451,6 +1457,24 @@ body.mode-pomodoro .avatar-ring {
 .progress-style-minimal .pomo-big-ring-wrap svg,
 .progress-style-minimal #dfMount svg {
   display: none !important;
+}
+
+/* Deep Focus Pomodoro typography & badge scaling */
+body.deep-focus-active.mode-pomodoro #pomoBigTimeLabel {
+  font-size: clamp(3.8rem, 9vw, 5.5rem) !important;
+}
+body.deep-focus-active.mode-pomodoro .pomo-badge {
+  font-size: 0.9rem !important;
+  padding: 6px 18px !important;
+}
+body.deep-focus-active.mode-pomodoro .pomo-status-sub {
+  font-size: 0.82rem !important;
+}
+body.deep-focus-active.mode-pomodoro #dfTotalWorkSub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.15em;
+  margin-top: 14px !important;
 }
 
 body.df-pomo-hide-label .df-session-label,

@@ -251,6 +251,13 @@
           </select>
         </div>
         <div class="df-toggle-row">
+            <span class="df-control-label">Sayaç İlerleme Yönü</span>
+            <select id="dfPomoProgressDirectionSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:6px 10px; font-size:0.75rem; outline:none;">
+            <option value="fill">Çalıştıkça Dolsun (%0 ➔ %100)</option>
+            <option value="deplete">Kaldıkça Eksilsin (%100 ➔ %0)</option>
+          </select>
+        </div>
+        <div class="df-toggle-row">
             <span class="df-control-label">Gösterim Modu</span>
             <select id="dfPomoViewModeSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:6px 10px; font-size:0.75rem; outline:none;">
             <option value="both">İkisini de Göster</option>
@@ -465,6 +472,16 @@
           <option value="fill">Radyal Dolum (Radar)</option>
           <option value="linear">Lineer Neon Çubuk</option>
           <option value="minimal">Saf Minimalist (Yalnızca Süre)</option>
+        </select>
+      </div>
+      <div class="toggle-row" style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+        <div class="toggle-label" style="display:flex; flex-direction:column;">
+          <span style="font-size:0.8rem; font-weight:600;">Sayaç İlerleme Yönü</span>
+          <small style="font-size:0.65rem; color:var(--text-dimmer);">Dolma (%0 ➔ %100) veya eksilme (%100 ➔ %0)</small>
+        </div>
+        <select id="pomoProgressDirectionSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+          <option value="fill">Çalıştıkça Dolsun (%0 ➔ %100)</option>
+          <option value="deplete">Kaldıkça Eksilsin (%100 ➔ %0)</option>
         </select>
       </div>
     </div>

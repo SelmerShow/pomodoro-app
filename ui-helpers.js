@@ -5,7 +5,7 @@ const ASSETS = {
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PROFILE_META = { neon2:{ name:'NEON PULSE', theme:'cyberpunkBlue' }, y2026:{ name:'SOLAR FLARE', theme:'volcanicOrange' } };
-const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, neonGlow:true, uiScale:1.0, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#3fd0ff', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
+const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, neonGlow:true, uiScale:1.0, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', progressDirection:'fill', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#3fd0ff', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
 const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:25, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, isOvertime:false, overtimeSec:0, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:25*60*1000, intervalId:null, lastTickTs:0 };
 const SEC_R=78, SEC_C=2*Math.PI*SEC_R;
 const PRING_R=76, PRING_C=2*Math.PI*PRING_R;
@@ -33,7 +33,7 @@ function cacheDom(){
    'profileThumbNeon2','profileThumbY2026','themeSwatches','customColorInput',
    'focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'mode3dToggle','mode3dValue','todayMinutesLabel',
-   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','neonGlowToggle','uiScaleSlider','uiScaleValue','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect',
+   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','neonGlowToggle','uiScaleSlider','uiScaleValue','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect','pomoProgressDirectionSelect','dfPomoProgressDirectionSelect',
    'pomoLinearBarWrap','pomoLinearBarFill','pomoVisualsCanvas','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn','saveDayOpenBtn','saveDayModalBackdrop','saveDayModalClose','saveDayDateOptions','saveDayCancelBtn','saveDayConfirmBtn',
    'authBtn','authStatusDot','authModalBackdrop','authModal','authModalClose','authModalTitle','loggedInView','loggedOutView','userEmailDisplay','userSyncStatus','logoutBtn','authTabLogin','authTabRegister','authForm','authEmailInput','authPasswordInput','authErrorMsg','authSuccessMsg','authSubmitBtn','forgotPasswordBtn',
    'analyticsBtn','analyticsModalBackdrop','analyticsModal','analyticsModalClose','prevMonthBtn','nextMonthBtn','monthlyAnalyticsMonthName','monthlyAnalyticsGrid','analyticsDayDetailCard','detailPanelDate','closeDetailPanelBtn','detailPanelTotalTime','detailPanelSessionCount','detailPanelSessionsList','smartDayBoundaryToggle','dayBoundaryTimeSelect',
@@ -857,6 +857,7 @@ function saveSettingsToStorage(){
       dfPomoShowLabel: state.dfPomoShowLabel,
       dfPomoShowRing: state.dfPomoShowRing,
       progressStyle: state.progressStyle,
+      progressDirection: state.progressDirection || 'fill',
       enableCelebration: state.enableCelebration,
       celebrationStyle: state.celebrationStyle,
       focusMin: pomodoro.focusMin,
@@ -911,6 +912,11 @@ function loadSettingsFromStorage(){
     if(s.dfPomoShowIcon !== undefined) state.dfPomoShowIcon = !!s.dfPomoShowIcon;
     if(s.dfPomoShowLabel !== undefined) state.dfPomoShowLabel = !!s.dfPomoShowLabel;
     if(s.dfPomoShowRing !== undefined) state.dfPomoShowRing = !!s.dfPomoShowRing;
+    if(s.progressDirection) {
+      state.progressDirection = s.progressDirection;
+      if(dom.pomoProgressDirectionSelect) dom.pomoProgressDirectionSelect.value = s.progressDirection;
+      if(dom.dfPomoProgressDirectionSelect) dom.dfPomoProgressDirectionSelect.value = s.progressDirection;
+    }
     applyProgressStyle(s.progressStyle || 'ring', {skipSave: true});
     if(s.enableCelebration !== undefined) {
       state.enableCelebration = !!s.enableCelebration;
@@ -1599,6 +1605,25 @@ function wireEvents(){
   if(dom.dfPomoProgressStyleSelect){
     dom.dfPomoProgressStyleSelect.addEventListener('change', ()=>{
       applyProgressStyle(dom.dfPomoProgressStyleSelect.value);
+    });
+  }
+
+  const handleProgressDirectionChange = (val) => {
+    state.progressDirection = val;
+    pomoNeedsRender = true;
+    if(dom.pomoProgressDirectionSelect) dom.pomoProgressDirectionSelect.value = val;
+    if(dom.dfPomoProgressDirectionSelect) dom.dfPomoProgressDirectionSelect.value = val;
+    renderPomodoro();
+    saveSettingsToStorage();
+  };
+  if(dom.pomoProgressDirectionSelect){
+    dom.pomoProgressDirectionSelect.addEventListener('change', ()=>{
+      handleProgressDirectionChange(dom.pomoProgressDirectionSelect.value);
+    });
+  }
+  if(dom.dfPomoProgressDirectionSelect){
+    dom.dfPomoProgressDirectionSelect.addEventListener('change', ()=>{
+      handleProgressDirectionChange(dom.dfPomoProgressDirectionSelect.value);
     });
   }
 
