@@ -39,7 +39,7 @@ function cacheDom(){
    'analyticsBtn','analyticsModalBackdrop','analyticsModal','analyticsModalClose','prevMonthBtn','nextMonthBtn','monthlyAnalyticsMonthName','monthlyAnalyticsGrid','analyticsDayDetailCard','detailPanelDate','closeDetailPanelBtn','detailPanelTotalTime','detailPanelSessionCount','detailPanelSessionsList','smartDayBoundaryToggle','dayBoundaryTimeSelect',
    'saveDayOptToday','saveDayOptYesterday','saveDayDateStrToday','saveDayDateStrYesterday','saveDayStatusToday','saveDayStatusYesterday','saveDaySummaryText',
    'deleteHistoryModalBackdrop','deleteHistoryModalClose','deleteHistoryCancelBtn','deleteHistoryConfirmBtn','deleteHistoryModalMsg',
-   'dfTabNav','pomoDottedMaskCircle'
+   'dfTabNav','pomoDottedMaskCircle','soundModalBtn','soundModalBackdrop','soundModalClose'
   ].forEach(id => dom[id] = document.getElementById(id));
 }
 
@@ -1484,6 +1484,23 @@ function openSettingsDrawer(){ dom.settingsDrawer.classList.add('open'); dom.dra
 function closeSettingsDrawer(){ dom.settingsDrawer.classList.remove('open'); dom.drawerBackdrop.classList.remove('open'); }
 
 function wireEvents(){
+  if(dom.soundModalBtn){
+    dom.soundModalBtn.addEventListener('click', ()=>{
+      if(dom.soundModalBackdrop) dom.soundModalBackdrop.classList.add('open');
+      setupWave();
+    });
+  }
+  if(dom.soundModalClose){
+    dom.soundModalClose.addEventListener('click', ()=>{
+      if(dom.soundModalBackdrop) dom.soundModalBackdrop.classList.remove('open');
+    });
+  }
+  if(dom.soundModalBackdrop){
+    dom.soundModalBackdrop.addEventListener('click', (e)=>{
+      if(e.target === dom.soundModalBackdrop) dom.soundModalBackdrop.classList.remove('open');
+    });
+  }
+
   if(dom.analyticsBtn){
     dom.analyticsBtn.addEventListener('click', ()=>{
       if(dom.analyticsModalBackdrop) dom.analyticsModalBackdrop.classList.add('open');
@@ -1706,8 +1723,8 @@ function wireEvents(){
       setMode(btn.dataset.mode);
     });
   });
-  dom.pomodoroStartPause.addEventListener('click', ()=> pomodoro.running?pomodoroPause():pomodoroStart());
-  dom.pomodoroReset.addEventListener('click', pomodoroReset);
+  if(dom.pomodoroStartPause) dom.pomodoroStartPause.addEventListener('click', ()=> pomodoro.running?pomodoroPause():pomodoroStart());
+  if(dom.pomodoroReset) dom.pomodoroReset.addEventListener('click', pomodoroReset);
 
   if(dom.pomoMainStartPause) dom.pomoMainStartPause.addEventListener('click', ()=> pomodoro.running ? pomodoroPause() : pomodoroStart());
   if(dom.pomoMainReset) dom.pomoMainReset.addEventListener('click', pomodoroReset);

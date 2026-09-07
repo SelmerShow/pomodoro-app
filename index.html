@@ -30,6 +30,9 @@
       <div id="dateCycleText">—</div>
     </div>
     <div class="top-actions">
+      <button class="icon-btn" id="soundModalBtn" title="Ortam Sesi" aria-label="Ortam Sesi panelini aç">
+        <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+      </button>
       <button class="icon-btn" id="analyticsBtn" title="Aylık Analiz" aria-label="Aylık Analiz panelini aç">
         <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
       </button>
@@ -47,6 +50,11 @@
   </header>
 
   <main class="cockpit">
+    <nav class="mode-tabs" id="modeTabs">
+      <button data-mode="clock" class="active">SAAT</button>
+      <button data-mode="pomodoro">POMODORO</button>
+    </nav>
+
     <div class="ring-cluster" id="ringCluster">
       <div class="parallax-layer layer-back" id="layerBack">
         <svg class="ring-svg" viewBox="0 0 200 200">
@@ -139,56 +147,6 @@
       </div>
     </div>
 
-    <nav class="mode-tabs" id="modeTabs">
-      <button data-mode="clock" class="active">SAAT</button>
-      <button data-mode="pomodoro">POMODORO</button>
-    </nav>
-
-    <div class="panels" id="panels">
-      <div class="panel pomodoro-panel" id="pomodoroPanel">
-        <span class="panel-label">Odak Seansı</span>
-        <div class="pomodoro-ring-wrap">
-          <svg viewBox="0 0 168 168">
-            <circle class="pring-track" cx="84" cy="84" r="76"></circle>
-            <circle class="pring-progress" id="pomodoroProgress" cx="84" cy="84" r="76"></circle>
-          </svg>
-          <div class="pomodoro-center">
-            <span id="pomodoroSessionType">ODAK</span>
-            <span id="pomodoroTimeLabel">25:00</span>
-          </div>
-        </div>
-        <div class="pomodoro-controls">
-          <button class="pbtn pbtn-primary" id="pomodoroStartPause">BAŞLAT</button>
-          <button class="pbtn pbtn-ghost" id="pomodoroReset">SIFIRLA</button>
-        </div>
-        <div class="session-dots" id="sessionDots"></div>
-      </div>
-
-      <div class="panel sound-panel" id="soundPanel">
-        <span class="panel-label">Ortam Sesi</span>
-        <div class="sound-presets" id="soundPresets">
-          <button class="preset-btn active" data-preset="off">SESSİZ</button>
-          <button class="preset-btn" data-preset="whiteNoise">WHITE NOISE</button>
-          <button class="preset-btn" data-preset="blackNoise">BLACK NOISE</button>
-          <button class="preset-btn" data-preset="pinkNoise">PINK NOISE</button>
-          <button class="preset-btn" data-preset="rain">RAIN</button>
-          <button class="preset-btn" data-preset="ocean">OCEAN</button>
-          <button class="preset-btn" data-preset="bioGreen">BIO-GREEN</button>
-          <button class="preset-btn" data-preset="cyberpunkRain">CYBER RAIN</button>
-        </div>
-        <canvas id="waveCanvas"></canvas>
-        <div class="volume-row" style="margin-bottom:8px;">
-          <span style="font-size:0.75rem; color:var(--text-dim); min-width:82px;">Ortam Sesi:</span>
-          <svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3z"></path><path d="M16 8a5 5 0 010 8"></path></svg>
-          <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.55">
-        </div>
-        <div class="volume-row">
-          <span style="font-size:0.75rem; color:var(--text-dim); min-width:82px;">Zil & Alarm:</span>
-          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          <input type="range" id="alarmVolumeSlider" min="0" max="1" step="0.01" value="0.70">
-        </div>
-      </div>
-    </div>
   </main>
 </div>
 
@@ -841,6 +799,39 @@
       <div style="display:flex; justify-flex:flex-end; gap:10px; margin-top:10px;">
         <button class="pomo-type-btn" id="saveDayCancelBtn">Vazgeç</button>
         <button class="pomo-type-btn active" id="saveDayConfirmBtn">Kaydet ve Sıfırla</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SOUND MODAL -->
+<div class="pomo-modal-backdrop" id="soundModalBackdrop">
+  <div class="pomo-modal" id="soundModal" style="max-width:480px;">
+    <div class="pomo-modal-header">
+      <span>ORTAM SESİ</span>
+      <button class="pomo-modal-close" id="soundModalClose">&times;</button>
+    </div>
+    <div class="panel sound-panel" id="soundPanel" style="border:none; padding:0; background:none;">
+      <div class="sound-presets" id="soundPresets">
+        <button class="preset-btn active" data-preset="off">SESSİZ</button>
+        <button class="preset-btn" data-preset="whiteNoise">WHITE NOISE</button>
+        <button class="preset-btn" data-preset="blackNoise">BLACK NOISE</button>
+        <button class="preset-btn" data-preset="pinkNoise">PINK NOISE</button>
+        <button class="preset-btn" data-preset="rain">RAIN</button>
+        <button class="preset-btn" data-preset="ocean">OCEAN</button>
+        <button class="preset-btn" data-preset="bioGreen">BIO-GREEN</button>
+        <button class="preset-btn" data-preset="cyberpunkRain">CYBER RAIN</button>
+      </div>
+      <canvas id="waveCanvas"></canvas>
+      <div class="volume-row" style="margin-bottom:8px;">
+        <span style="font-size:0.75rem; color:var(--text-dim); min-width:82px;">Ortam Sesi:</span>
+        <svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3z"></path><path d="M16 8a5 5 0 010 8"></path></svg>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.55">
+      </div>
+      <div class="volume-row">
+        <span style="font-size:0.75rem; color:var(--text-dim); min-width:82px;">Zil & Alarm:</span>
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        <input type="range" id="alarmVolumeSlider" min="0" max="1" step="0.01" value="0.70">
       </div>
     </div>
   </div>

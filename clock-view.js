@@ -16,8 +16,8 @@ function buildTicks(){
   dom.ticksGroup.appendChild(frag);
 }
 function setupRings(){
-  dom.secondsProgress.setAttribute('stroke-dasharray', SEC_C.toFixed(2));
-  dom.pomodoroProgress.setAttribute('stroke-dasharray', PRING_C.toFixed(2));
+  if(dom.secondsProgress) dom.secondsProgress.setAttribute('stroke-dasharray', SEC_C.toFixed(2));
+  if(dom.pomodoroProgress) dom.pomodoroProgress.setAttribute('stroke-dasharray', PRING_C.toFixed(2));
 }
 function renderClock(){
   const now=getSyncedNow();

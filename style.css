@@ -212,7 +212,8 @@ body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96
 
 .mode-tabs{
   display:flex; gap:6px; padding:5px; border-radius:999px;
-  border:1px solid var(--hairline); background:rgba(255,255,255,.02); margin-bottom:22px;
+  border:1px solid var(--hairline); background:rgba(255,255,255,.02);
+  margin:0 auto 24px; z-index:10;
 }
 .mode-tabs button{
   font-family:'Rajdhani',sans-serif; font-weight:600; font-size:.78rem; letter-spacing:.12em;
@@ -719,7 +720,6 @@ body.df-only-time .df-session-label, body.df-only-time .df-focus { display: none
 body.mode-pomodoro #ringCluster,
 body.mode-pomodoro .digital-time,
 body.mode-pomodoro .ekg-strip,
-body.mode-pomodoro #soundPanel,
 body.mode-pomodoro .pulse-field,
 body.mode-pomodoro .avatar-pulse,
 body.mode-pomodoro .avatar-glow,
