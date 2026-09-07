@@ -107,21 +107,11 @@
           <button class="pomo-open-config-btn" id="pomoOpenConfigBtn" title="Ders & Mola Ayarları" aria-label="Ders & Mola Ayarları">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 13a7.6 7.6 0 000-2l2-1.5-2-3.4-2.3.9a7.7 7.7 0 00-1.7-1L15 3.4h-4l-.4 2.6a7.7 7.7 0 00-1.7 1l-2.3-.9-2 3.4L6.6 11a7.6 7.6 0 000 2l-2 1.5 2 3.4 2.3-.9c.5.4 1.1.75 1.7 1l.4 2.6h4l.4-2.6c.6-.25 1.2-.6 1.7-1l2.3.9 2-3.4-2-1.5z"></path></svg>
           </button>
-          <div class="border-glow-box" id="pomoBorderGlowBox"><div class="border-glow-line" id="pomoBorderGlowLine"></div></div>
           <div class="pomo-big-ring-wrap" id="pomoBigRingWrap">
-            <div class="radial-fill-overlay" id="pomoRadialFill"></div>
-            <canvas class="pomo-wave-canvas" id="pomoWaveCanvas"></canvas>
-            <canvas class="pomo-particles-canvas" id="pomoParticlesCanvas"></canvas>
+            <canvas id="pomoVisualsCanvas"></canvas>
             <svg viewBox="0 0 220 220">
-              <defs>
-                <mask id="pomoDottedMask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="220" height="220">
-                  <circle cx="110" cy="110" r="98" fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="butt" stroke-dasharray="0 615.75" transform="rotate(-90 110 110)" id="pomoDottedMaskCircle"></circle>
-                </mask>
-              </defs>
               <circle class="pring-track" cx="110" cy="110" r="98"></circle>
               <circle class="pring-progress" id="pomoBigProgress" cx="110" cy="110" r="98" transform="rotate(-90 110 110)"></circle>
-              <circle class="pring-dotted-track" cx="110" cy="110" r="98" transform="rotate(-90 110 110)"></circle>
-              <circle class="pring-dotted" id="pomoDottedProgress" cx="110" cy="110" r="98" transform="rotate(-90 110 110)" mask="url(#pomoDottedMask)"></circle>
             </svg>
             <div class="pomo-big-center">
               <span class="pomo-badge" id="pomoSessionBadge">1. ETÜT</span>
@@ -250,14 +240,21 @@
         <div class="df-toggle-row">
             <span class="df-control-label">Sayaç İlerleme Görseli</span>
             <select id="dfPomoProgressStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:6px 10px; font-size:0.75rem; outline:none;">
-            <option value="ring">Dairesel Çizgi (Circular Ring)</option>
-            <option value="linear">Yatay İlerleme Çubuğu (Linear Bar)</option>
-            <option value="wave">Arka Plan Dalga (Wave Liquid)</option>
-            <option value="border">Köşe Çerçeve Dolumu (Border Glow)</option>
-            <option value="particles">Kum Saati / Noktasal (Particles)</option>
-            <option value="dotted">Yıldız Halka / Kesikli (Dotted Neon)</option>
-            <option value="fill">Dolum Efekti (Radial Fill)</option>
-            <option value="minimal">Klasik / Gizli (Minimal)</option>
+            <option value="ring">Neon Halka (Klasik)</option>
+            <option value="dotted">Siber Kapsül (Matrix)</option>
+            <option value="wave">Plazma Dalga (Sıvı Rezonans)</option>
+            <option value="particles">Kozmik Akış (Yıldız Tozu)</option>
+            <option value="arc">Çift Siber Yay (Dual Plasma)</option>
+            <option value="fill">Radyal Dolum (Radar)</option>
+            <option value="linear">Lineer Neon Çubuk</option>
+            <option value="minimal">Saf Minimalist (Yalnızca Süre)</option>
+          </select>
+        </div>
+        <div class="df-toggle-row">
+            <span class="df-control-label">Sayaç İlerleme Yönü</span>
+            <select id="dfPomoProgressDirectionSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:6px 10px; font-size:0.75rem; outline:none;">
+            <option value="fill">Çalıştıkça Dolsun (%0 ➔ %100)</option>
+            <option value="deplete">Kaldıkça Eksilsin (%100 ➔ %0)</option>
           </select>
         </div>
         <div class="df-toggle-row">
@@ -467,14 +464,24 @@
           <small style="font-size:0.65rem; color:var(--text-dimmer);">Pomodoro & Odak sayaç halkası efekti</small>
         </div>
         <select id="mainProgressStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
-          <option value="ring">Dairesel Çizgi (Circular Ring)</option>
-          <option value="linear">Yatay İlerleme Çubuğu (Linear Bar)</option>
-          <option value="wave">Arka Plan Dalga (Wave Liquid)</option>
-          <option value="border">Köşe Çerçeve Dolumu (Border Glow)</option>
-          <option value="particles">Kum Saati / Noktasal (Particles)</option>
-          <option value="dotted">Yıldız Halka / Kesikli (Dotted Neon)</option>
-          <option value="fill">Dolum Efekti (Radial Fill)</option>
-          <option value="minimal">Klasik / Gizli (Minimal)</option>
+          <option value="ring">Neon Halka (Klasik)</option>
+          <option value="dotted">Siber Kapsül (Matrix)</option>
+          <option value="wave">Plazma Dalga (Sıvı Rezonans)</option>
+          <option value="particles">Kozmik Akış (Yıldız Tozu)</option>
+          <option value="arc">Çift Siber Yay (Dual Plasma)</option>
+          <option value="fill">Radyal Dolum (Radar)</option>
+          <option value="linear">Lineer Neon Çubuk</option>
+          <option value="minimal">Saf Minimalist (Yalnızca Süre)</option>
+        </select>
+      </div>
+      <div class="toggle-row" style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+        <div class="toggle-label" style="display:flex; flex-direction:column;">
+          <span style="font-size:0.8rem; font-weight:600;">Sayaç İlerleme Yönü</span>
+          <small style="font-size:0.65rem; color:var(--text-dimmer);">Dolma (%0 ➔ %100) veya eksilme (%100 ➔ %0)</small>
+        </div>
+        <select id="pomoProgressDirectionSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.72rem; outline:none;">
+          <option value="fill">Çalıştıkça Dolsun (%0 ➔ %100)</option>
+          <option value="deplete">Kaldıkça Eksilsin (%100 ➔ %0)</option>
         </select>
       </div>
     </div>
@@ -890,6 +897,7 @@
 <script src="ui-helpers.js"></script>
 <script src="firebase-sync.js"></script>
 <script src="clock-view.js"></script>
+<script src="timer-visuals.js"></script>
 <script src="pomodoro-timer.js"></script>
 <script src="deep-focus.js"></script>
 </body>

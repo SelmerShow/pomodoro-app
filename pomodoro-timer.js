@@ -285,7 +285,7 @@ function applyProgressStyle(styleName, opts){
   opts = opts || {};
   state.progressStyle = styleName;
   pomoNeedsRender = true;
-  const styles = ['ring', 'linear', 'wave', 'border', 'particles', 'dotted', 'fill', 'minimal'];
+  const styles = ['ring', 'linear', 'wave', 'arc', 'particles', 'dotted', 'fill', 'minimal'];
   styles.forEach(s => document.body.classList.remove('progress-style-' + s));
   document.body.classList.add('progress-style-' + styleName);
 
@@ -296,120 +296,14 @@ function applyProgressStyle(styleName, opts){
 }
 
 function drawPomoVisuals(ts, frac){
-  // 1. Linear Bar Update
   if(dom.pomoLinearBarFill){
-    dom.pomoLinearBarFill.style.width = (frac * 100).toFixed(1) + '%';
+    const isDeplete = state.progressDirection === 'deplete';
+    const fillPct = isDeplete ? (1 - frac) * 100 : frac * 100;
+    dom.pomoLinearBarFill.style.width = fillPct.toFixed(1) + '%';
   }
-
-  // 2. Wave / Liquid Fill Canvas
-  if(pomoWaveCtx && state.progressStyle === 'wave'){
-    pomoWaveCtx.clearRect(0, 0, 240, 240);
-    pomoWaveCtx.save();
-    pomoWaveCtx.beginPath();
-    pomoWaveCtx.arc(120, 120, 118, 0, Math.PI * 2);
-    pomoWaveCtx.clip();
-
-    const waterHeight = 240 * frac;
-    const waterY = 240 - waterHeight;
-
-    pomoWaveCtx.fillStyle = CACHED_C1;
-    pomoWaveCtx.globalAlpha = 0.35;
-    pomoWaveCtx.beginPath();
-    for(let x = 0; x <= 240; x += 5){
-      const y = waterY + Math.sin(x * 0.04 + ts * 0.003) * 6;
-      if(x === 0) pomoWaveCtx.moveTo(x, y);
-      else pomoWaveCtx.lineTo(x, y);
-    }
-    pomoWaveCtx.lineTo(240, 240);
-    pomoWaveCtx.lineTo(0, 240);
-    pomoWaveCtx.closePath();
-    pomoWaveCtx.fill();
-
-    pomoWaveCtx.fillStyle = CACHED_C2;
-    pomoWaveCtx.globalAlpha = 0.25;
-    pomoWaveCtx.beginPath();
-    for(let x = 0; x <= 240; x += 5){
-      const y = waterY + Math.cos(x * 0.05 + ts * 0.0025) * 5;
-      if(x === 0) pomoWaveCtx.moveTo(x, y);
-      else pomoWaveCtx.lineTo(x, y);
-    }
-    pomoWaveCtx.lineTo(240, 240);
-    pomoWaveCtx.lineTo(0, 240);
-    pomoWaveCtx.closePath();
-    pomoWaveCtx.fill();
-
-    pomoWaveCtx.restore();
-  }
-
-  // 3. Hourglass Sand / Particles Stream & Accumulation Canvas
-  if(pomoParticlesCtx && state.progressStyle === 'particles'){
-    pomoParticlesCtx.clearRect(0, 0, 240, 240);
-    pomoParticlesCtx.save();
-    pomoParticlesCtx.beginPath();
-    pomoParticlesCtx.arc(120, 120, 118, 0, Math.PI * 2);
-    pomoParticlesCtx.clip();
-
-    // Accumulated sand bed height at the bottom based on frac
-    const pileHeight = 236 * frac;
-    const pileY = 240 - pileHeight;
-
-    // Draw falling particles
-    pomoStreamParticles.forEach(p => {
-      p.y += p.speed;
-      if(p.y >= pileY && pileY < 238){ p.y = Math.random() * 40; p.x = 90 + Math.random() * 60; }
-      pomoParticlesCtx.fillStyle = CACHED_C1;
-      pomoParticlesCtx.globalAlpha = p.opacity;
-      pomoParticlesCtx.beginPath();
-      pomoParticlesCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      pomoParticlesCtx.fill();
-    });
-
-    // Draw accumulated sand pile at the bottom
-    if(frac > 0.005){
-      pomoParticlesCtx.fillStyle = CACHED_C1;
-      pomoParticlesCtx.globalAlpha = 0.55;
-      pomoParticlesCtx.beginPath();
-      // Curved mound surface
-      pomoParticlesCtx.moveTo(0, 240);
-      for(let x = 0; x <= 240; x += 10){
-        const distFromCenter = Math.abs(x - 120) / 120;
-        const moundOffset = Math.sin((1 - distFromCenter) * Math.PI * 0.5) * Math.min(20, pileHeight * 0.3);
-        const y = Math.max(0, pileY - moundOffset);
-        pomoParticlesCtx.lineTo(x, y);
-      }
-      pomoParticlesCtx.lineTo(240, 240);
-      pomoParticlesCtx.closePath();
-      pomoParticlesCtx.fill();
-
-      // Bright top highlight edge on the sand pile
-      pomoParticlesCtx.strokeStyle = CACHED_C3;
-      pomoParticlesCtx.lineWidth = 2;
-      pomoParticlesCtx.globalAlpha = 0.85;
-      pomoParticlesCtx.beginPath();
-      for(let x = 10; x <= 230; x += 10){
-        const distFromCenter = Math.abs(x - 120) / 120;
-        const moundOffset = Math.sin((1 - distFromCenter) * Math.PI * 0.5) * Math.min(20, pileHeight * 0.3);
-        const y = Math.max(0, pileY - moundOffset);
-        if(x === 10) pomoParticlesCtx.moveTo(x, y);
-        else pomoParticlesCtx.lineTo(x, y);
-      }
-      pomoParticlesCtx.stroke();
-    }
-
-    pomoParticlesCtx.restore();
-  }
-
-  // 4. Dotted Neon Radial Circle
-  if(dom.pomoDottedMaskCircle){
-    const PRING_BIG_C = 2 * Math.PI * 98; // 615.752
-    const filledLen = (PRING_BIG_C * frac).toFixed(2);
-    dom.pomoDottedMaskCircle.setAttribute('stroke-dasharray', `${filledLen} ${PRING_BIG_C}`);
-  }
-
-  // 5. Border Glow Walk Rotation
-  if(dom.pomoBorderGlowLine && state.progressStyle === 'border'){
-    const rot = (ts * 0.08) % 360;
-    dom.pomoBorderGlowLine.style.background = `conic-gradient(from ${rot}deg, var(--c1), transparent 40%, transparent 100%)`;
+  if(typeof TimerVisuals !== 'undefined'){
+    const remFrac = pomodoro.isOvertime ? 0 : (pomodoro.remainingMs / pomodoroTotalMs());
+    TimerVisuals.render(ts, remFrac, frac);
   }
 }
 
@@ -476,7 +370,9 @@ function renderPomodoro(ts, force){
     totalWorkSec
   };
 
-  const dashOffset = (PRING_BIG_C * elapsedFrac).toFixed(2);
+  const isDeplete = state.progressDirection === 'deplete';
+  const svgOffsetFrac = isDeplete ? elapsedFrac : (1 - elapsedFrac);
+  const dashOffset = (PRING_BIG_C * svgOffsetFrac).toFixed(2);
 
   if(dom.pomoBigProgress){
     dom.pomoBigProgress.setAttribute('stroke-dasharray', PRING_BIG_C.toFixed(2));
@@ -486,15 +382,13 @@ function renderPomodoro(ts, force){
     dom.pomodoroProgress.setAttribute('stroke-dashoffset', (PRING_C * elapsedFrac).toFixed(2));
   }
 
-  if(dom.pomoRadialFill){
-    const pctDeg = elapsedFrac * 360;
-    dom.pomoRadialFill.style.background = `conic-gradient(rgba(var(--c1-rgb), 0.35) ${pctDeg}deg, transparent ${pctDeg}deg)`;
-  }
-
   drawPomoVisuals(ts || performance.now(), elapsedFrac);
 
   if(dom.pomodoroTimeLabel) dom.pomodoroTimeLabel.textContent = timeStr;
-  if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.textContent = timeStr;
+  if(dom.pomoBigTimeLabel){
+    dom.pomoBigTimeLabel.classList.toggle('is-overtime', !!pomodoro.isOvertime);
+    dom.pomoBigTimeLabel.textContent = timeStr;
+  }
 
   const typeName = pomodoro.sessionType === 'focus' ? (focusIndex + '. ETÜT') : 'MOLA';
   if(dom.pomoSessionBadge) dom.pomoSessionBadge.textContent = typeName;

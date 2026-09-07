@@ -65,7 +65,6 @@ function enterDeepFocus(){
   dom.deepFocusBtn.classList.add('is-on');
   if(state.mode === 'pomodoro'){
     if(dom.pomoBigRingWrap && dom.dfMount){
-      if(dom.pomoBorderGlowBox) dom.dfMount.appendChild(dom.pomoBorderGlowBox);
       dom.dfMount.appendChild(dom.pomoBigRingWrap);
     }
   } else {
@@ -77,6 +76,7 @@ function enterDeepFocus(){
       }
     }
   }
+  if(typeof TimerVisuals !== 'undefined') TimerVisuals.resize();
   deepFocusStart=Date.now();
   closeSettingsDrawer();
   renderDeepFocus();
@@ -89,11 +89,11 @@ function exitDeepFocus(){
   const pomoRingCard = document.querySelector('.pomo-ring-card');
   if(pomoRingCard && dom.pomoBigRingWrap){
     const actionRow = pomoRingCard.querySelector('.pomo-action-row');
-    if(dom.pomoBorderGlowBox) pomoRingCard.insertBefore(dom.pomoBorderGlowBox, actionRow || null);
     if(actionRow) pomoRingCard.insertBefore(dom.pomoBigRingWrap, actionRow);
     else pomoRingCard.appendChild(dom.pomoBigRingWrap);
   }
   if(dom.layerFront && dom.avatarRing) dom.layerFront.appendChild(dom.avatarRing);
+  if(typeof TimerVisuals !== 'undefined') TimerVisuals.resize();
 }
 
 function renderDeepFocus(){
@@ -118,20 +118,24 @@ function renderDeepFocus(){
     }
 
     if(state.dfPomoViewMode === 'total'){
-      dom.dfTime.textContent = formatHoursMinutesSeconds(totalSec);
+      // Directly update the active big timer display with total work time
+      if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.textContent = formatHoursMinutesSeconds(totalSec);
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
       if(dom.pomoSessionBadge) dom.pomoSessionBadge.style.display = 'none';
+      if(dom.pomoStatusSub) dom.pomoStatusSub.style.display = 'none';
       if(dom.dfSessionLabel) dom.dfSessionLabel.style.display = 'none';
     } else if(state.dfPomoViewMode === 'countdown'){
-      dom.dfTime.textContent = timeDisplayStr;
+      if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.textContent = timeDisplayStr;
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'none';
       if(dom.pomoSessionBadge && state.dfPomoShowIcon) dom.pomoSessionBadge.style.display = '';
+      if(dom.pomoStatusSub && state.dfPomoShowLabel) dom.pomoStatusSub.style.display = '';
       if(dom.dfSessionLabel && state.dfPomoShowLabel) dom.dfSessionLabel.style.display = '';
     } else {
       // both
-      dom.dfTime.textContent = timeDisplayStr;
+      if(dom.pomoBigTimeLabel) dom.pomoBigTimeLabel.textContent = timeDisplayStr;
       if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.style.display = 'block';
       if(dom.pomoSessionBadge && state.dfPomoShowIcon) dom.pomoSessionBadge.style.display = '';
+      if(dom.pomoStatusSub && state.dfPomoShowLabel) dom.pomoStatusSub.style.display = '';
       if(dom.dfSessionLabel && state.dfPomoShowLabel) dom.dfSessionLabel.style.display = '';
     }
   } else {

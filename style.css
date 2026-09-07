@@ -1016,11 +1016,18 @@ body.mode-pomodoro .avatar-ring {
 .pomo-big-time {
   font-family: 'Orbitron', sans-serif;
   font-weight: 800;
-  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-size: clamp(2.1rem, 4.4vw, 3.1rem);
+  letter-spacing: -0.02em;
   color: var(--text-0);
   text-shadow: 0 0 24px rgba(var(--c1-rgb), 0.5);
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  white-space: nowrap;
+}
+
+/* Reduced size when overtime prefix is active */
+.pomo-big-time.is-overtime {
+  font-size: clamp(1.75rem, 3.8vw, 2.6rem) !important;
 }
 .pomo-status-sub {
   font-family: 'JetBrains Mono', monospace;
@@ -1263,14 +1270,24 @@ body.mode-pomodoro .avatar-ring {
   animation: nodeCompletePulse 1.2s var(--ease) forwards !important;
 }
 .pomo-node.active {
-  border-color: var(--c1);
-  background: linear-gradient(90deg, rgba(var(--c1-rgb), 0.25), rgba(10, 14, 28, 0.95));
-  box-shadow: 0 0 24px rgba(var(--c1-rgb), 0.4);
-  animation: nodePulse 2s ease-in-out infinite;
+  border-color: rgba(var(--c1-rgb), 0.75) !important;
+  background: linear-gradient(90deg, rgba(var(--c1-rgb), 0.14), rgba(10, 14, 28, 0.95)) !important;
+  box-shadow: inset 0 0 14px rgba(var(--c1-rgb), 0.1), 0 2px 12px rgba(var(--c1-rgb), 0.18) !important;
+  position: relative;
+  overflow: hidden;
+  animation: none !important;
 }
-@keyframes nodePulse {
-  0%, 100% { box-shadow: 0 0 16px rgba(var(--c1-rgb), 0.3); }
-  50% { box-shadow: 0 0 28px rgba(var(--c1-rgb), 0.6); }
+
+.pomo-node.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10%;
+  bottom: 10%;
+  width: 3px;
+  background: var(--c1);
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 10px var(--c1), 0 0 4px var(--c1);
 }
 
 .pomo-node-info {
@@ -1424,89 +1441,38 @@ body.mode-pomodoro .avatar-ring {
   height: 100%; width: 0%; background: linear-gradient(90deg, var(--c2), var(--c1)); border-radius: 999px;
   box-shadow: 0 0 14px var(--c1), 0 0 6px var(--c1); transition: width 0.3s var(--ease);
 }
+#pomoVisualsCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
 .progress-style-linear .pomo-linear-bar-wrap { display: block !important; }
 .progress-style-linear .pring-track,
 .progress-style-linear .pring-progress,
-.progress-style-linear .radial-fill-overlay,
-.progress-style-linear .pring-dotted,
 .progress-style-linear .pomo-big-ring-wrap > svg { display: none !important; }
 
-.pomo-wave-canvas {
-  position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%;
-  pointer-events: none; z-index: 1; display: none; opacity: 0.85;
-}
-.progress-style-wave .pomo-wave-canvas { display: block !important; }
-.progress-style-wave .pring-progress { opacity: 0.2 !important; }
-
-.pomo-particles-canvas {
-  position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%;
-  pointer-events: none; z-index: 1; display: none;
-}
-.progress-style-particles .pomo-particles-canvas { display: block !important; }
-.progress-style-particles .pring-progress { opacity: 0.25 !important; }
-
-.pring-dotted-track {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.08);
-  stroke-width: 6;
-  stroke-dasharray: 4 11.3938;
-  stroke-linecap: round;
-  display: none;
-}
-
-.pring-dotted {
-  fill: none;
-  stroke: var(--c1);
-  stroke-width: 6;
-  stroke-dasharray: 4 11.3938;
-  stroke-linecap: round;
-  display: none;
-  filter: drop-shadow(0 0 6px var(--c1));
-}
-
-#pomoDottedMaskCircle {
-  fill: none;
-  stroke: #ffffff;
-  stroke-width: 24;
-  stroke-linecap: butt;
-}
-
-.progress-style-dotted .pring-dotted-track,
-.progress-style-dotted .pring-dotted {
-  display: block !important;
-}
+/* Hide both progress and track circle in dotted mode so ONLY the 40 canvas capsules are visible */
 .progress-style-dotted .pring-track,
-.progress-style-dotted .pring-progress {
+.progress-style-dotted #pomoBigProgress {
   display: none !important;
 }
 
-.border-glow-box {
-  position: absolute; inset: -12px; border-radius: var(--radius-l); pointer-events: none;
-  border: 1px solid rgba(255,255,255,0.08); overflow: hidden; display: none; z-index: 0;
+.progress-style-wave #pomoBigProgress,
+.progress-style-particles #pomoBigProgress,
+.progress-style-arc #pomoBigProgress,
+.progress-style-fill #pomoBigProgress,
+.progress-style-linear #pomoBigProgress,
+.progress-style-minimal #pomoBigProgress {
+  display: none !important;
 }
-.border-glow-line {
-  position: absolute; inset: 0; border-radius: var(--radius-l);
-  padding: 3px; background: conic-gradient(from 0deg, var(--c1), transparent 35%, transparent 100%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0.95;
-  filter: drop-shadow(0 0 12px var(--c1));
-}
-.progress-style-border .border-glow-box { display: block !important; }
-.progress-style-border .pring-progress { opacity: 0.2 !important; }
 
-.radial-fill-overlay {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-  background: conic-gradient(rgba(var(--c1-rgb), 0.25) 0deg, transparent 0deg);
-  mask-image: radial-gradient(circle, transparent 58%, black 60%);
-  -webkit-mask-image: radial-gradient(circle, transparent 58%, black 60%);
-  transition: background 0.3s var(--ease);
-  display: none;
+.progress-style-ring #pomoBigProgress {
+  display: block !important;
 }
-.progress-style-fill .radial-fill-overlay { display: block !important; }
-.progress-style-fill .pring-track, .progress-style-fill .pring-progress { opacity: 0.25 !important; }
 
 .progress-style-minimal .pring-track,
 .progress-style-minimal .pring-progress,
@@ -1515,15 +1481,35 @@ body.mode-pomodoro .avatar-ring {
   display: none !important;
 }
 
+/* Deep Focus Pomodoro typography & badge scaling */
+body.deep-focus-active.mode-pomodoro #pomoBigTimeLabel {
+  font-size: clamp(2.9rem, 7.5vw, 4.6rem) !important;
+  letter-spacing: -0.02em;
+}
+
+body.deep-focus-active.mode-pomodoro #pomoBigTimeLabel.is-overtime {
+  font-size: clamp(2.3rem, 6.2vw, 3.8rem) !important;
+}
+body.deep-focus-active.mode-pomodoro .pomo-badge {
+  font-size: 0.9rem !important;
+  padding: 6px 18px !important;
+}
+body.deep-focus-active.mode-pomodoro .pomo-status-sub {
+  font-size: 0.82rem !important;
+}
+body.deep-focus-active.mode-pomodoro #dfTotalWorkSub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.15em;
+  margin-top: 14px !important;
+}
+
 body.df-pomo-hide-label .df-session-label,
 body.df-pomo-hide-label .pomo-status-sub { display: none !important; }
 body.df-pomo-hide-icon .pomo-badge { display: none !important; }
 body.df-pomo-hide-ring .pomo-big-ring-wrap svg,
-body.df-pomo-hide-ring .pomo-wave-canvas,
-body.df-pomo-hide-ring .pomo-particles-canvas,
-body.df-pomo-hide-ring .radial-fill-overlay,
-body.df-pomo-hide-ring .pomo-linear-bar-wrap,
-body.df-pomo-hide-ring .border-glow-box { display: none !important; }
+body.df-pomo-hide-ring #pomoVisualsCanvas,
+body.df-pomo-hide-ring .pomo-linear-bar-wrap { display: none !important; }
 
 .deep-focus-active.mode-pomodoro .df-mount {
   width: min(65vw, 65vh, 460px);
