@@ -284,6 +284,7 @@ function renderPomodoroTimeline(justCompletedIdx){
 function applyProgressStyle(styleName, opts){
   opts = opts || {};
   state.progressStyle = styleName;
+  pomoNeedsRender = true;
   const styles = ['ring', 'linear', 'wave', 'border', 'particles', 'dotted', 'fill', 'minimal'];
   styles.forEach(s => document.body.classList.remove('progress-style-' + s));
   document.body.classList.add('progress-style-' + styleName);
@@ -417,28 +418,6 @@ function drawPomoVisuals(ts, frac){
     dom.pomoBorderGlowLine.style.background = `conic-gradient(from ${rot}deg, var(--c1), transparent 40%, transparent 100%)`;
   }
 }
-function drawWave(t){
-  if(!waveCtx) return;
-  waveCtx.clearRect(0,0,waveWidth,waveHeight);
-  waveCtx.strokeStyle=CACHED_C1; waveCtx.lineWidth=1.6; waveCtx.shadowColor=CACHED_C1; waveCtx.shadowBlur=6;
-  waveCtx.beginPath();
-  const mid=waveHeight/2;
-  if(analyser && currentPresetName!=='off'){
-    analyser.getByteTimeDomainData(analyserData);
-    const step=waveWidth/analyserData.length;
-    for(let i=0;i<analyserData.length;i++){
-      const v=(analyserData[i]-128)/128;
-      const x=i*step, y=mid+v*mid*0.85;
-      i===0?waveCtx.moveTo(x,y):waveCtx.lineTo(x,y);
-    }
-  } else {
-    for(let x=0;x<=waveWidth;x+=4){
-      const y=mid+Math.sin(x*0.05+t*0.0015)*mid*0.12;
-      x===0?waveCtx.moveTo(x,y):waveCtx.lineTo(x,y);
-    }
-  }
-  waveCtx.stroke(); waveCtx.shadowBlur=0;
-}
 
 function pomodoroTotalMs(){
   const map={focus:pomodoro.focusMin, short:pomodoro.shortMin, long:pomodoro.longMin};
@@ -451,8 +430,12 @@ function formatMs(ms){
   return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
 }
 
-function renderPomodoro(ts){
-  const PRING_BIG_C = 2 * Math.PI * 98;
+let pomoNeedsRender = true;
+let lastPomoState = {};
+const PRING_BIG_C = 2 * Math.PI * 98;
+
+function renderPomodoro(ts, force){
+  const running = pomodoro.running;
   const currentTotal = pomodoroTotalMs();
   const elapsedMs = getCurrentSessionElapsedMs();
 
@@ -468,6 +451,37 @@ function renderPomodoro(ts){
   }
 
   const elapsedFrac = pomodoro.isOvertime ? 1 : (1 - frac);
+  const totalWorkSec = getTotalWorkSeconds();
+
+  if(!running && !force && !pomoNeedsRender){
+    if(
+      lastPomoState.running === running &&
+      lastPomoState.timeStr === timeStr &&
+      lastPomoState.elapsedFrac === elapsedFrac &&
+      lastPomoState.sessionType === pomodoro.sessionType &&
+      lastPomoState.focusIndex === focusIndex &&
+      lastPomoState.isOvertime === pomodoro.isOvertime &&
+      lastPomoState.progressStyle === state.progressStyle &&
+      lastPomoState.deepFocus === state.deepFocus &&
+      lastPomoState.totalWorkSec === totalWorkSec
+    ){
+      return;
+    }
+  }
+
+  pomoNeedsRender = false;
+  lastPomoState = {
+    running,
+    timeStr,
+    elapsedFrac,
+    sessionType: pomodoro.sessionType,
+    focusIndex,
+    isOvertime: pomodoro.isOvertime,
+    progressStyle: state.progressStyle,
+    deepFocus: state.deepFocus,
+    totalWorkSec
+  };
+
   const dashOffset = (PRING_BIG_C * elapsedFrac).toFixed(2);
 
   if(dom.pomoBigProgress){
@@ -532,6 +546,7 @@ function renderSessionDots(){
   }
 }
 function pomodoroStart(){
+  pomoNeedsRender = true;
   if(pomodoro.running) return;
   ensureAudio();
   playUiSound('start');
@@ -586,6 +601,7 @@ function pomodoroStart(){
 }
 
 function pomodoroPause(){
+  pomoNeedsRender = true;
   if(!pomodoro.running) return;
   const nowMs = Date.now();
   if(pomodoro.sessionStartTs > 0){
@@ -603,6 +619,7 @@ function pomodoroPause(){
 }
 
 function pomodoroReset(){
+  pomoNeedsRender = true;
   playUiSound('reset');
   if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
   pomodoro.running = false;
@@ -651,6 +668,7 @@ function pomodoroTick(){
 }
 
 function handleFinishClick(){
+  pomoNeedsRender = true;
   const wasDeepFocus = state.deepFocus;
 
   // 1. Calculate final elapsed seconds for this session

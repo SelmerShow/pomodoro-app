@@ -75,26 +75,27 @@ function applyMode3D(on, opts){
   if(dom.mode3dValue) dom.mode3dValue.textContent=on?'3D':'2D';
   if(dom.mode3dToggle) dom.mode3dToggle.checked=on;
   if(!on){
-    document.documentElement.style.setProperty('--tilt-x','0deg');
-    document.documentElement.style.setProperty('--tilt-y','0deg');
-    ['layerBack','layerMid','layerFront'].forEach(k=>{
-      if(dom[k]) { dom[k].style.setProperty('--px','0px'); dom[k].style.setProperty('--py','0px'); }
-    });
+    if(dom.ringCluster) dom.ringCluster.style.transform = 'rotateX(0deg) rotateY(0deg)';
+    if(dom.layerBack) dom.layerBack.style.transform = 'translate3d(0px, 0px, 0px)';
+    if(dom.layerMid) dom.layerMid.style.transform = 'translate3d(0px, 0px, 0px)';
+    if(dom.layerFront) dom.layerFront.style.transform = 'translate3d(0px, 0px, 0px)';
   }
   if(!opts.skipSave) saveSettingsToStorage();
 }
 function updateParallax(){
   if(!state.mode3D || prefersReducedMotion) return;
+  if(Math.abs(mouseNX - curNX) < 0.001 && Math.abs(mouseNY - curNY) < 0.001) return;
+
   curNX += (mouseNX-curNX)*0.06;
   curNY += (mouseNY-curNY)*0.06;
-  document.documentElement.style.setProperty('--tilt-x', (-curNY*6).toFixed(2)+'deg');
-  document.documentElement.style.setProperty('--tilt-y', (curNX*8).toFixed(2)+'deg');
-  dom.layerBack.style.setProperty('--px',(curNX*7).toFixed(1)+'px');
-  dom.layerBack.style.setProperty('--py',(curNY*7).toFixed(1)+'px');
-  dom.layerMid.style.setProperty('--px',(curNX*13).toFixed(1)+'px');
-  dom.layerMid.style.setProperty('--py',(curNY*13).toFixed(1)+'px');
-  dom.layerFront.style.setProperty('--px','0px');
-  dom.layerFront.style.setProperty('--py','0px');
+
+  const tiltX = (-curNY*6).toFixed(2);
+  const tiltY = (curNX*8).toFixed(2);
+
+  if(dom.ringCluster) dom.ringCluster.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+  if(dom.layerBack) dom.layerBack.style.transform = `translate3d(${(curNX*7).toFixed(1)}px, ${(curNY*7).toFixed(1)}px, 0px)`;
+  if(dom.layerMid) dom.layerMid.style.transform = `translate3d(${(curNX*13).toFixed(1)}px, ${(curNY*13).toFixed(1)}px, 0px)`;
+  if(dom.layerFront) dom.layerFront.style.transform = `translate3d(0px, 0px, 0px)`;
 }
 
 function setMode(mode, opts){
