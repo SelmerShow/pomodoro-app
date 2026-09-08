@@ -315,12 +315,31 @@ body.deep-focus-active .deep-focus-overlay{opacity:1; visibility:visible; pointe
 }
 .df-session-label{ font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.2em; color:var(--text-dim); margin-top:10px; text-transform:uppercase; }
 .df-focus{ font-family:'JetBrains Mono',monospace; font-size:.85rem; letter-spacing:.1em; color:var(--c1); margin-top:6px; }
-.exit-df{
-  position:absolute; top:26px; right:26px; display:flex; align-items:center; gap:8px;
-  font-size:.68rem; letter-spacing:.15em; color:var(--text-dim);
-  padding:9px 16px; border:1px solid var(--hairline-strong); border-radius:999px; opacity:.55; transition:all .25s;
+.exit-df {
+  position: absolute;
+  top: 26px;
+  right: 26px;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .68rem;
+  letter-spacing: .15em;
+  color: var(--text-dim);
+  padding: 9px 16px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  opacity: .55;
+  transition: all .25s;
 }
-.exit-df:hover{opacity:1; border-color:rgba(var(--c1-rgb),.6); color:var(--text-0);}
+
+.exit-df:hover {
+  opacity: 1 !important;
+  border-color: rgba(var(--c1-rgb), .6) !important;
+  color: var(--text-0) !important;
+}
 
 .drawer-backdrop{
   position:fixed; inset:0; z-index:48; background:rgba(3,4,10,.85);
@@ -440,6 +459,13 @@ body[data-mode3d="off"] .ring-cluster{ perspective:none; }
   width: 100%;
   transition: transform 0.3s var(--ease);
   transform-origin: center center;
+  pointer-events: none;
+}
+
+/* Re-enable pointer events for interactive elements inside scale wrapper */
+.df-scale-wrapper .df-finish-btn,
+.df-scale-wrapper button {
+  pointer-events: auto !important;
 }
 
 /* History Management CSS */
@@ -662,7 +688,8 @@ body.clock-only-mode .ekg-strip { opacity: 0 !important; pointer-events: none !i
   position: absolute; bottom: 26px; right: 26px; display: flex; align-items: center; gap: 8px;
   font-size: .68rem; letter-spacing: .15em; color: var(--text-dim);
   padding: 9px 16px; border: 1px solid var(--hairline-strong); border-radius: 999px; opacity: .75; transition: all .25s;
-  background: rgba(10, 14, 28, 0.94); cursor: pointer; z-index: 42;
+  background: rgba(10, 14, 28, 0.94); cursor: pointer; z-index: 50 !important;
+  pointer-events: auto !important;
 }
 .df-customize-btn:hover, .df-customize-btn.active {
   opacity: 1; border-color: var(--c1); color: var(--text-0); background: rgba(var(--c1-rgb), 0.18);

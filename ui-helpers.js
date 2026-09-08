@@ -1551,7 +1551,12 @@ function wireEvents(){
   }
 
   dom.deepFocusBtn.addEventListener('click', ()=> state.deepFocus?exitDeepFocus():enterDeepFocus());
-  dom.exitDeepFocus.addEventListener('click', exitDeepFocus);
+  if(dom.exitDeepFocus){
+    dom.exitDeepFocus.addEventListener('click', (e) => {
+      e.stopPropagation();
+      exitDeepFocus();
+    });
+  }
 
   if(dom.dfCustomizeBtn){
     dom.dfCustomizeBtn.addEventListener('click', (e)=>{
