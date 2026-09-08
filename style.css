@@ -126,10 +126,24 @@ body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96
   padding-top: clamp(8px, 1.8vh, 20px) !important;
   flex:1; perspective:1400px;
 }
+
+/* Center cockpit contents vertically in Clock mode */
+body:not(.mode-pomodoro) .cockpit {
+  justify-content: center !important;
+  padding-top: 0 !important;
+  padding-bottom: clamp(24px, 6vh, 60px) !important;
+}
+
 .ring-cluster{
   position:relative; width:clamp(230px, 32vw, 372px); aspect-ratio:1/1;
   transform-style:preserve-3d; transform:rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
   transition:transform .1s linear; margin-bottom:clamp(14px,2.6vh,26px);
+}
+
+/* Give the clock ring a majestic, balanced presence */
+body:not(.mode-pomodoro) .ring-cluster {
+  width: clamp(260px, 34vw, 400px);
+  margin-bottom: clamp(14px, 2.8vh, 28px);
 }
 .parallax-layer{position:absolute; inset:0; transform:translate3d(var(--px,0),var(--py,0),0);}
 .ring-svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible;}
@@ -155,6 +169,20 @@ body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96
 }
 .hand-hour{width:3.4px; height:24%; margin-left:-1.7px;}
 .hand-minute{width:2.4px; height:34%; margin-left:-1.2px; background:linear-gradient(to bottom, var(--c1), rgba(255,255,255,.4));}
+.hand-second {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.6px;
+  height: 44%;
+  margin-left: -0.8px;
+  transform-origin: 50% 0%;
+  border-radius: 2px;
+  background: var(--c3);
+  box-shadow: 0 0 8px var(--c3);
+  z-index: 4;
+  display: none;
+}
 .hand-cap{
   position:absolute; top:50%; left:50%; width:8px; height:8px; margin:-4px 0 0 -4px;
   border-radius:50%; background:var(--c1); box-shadow:0 0 10px rgba(var(--c1-rgb),.9); z-index:3;
@@ -748,15 +776,19 @@ body.clock-only-mode .ekg-strip { opacity: 0 !important; pointer-events: none !i
 .df-swatch:hover { transform: scale(1.15); border-color: var(--text-0); }
 
 /* Collapse and remove phantom df-mount completely when icon is disabled or in clock-only mode */
-body.df-hide-icon .df-mount,
-body.df-digital-only .df-mount,
-body.clock-only-mode .df-mount,
-.df-mount:empty {
+body:not(.mode-pomodoro).df-hide-icon .df-mount,
+body:not(.mode-pomodoro).df-digital-only .df-mount,
+body:not(.mode-pomodoro).clock-only-mode .df-mount,
+body:not(.mode-pomodoro) .df-mount:empty {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+body.mode-pomodoro .df-mount {
+  display: flex !important;
 }
 
 /* When mount is hidden, scale and center the digital clock cleanly */
@@ -1669,6 +1701,56 @@ body.no-neon-glow .avatar-glow {
 }
 body.no-neon-glow .pulse-field {
   opacity: 0.1 !important;
+}
+
+/* Style 2: Klasik Duvar Saati */
+body[data-clock-style="wall"] .avatar-ring,
+body[data-clock-style="wall"] #decoGroup,
+body[data-clock-style="wall"] #decoGroup2,
+body[data-clock-style="wall"] .sec-progress,
+body[data-clock-style="wall"] .sec-dot {
+  display: none !important;
+}
+body[data-clock-style="wall"] .hand-second {
+  display: block !important;
+}
+body[data-clock-style="wall"] .sec-track {
+  stroke: rgba(255, 255, 255, 0.16) !important;
+}
+
+/* Style 3: Siber Radar HUD */
+body[data-clock-style="hud"] .sec-progress {
+  stroke-dasharray: 40 120 !important;
+  stroke-width: 4px !important;
+  animation: spinSlow 4s linear infinite;
+}
+body[data-clock-style="hud"] .ring-cluster::before {
+  content: 'HUD // 360° RADAR';
+  position: absolute;
+  top: -24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: var(--c1);
+}
+
+/* Style 4: Kronograf Spor Kadran */
+body[data-clock-style="chrono"] .hand-second {
+  display: block !important;
+}
+body[data-clock-style="chrono"] .sec-track {
+  stroke-dasharray: 2 6 !important;
+  stroke-width: 3px !important;
+}
+
+/* Style 5: Monolit Dijital Konsol */
+body[data-clock-style="digital"]:not(.mode-pomodoro) #ringCluster {
+  display: none !important;
+}
+body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
+  font-size: clamp(4.5rem, 13vw, 8.5rem) !important;
+  margin-bottom: 24px !important;
+  text-shadow: 0 0 40px rgba(var(--c1-rgb), 0.7) !important;
 }
 
 /* Directional Slide Transition Animations */

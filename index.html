@@ -73,6 +73,7 @@
         <div class="hands">
           <div class="hand hand-hour" id="handHour"></div>
           <div class="hand hand-minute" id="handMinute"></div>
+          <div class="hand hand-second" id="handSecond"></div>
           <div class="hand-cap"></div>
         </div>
       </div>
@@ -514,6 +515,19 @@
 
     <div class="settings-section">
       <div class="settings-section-title">Ana Sayfa Özelleştirme</div>
+      <div class="toggle-row" style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+        <div class="toggle-label" style="display:flex; flex-direction:column;">
+          <span style="font-size:0.8rem; font-weight:600;">Saat Kadran Stili</span>
+          <small style="font-size:0.65rem; color:var(--text-dimmer);">Saat sekmesindeki görünüm modeli</small>
+        </div>
+        <select id="clockStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.75rem; outline:none;">
+          <option value="hybrid">Siber Biyometrik (Varsayılan)</option>
+          <option value="wall">Klasik Duvar Saati</option>
+          <option value="hud">Siber Radar & HUD</option>
+          <option value="chrono">Kronograf Spor Kadran</option>
+          <option value="digital">Monolit Dijital Konsol</option>
+        </select>
+      </div>
       <div class="toggle-row" style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
         <div class="toggle-label" style="display:flex; flex-direction:column;">
           <span style="font-size:0.8rem; font-weight:600;">Neon Parlamaları (Glow)</span>

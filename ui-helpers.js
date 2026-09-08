@@ -5,7 +5,7 @@ const ASSETS = {
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PROFILE_META = { neon2:{ name:'NEON PULSE', theme:'cyberpunkBlue' }, y2026:{ name:'SOLAR FLARE', theme:'volcanicOrange' } };
-const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, neonGlow:true, uiScale:1.0, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', progressDirection:'fill', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#3fd0ff', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
+const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, clockStyle:'hybrid', neonGlow:true, uiScale:1.0, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', progressDirection:'fill', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#3fd0ff', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
 const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:25, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, isOvertime:false, overtimeSec:0, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:25*60*1000, intervalId:null, lastTickTs:0 };
 const SEC_R=78, SEC_C=2*Math.PI*SEC_R;
 const PRING_R=76, PRING_C=2*Math.PI*PRING_R;
@@ -22,7 +22,7 @@ const dom = {};
 function cacheDom(){
   ['bgCanvas','deepFocusBtn','settingsBtn','dateLocaleText','dateCycleText',
    'ringCluster','layerBack','layerMid','layerFront','ticksGroup',
-   'secondsProgress','secondsDot','handHour','handMinute',
+   'secondsProgress','secondsDot','handHour','handMinute','handSecond','clockStyleSelect',
    'avatarRing','avatarPulse','avatarCircle','avatarImg','digitalTime','ekgCanvas',
    'bpmReadout','profileCaption','modeTabs','panels',
    'pomodoroPanel','pomodoroProgress','pomodoroSessionType','pomodoroTimeLabel',
@@ -90,6 +90,21 @@ function applyMainPageCustomizations(){
   if(dom.heartPulseToggle) dom.heartPulseToggle.checked = !!state.showHeartPulse;
   if(dom.clockOnlyToggle) dom.clockOnlyToggle.checked = !!state.clockOnlyMode;
   if(dom.neonGlowToggle) dom.neonGlowToggle.checked = !!state.neonGlow;
+}
+
+function applyClockStyle(styleName, opts){
+  opts = opts || {};
+  state.clockStyle = styleName;
+  document.body.setAttribute('data-clock-style', styleName);
+  if(dom.clockStyleSelect) dom.clockStyleSelect.value = styleName;
+
+  if(styleName === 'wall'){
+    state.clockOnlyMode = true;
+    if(dom.clockOnlyToggle) dom.clockOnlyToggle.checked = true;
+    applyMainPageCustomizations();
+  }
+
+  if(!opts.skipSave) saveSettingsToStorage();
 }
 
 function applyUiScale(scaleVal, opts){
@@ -845,6 +860,7 @@ function saveSettingsToStorage(){
       mode3D: state.mode3D,
       showHeartPulse: state.showHeartPulse,
       clockOnlyMode: state.clockOnlyMode,
+      clockStyle: state.clockStyle || 'hybrid',
       neonGlow: state.neonGlow !== undefined ? state.neonGlow : true,
       uiScale: state.uiScale !== undefined ? state.uiScale : 1.0,
       dfShowIcon: state.dfShowIcon,
@@ -901,6 +917,7 @@ function loadSettingsFromStorage(){
     if(s.mode3D !== undefined) applyMode3D(!!s.mode3D, {skipSave: true});
     if(s.showHeartPulse !== undefined) state.showHeartPulse = !!s.showHeartPulse;
     if(s.clockOnlyMode !== undefined) state.clockOnlyMode = !!s.clockOnlyMode;
+    applyClockStyle(s.clockStyle || 'hybrid', {skipSave: true});
     if(s.neonGlow !== undefined) state.neonGlow = !!s.neonGlow;
     if(s.uiScale !== undefined) applyUiScale(parseFloat(s.uiScale), {skipSave: true});
     if(s.dfShowIcon !== undefined) state.dfShowIcon = !!s.dfShowIcon;
@@ -966,7 +983,7 @@ function loadSettingsFromStorage(){
       if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.value = s.pomoAlarm;
       if(dom.dfAlarmSelect) dom.dfAlarmSelect.value = s.pomoAlarm;
     }
-    if(s.activeMode) {
+    if(s.activeMode && s.activeMode !== state.mode) {
       setMode(s.activeMode, {skipSave: true});
     }
     if(s.soundPreset && s.soundPreset !== currentPresetName) {
@@ -1931,6 +1948,7 @@ function wireEvents(){
   applyDFCustomizations(); saveSettingsToStorage(); });
   if(dom.clockOnlyToggle) dom.clockOnlyToggle.addEventListener('change', ()=>{ state.clockOnlyMode = dom.clockOnlyToggle.checked; applyMainPageCustomizations();
   applyDFCustomizations(); saveSettingsToStorage(); });
+  if(dom.clockStyleSelect) dom.clockStyleSelect.addEventListener('change', ()=>{ applyClockStyle(dom.clockStyleSelect.value); });
 
   if(dom.neonGlowToggle){
     dom.neonGlowToggle.addEventListener('change', ()=>{
