@@ -8,6 +8,9 @@ const TimerVisuals = (() => {
   let currentHeight = 0;
   let dpr = 1;
 
+  let lastRemainingFrac = 1;
+  let lastElapsedFrac = 0;
+
   const particles = [];
   const TOTAL_PARTICLES = 40;
 
@@ -47,9 +50,15 @@ const TimerVisuals = (() => {
     canvas.height = Math.round(h * dpr);
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
+
+    // Redraw immediately if canvas was cleared by dimension change
+    render(performance.now(), lastRemainingFrac, lastElapsedFrac);
   }
 
   function render(ts, remainingFrac, elapsedFrac){
+    lastRemainingFrac = remainingFrac;
+    lastElapsedFrac = elapsedFrac;
+
     if(!canvas || !ctx) return;
     const parent = canvas.parentElement;
     if(parent && (parent.clientWidth !== currentWidth || parent.clientHeight !== currentHeight)){

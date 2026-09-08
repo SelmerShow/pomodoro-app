@@ -1378,10 +1378,10 @@ function renderHistoryList(){
     const dateStr = parts.length === 3 ? (parts[2] + ' ' + monthNames[parseInt(parts[1], 10) - 1] + ' ' + parts[0]) : isoKey;
 
     const sessionCount = (recordData && recordData.sessionCount) ? recordData.sessionCount : 0;
-    const editable = isDateWithinLast2Days(isoKey);
+    const canDelete = isDateWithinLast2Days(isoKey);
 
     const card = document.createElement('div');
-    card.className = 'history-item-card' + (editable ? '' : ' locked');
+    card.className = 'history-item-card' + (canDelete ? '' : ' locked');
 
     card.innerHTML = `
       <div class="history-info">
@@ -1389,41 +1389,11 @@ function renderHistoryList(){
         <span class="history-meta">⏱ ${formatHoursMinutes(focusMins)} · 🎯 ${sessionCount} Seans</span>
       </div>
       <div class="history-actions">
-        ${editable ? `<button class="history-btn edit-btn" data-isokey="${isoKey}">✏️ Düzenle</button>` : ''}
-        <button class="history-btn delete-btn" data-isokey="${isoKey}">🗑 Sil</button>
+        ${canDelete ? `<button class="history-btn delete-btn" data-isokey="${isoKey}">🗑 Sil</button>` : `<span class="history-locked-badge">🔒 Kilitli</span>`}
       </div>
     `;
 
-    const editBtn = card.querySelector('.edit-btn');
     const deleteBtn = card.querySelector('.delete-btn');
-
-    if(editBtn){
-      editBtn.addEventListener('click', () => {
-        const newMinsStr = prompt(dateStr + ' için yeni çalışma süresini dakika olarak giriniz:', focusMins);
-        if(newMinsStr !== null){
-          const newMins = parseInt(newMinsStr, 10);
-          if(!isNaN(newMins) && newMins >= 0){
-            localStorage.setItem('selmer_focus_' + isoKey, newMins);
-
-            const updatedRecord = recordData || { isoKey, totalWorkSeconds: newMins * 60, completedEtuts: [] };
-            updatedRecord.totalMinutes = newMins;
-            updatedRecord.updatedAt = new Date().toISOString();
-            localStorage.setItem('selmer_record_' + isoKey, JSON.stringify(updatedRecord));
-
-            pushStudyTotalToCloud(isoKey, newMins);
-            pushSessionRecordToCloud(isoKey, updatedRecord);
-
-            if(isoKey === getTodayStorageKey().replace('selmer_focus_','')){
-              todayFocusMinutes = newMins;
-            }
-
-            renderDataPanel();
-            renderHistoryList();
-            showToast('Çalışma geçmişi güncellendi! ✏️');
-          }
-        }
-      });
-    }
 
     if(deleteBtn){
       deleteBtn.addEventListener('click', () => {
@@ -1980,7 +1950,14 @@ function wireEvents(){
 
   dom.mode3dToggle.addEventListener('change', ()=>applyMode3D(dom.mode3dToggle.checked));
   window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('resize', ()=>{ setupEkg(); setupWave(); setupBg(); });
+  window.addEventListener('resize', ()=>{
+    setupEkg();
+    setupWave();
+    setupBg();
+    if(typeof TimerVisuals !== 'undefined') TimerVisuals.resize();
+    pomoNeedsRender = true;
+    if(state.mode === 'pomodoro') renderPomodoro(performance.now(), true);
+  });
   document.addEventListener('keydown', (e)=>{
     if(e.key==='Escape'){
       if(state.deepFocus) exitDeepFocus();
