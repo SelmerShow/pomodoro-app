@@ -29,6 +29,8 @@ function renderClock(){
   dom.secondsDot.setAttribute('cy',(100-SEC_R*Math.cos(secAngle)).toFixed(2));
   const minDeg=180+((m+s/60)/60)*360;
   const hourDeg=180+((h+m/60)/12)*360;
+  const secDeg = 180 + secFrac * 360;
+  if(dom.handSecond) dom.handSecond.style.transform = `rotate(${secDeg.toFixed(2)}deg)`;
   dom.handMinute.style.transform='rotate('+minDeg.toFixed(2)+'deg)';
   dom.handHour.style.transform='rotate('+hourDeg.toFixed(2)+'deg)';
   if(state.mode==='pomodoro'){
@@ -101,6 +103,12 @@ function updateParallax(){
 function setMode(mode, opts){
   opts = opts || {};
   const prevMode = state.mode;
+
+  // Prevent re-triggering slide animations if already in the same mode
+  if(mode === prevMode && !opts.force){
+    return;
+  }
+
   state.mode = mode;
   document.querySelectorAll('#modeTabs button').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
 
