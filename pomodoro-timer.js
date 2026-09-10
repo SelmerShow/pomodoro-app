@@ -20,22 +20,62 @@ function getTotalWorkSeconds(){
 }
 
 function checkDailyReset(){
-  const todayKey = getTodayStorageKey() + '_timeline';
   const activeDateObj = getActiveDateObj();
   const activeDateStr = activeDateObj.toDateString();
   const savedDate = localStorage.getItem('selmer_last_active_date');
-
-  // Check long absence (24+ hours since last activity or last active timestamp)
-  const lastActiveTs = parseInt(localStorage.getItem('selmer_last_active_ts') || '0', 10);
   const nowMs = Date.now();
 
-  if(lastActiveTs > 0 && (nowMs - lastActiveTs) >= 24 * 3600 * 1000){
-    handleLongAbsenceAutoAssign(lastActiveTs, nowMs);
-  }
+  const todayKey = getTodayStorageKey() + '_timeline';
 
-  if(savedDate !== activeDateStr){
+  if(savedDate && savedDate !== activeDateStr){
+    // Determine previous day's ISO key
+    const prevDateObj = new Date(activeDateObj.getFullYear(), activeDateObj.getMonth(), activeDateObj.getDate() - 1);
+    const prevIsoKey = prevDateObj.getFullYear() + '_' + String(prevDateObj.getMonth() + 1).padStart(2, '0') + '_' + String(prevDateObj.getDate()).padStart(2, '0');
+
+    // Check if yesterday's timeline exists and has data that needs archiving
+    let prevTimeline = pomodoroTimeline;
+    if(!prevTimeline || prevTimeline.length === 0){
+      try {
+        const stored = localStorage.getItem('selmer_focus_' + prevIsoKey + '_timeline');
+        if(stored) prevTimeline = JSON.parse(stored);
+      } catch(e){}
+    }
+
+    const prevRecordKey = 'selmer_record_' + prevIsoKey;
+    const existingPrevRecord = localStorage.getItem(prevRecordKey);
+
+    if(!existingPrevRecord && prevTimeline && prevTimeline.length > 0){
+      const completedSessions = prevTimeline.filter(t => t.status === 'completed');
+      const totalSec = completedSessions.reduce((acc, t) => acc + (typeof t.elapsedSec === 'number' ? t.elapsedSec : (t.mins * 60)), 0);
+      const totalMins = Math.max(1, Math.round(totalSec / 60));
+
+      if(totalSec > 0 || completedSessions.length > 0){
+        const autoRecord = {
+          isoKey: prevIsoKey,
+          totalWorkSeconds: totalSec,
+          totalMinutes: totalMins,
+          sessionCount: completedSessions.length,
+          completedEtuts: completedSessions,
+          savedAt: new Date().toISOString(),
+          autoArchived: true
+        };
+        localStorage.setItem(prevRecordKey, JSON.stringify(autoRecord));
+
+        const prevStorageKey = 'selmer_focus_' + prevIsoKey;
+        const currentSavedMins = parseInt(localStorage.getItem(prevStorageKey) || '0', 10);
+        const finalMins = Math.max(currentSavedMins, totalMins);
+        localStorage.setItem(prevStorageKey, finalMins.toString());
+
+        pushStudyTotalToCloud(prevIsoKey, finalMins);
+        pushSessionRecordToCloud(prevIsoKey, autoRecord);
+      }
+    }
+
+    // Reset current workspace for the new day
     pomodoroTimeline = [];
     focusIndex = 1;
+    todayFocusMinutes = 0;
+    localStorage.setItem(getTodayStorageKey(), '0');
     localStorage.setItem('selmer_last_active_date', activeDateStr);
     localStorage.setItem('selmer_last_active_ts', nowMs.toString());
     localStorage.setItem(todayKey, JSON.stringify([]));

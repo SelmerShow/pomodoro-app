@@ -1052,6 +1052,15 @@ function formatHoursMinutes(totalMins){
   return m + ' dk';
 }
 
+function formatBarTimeLabel(mins){
+  if(!mins || mins <= 0) return '0';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if(h > 0 && m > 0) return `${h}s ${m}d`;
+  if(h > 0) return `${h}sa`;
+  return `${m}dk`;
+}
+
 function renderDonut(){
   if(dom.todayMinutesLabel){
     dom.todayMinutesLabel.textContent = formatHoursMinutes(todayFocusMinutes);
@@ -1120,7 +1129,7 @@ function buildWeeklyBars(){
 
     const barValueLabel = document.createElement('div');
     barValueLabel.style.cssText = 'font-size:0.58rem; color:var(--text-dim); font-family:"JetBrains Mono",monospace; font-weight:700; text-align:center; margin-bottom:2px;';
-    barValueLabel.textContent = day.focusMins > 0 ? (day.focusMins + 'm') : '0';
+    barValueLabel.textContent = formatBarTimeLabel(day.focusMins);
 
     const bar = document.createElement('div');
     bar.className = 'wbar' + (day.isToday ? ' today' : '');
