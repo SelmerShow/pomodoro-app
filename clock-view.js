@@ -1,18 +1,72 @@
 function buildTicks(){
-  const ns='http://www.w3.org/2000/svg';
-  const frag=document.createDocumentFragment();
-  for(let i=0;i<60;i++){
-    const angle=i*6*Math.PI/180;
-    const isHour=i%5===0;
-    const rOuter=96, rInner=isHour?83:90;
-    const x1=100+rOuter*Math.sin(angle), y1=100-rOuter*Math.cos(angle);
-    const x2=100+rInner*Math.sin(angle), y2=100-rInner*Math.cos(angle);
-    const line=document.createElementNS(ns,'line');
-    line.setAttribute('x1',x1.toFixed(2)); line.setAttribute('y1',y1.toFixed(2));
-    line.setAttribute('x2',x2.toFixed(2)); line.setAttribute('y2',y2.toFixed(2));
-    line.setAttribute('class', isHour?'tick tick-hour':'tick tick-minute');
+  const ns = 'http://www.w3.org/2000/svg';
+  if(!dom.ticksGroup) return;
+  dom.ticksGroup.innerHTML = '';
+  const frag = document.createDocumentFragment();
+
+  // Helper to generate SVG arc paths with gaps
+  function createArc(startAngle, endAngle, color, strokeWidth = 3.5){
+    const r = 88;
+    const cx = 100, cy = 100;
+    const rad = deg => (deg - 90) * Math.PI / 180.0;
+    const pStart = { x: cx + r * Math.cos(rad(endAngle)), y: cy + r * Math.sin(rad(endAngle)) };
+    const pEnd = { x: cx + r * Math.cos(rad(startAngle)), y: cy + r * Math.sin(rad(startAngle)) };
+    const largeArc = (endAngle - startAngle) <= 180 ? '0' : '1';
+
+    const path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', `M ${pStart.x.toFixed(2)} ${pStart.y.toFixed(2)} A ${r} ${r} 0 ${largeArc} 0 ${pEnd.x.toFixed(2)} ${pEnd.y.toFixed(2)}`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', strokeWidth);
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('class', 'neon-logo-arc');
+    path.style.filter = `drop-shadow(0 0 6px ${color})`;
+    return path;
+  }
+
+  // 1. Four Segmented Neon Perimeter Arcs with Gaps (Matching Logo)
+  // Top-Left: Red (274° -> 356°)
+  frag.appendChild(createArc(274, 356, '#ff2a55', 4));
+  // Top-Right: Cyan (4° -> 58°)
+  frag.appendChild(createArc(4, 58, '#00e5ff', 4));
+  // Mid-Right: Gold/Yellow (64° -> 132°)
+  frag.appendChild(createArc(64, 132, '#ffb800', 4));
+  // Bottom Arc: Purple/Magenta (138° -> 268°)
+  frag.appendChild(createArc(138, 268, '#d946ef', 4));
+
+  // 2. 12 Inward Neon Hour Ticks
+  for(let i = 0; i < 12; i++){
+    if(i === 6) continue; // 6 o'clock is replaced by the "S" glyph
+    const angle = i * 30 * Math.PI / 180;
+    const rOuter = 82;
+    const rInner = 72;
+    const x1 = 100 + rOuter * Math.sin(angle);
+    const y1 = 100 - rOuter * Math.cos(angle);
+    const x2 = 100 + rInner * Math.sin(angle);
+    const y2 = 100 - rInner * Math.cos(angle);
+
+    const tickColor = (i >= 11 || i === 0) ? '#ff2a55' : (i <= 2 ? '#00e5ff' : '#d946ef');
+
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('x1', x1.toFixed(2)); line.setAttribute('y1', y1.toFixed(2));
+    line.setAttribute('x2', x2.toFixed(2)); line.setAttribute('y2', y2.toFixed(2));
+    line.setAttribute('stroke', tickColor);
+    line.setAttribute('stroke-width', '2.2');
+    line.setAttribute('stroke-linecap', 'round');
+    line.setAttribute('class', 'neon-hour-tick');
+    line.style.filter = `drop-shadow(0 0 4px ${tickColor})`;
     frag.appendChild(line);
   }
+
+  // 3. Glowing "S" Logo Letter at 6 o'clock
+  const sText = document.createElementNS(ns, 'text');
+  sText.setAttribute('x', '100');
+  sText.setAttribute('y', '178');
+  sText.setAttribute('text-anchor', 'middle');
+  sText.setAttribute('class', 'neon-s-mark');
+  sText.textContent = 'S';
+  frag.appendChild(sText);
+
   dom.ticksGroup.appendChild(frag);
 }
 function setupRings(){
