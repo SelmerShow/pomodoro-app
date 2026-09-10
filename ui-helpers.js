@@ -4,15 +4,47 @@ const ASSETS = {
 };
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const PROFILE_META = { neon2:{ name:'NEON PULSE', theme:'cyberpunkBlue' }, y2026:{ name:'SOLAR FLARE', theme:'volcanicOrange' } };
-const state = { profile:'neon2', theme:'cyberpunkBlue', mode3D:true, mode:'clock', deepFocus:false, showHeartPulse:true, clockOnlyMode:false, clockStyle:'hybrid', neonGlow:true, uiScale:1.0, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', progressDirection:'fill', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#3fd0ff', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
+const PROFILE_META = {
+  neon2: { name:'NEON PULSE', theme:'selmerNeon' },
+  y2026: { name:'SOLAR FLARE', theme:'selmerNeon' }
+};
+const state = {
+  profile: 'y2026',
+  theme: 'selmerNeon',
+  mode3D: true,
+  mode: 'clock',
+  deepFocus: false,
+  showHeartPulse: true,
+  clockOnlyMode: false,
+  clockStyle: 'hybrid',
+  neonGlow: true,
+  uiScale: 1.0,
+  dfShowIcon: true,
+  dfOnlyTime: false,
+  dfDigitalOnly: false,
+  dfClockType: '24h',
+  dfFont: "'Orbitron', sans-serif",
+  dfPomoViewMode: 'both',
+  dfPomoShowIcon: true,
+  dfPomoShowLabel: true,
+  dfPomoShowRing: true,
+  progressStyle: 'ring',
+  progressDirection: 'fill',
+  enableCelebration: true,
+  celebrationStyle: 'all',
+  dfScale: 1.0,
+  dfAtmosphere: 'void',
+  customHex: '#d946ef',
+  useSmartDayBoundary: true,
+  dayBoundaryTime: '06:00'
+};
 const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:25, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, isOvertime:false, overtimeSec:0, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:25*60*1000, intervalId:null, lastTickTs:0 };
 const SEC_R=78, SEC_C=2*Math.PI*SEC_R;
 const PRING_R=76, PRING_C=2*Math.PI*PRING_R;
 const DONUT_R=40, DONUT_C=2*Math.PI*DONUT_R;
 let focusLevel=10, bpm=60, deepFocusStart=0, lastDigitalSecond=-1;
 let todayFocusMinutes = seedTodayMinutes();
-let CACHED_C1='#3fd0ff', CACHED_C2='#7b6cff', CACHED_C3='#ff5da2';
+let CACHED_C1 = '#d946ef', CACHED_C2 = '#00e5ff', CACHED_C3 = '#ff007f';
 
 function getSyncedNow(){
   return new Date(Date.now() + serverTimeOffsetMs);
@@ -147,7 +179,7 @@ function applyProfile(profileKey, opts){
   if(dom.avatarImg) dom.avatarImg.src = ASSETS[profileKey];
   document.querySelectorAll('.profile-option').forEach(btn=>{ btn.classList.toggle('selected', btn.dataset.profile===profileKey); });
   if(dom.profileCaption) dom.profileCaption.textContent = PROFILE_META[profileKey].name;
-  if(!opts.skipTheme) applyTheme(PROFILE_META[profileKey].theme, opts);
+  if(opts.changeTheme) applyTheme(PROFILE_META[profileKey].theme, opts);
   if(!opts.skipSave) saveSettingsToStorage();
 }
 
@@ -855,8 +887,8 @@ function saveSettingsToStorage(){
     const settings = {
       volume: dom.volumeSlider ? dom.volumeSlider.value : 0.55,
       alarmVolume: dom.alarmVolumeSlider ? dom.alarmVolumeSlider.value : 0.70,
-      theme: state.theme || 'cyberpunkBlue',
-      profile: state.profile || 'neon2',
+      theme: state.theme || 'selmerNeon',
+      profile: state.profile || 'y2026',
       mode3D: state.mode3D,
       showHeartPulse: state.showHeartPulse,
       clockOnlyMode: state.clockOnlyMode,
@@ -881,7 +913,7 @@ function saveSettingsToStorage(){
       pomoAlarm: dom.pomoAlarmSelect ? dom.pomoAlarmSelect.value : 'chime',
       dfScale: state.dfScale !== undefined ? state.dfScale : (dom.dfScaleSlider ? parseFloat(dom.dfScaleSlider.value) : 1.0),
       dfAtmosphere: state.dfAtmosphere || (dom.dfAtmosphereSelect ? dom.dfAtmosphereSelect.value : 'void'),
-      customHex: state.customHex || (dom.customColorInput ? dom.customColorInput.value : '#3fd0ff'),
+      customHex: state.customHex || (dom.customColorInput ? dom.customColorInput.value : '#d946ef'),
       soundPreset: currentPresetName || 'off',
       activeMode: state.mode || 'clock',
       sessionType: pomodoro.sessionType || 'focus',
@@ -912,8 +944,8 @@ function loadSettingsFromStorage(){
       state.customHex = s.customHex;
       if(dom.customColorInput) dom.customColorInput.value = s.customHex;
     }
-    if(s.theme) applyTheme(s.theme, {skipSave: true, customHex: s.customHex});
-    if(s.profile) applyProfile(s.profile, {skipSave: true, skipTheme: true});
+    applyTheme(s.theme || 'selmerNeon', {skipSave: true, customHex: s.customHex});
+    applyProfile(s.profile || 'y2026', {skipSave: true});
     if(s.mode3D !== undefined) applyMode3D(!!s.mode3D, {skipSave: true});
     if(s.showHeartPulse !== undefined) state.showHeartPulse = !!s.showHeartPulse;
     if(s.clockOnlyMode !== undefined) state.clockOnlyMode = !!s.clockOnlyMode;
@@ -1998,14 +2030,14 @@ function init(){
   cacheDom();
   if(typeof TimerVisuals !== 'undefined') TimerVisuals.init();
   initFirebaseSync();
-  dom.profileThumbNeon2.src=ASSETS.neon2;
-  dom.profileThumbY2026.src=ASSETS.y2026;
+  if(dom.profileThumbNeon2) dom.profileThumbNeon2.src=ASSETS.neon2;
+  if(dom.profileThumbY2026) dom.profileThumbY2026.src=ASSETS.y2026;
   buildTicks();
   setupRings();
   loadSettingsFromStorage();
   applyProgressStyle(state.progressStyle || 'ring', {skipSave: true});
   checkDailyReset();
-  applyProfile(state.profile, {skipSave: true, skipTheme: true});
+  applyProfile(state.profile, {skipSave: true});
   applyMode3D(state.mode3D, {skipSave: true});
   wireEvents();
   setupBg();
