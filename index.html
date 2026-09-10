@@ -21,7 +21,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SelmerShow">
 </head>
-<body data-theme="cyberpunkBlue" data-profile="neon2" data-mode3d="on">
+<body data-theme="selmerNeon" data-profile="y2026" data-mode3d="on">
 
 <canvas id="bgCanvas"></canvas>
 <canvas id="celebrationCanvas"></canvas>
@@ -397,22 +397,22 @@
   </div>
   <div class="drawer-body">
     <div class="settings-section">
-      <div class="settings-section-title">Profil</div>
-      <div class="profile-options" id="profileOptions">
-        <button class="profile-option" data-profile="neon2">
-          <img id="profileThumbNeon2" alt="Neon Pulse profili">
-          <span>Neon Pulse</span>
-        </button>
-        <button class="profile-option" data-profile="y2026">
-          <img id="profileThumbY2026" alt="Solar Flare profili">
-          <span>Solar Flare</span>
-        </button>
+      <div class="settings-section-title">Profil İkonu</div>
+      <div class="profile-options" id="profileOptions" style="display:flex; justify-content:center;">
+        <div class="profile-option selected" data-profile="y2026" style="max-width:180px; cursor:default; background:rgba(217,70,239,0.08); border-color:var(--c1);">
+          <img id="profileThumbY2026" alt="Solar Flare profili" style="background:#030308; border-color:var(--c1);">
+          <span style="color:var(--c1); font-weight:700;">SOLAR FLARE</span>
+        </div>
       </div>
     </div>
 
     <div class="settings-section">
       <div class="settings-section-title">Renk Paleti</div>
       <div class="theme-swatches" id="themeSwatches">
+        <div class="swatch-wrap">
+          <button class="theme-swatch selected" data-theme="selmerNeon" style="background:linear-gradient(135deg,#d946ef,#00e5ff);"></button>
+          <div class="theme-swatch-label">SELMER NEON</div>
+        </div>
         <div class="swatch-wrap">
           <button class="theme-swatch" data-theme="cyberpunkBlue" style="background:linear-gradient(135deg,#3fd0ff,#7b6cff);"></button>
           <div class="theme-swatch-label">CYBERPUNK</div>

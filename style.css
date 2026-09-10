@@ -13,15 +13,24 @@ button{cursor:pointer; background:none; border:none;}
 img{-webkit-user-drag:none; user-select:none;}
 ::selection{background:rgba(120,160,255,.35);}
 
-:root{
-  --void-0:#05060d; --void-1:#0a0d1a; --void-2:#121a30; --void-3:#1b2545;
+:root,
+[data-theme="selmerNeon"] {
+  --void-0: #030308;
+  --void-1: #070913;
+  --void-2: #0e1122;
+  --void-3: #161a33;
   --hairline: rgba(255,255,255,.09); --hairline-strong: rgba(255,255,255,.16);
   --text-0:#eef2ff; --text-dim:#8b93b8; --text-dimmer:#525c82;
   --radius-s:6px; --radius-m:14px; --radius-l:24px;
   --ease:cubic-bezier(.16,.84,.44,1);
   --beat-duration:0.95s; --glow-intensity:0.45;
   --tilt-x:0deg; --tilt-y:0deg; --px:0px; --py:0px;
-  --c1:#3fd0ff; --c1-rgb:63,208,255; --c2:#7b6cff; --c2-rgb:123,108,255; --c3:#ff5da2; --c3-rgb:255,93,162;
+  --c1: #d946ef;        /* Master Neon Magenta / Purple */
+  --c1-rgb: 217, 70, 239;
+  --c2: #00e5ff;        /* Cyber Electric Cyan / Blue */
+  --c2-rgb: 0, 229, 255;
+  --c3: #ff007f;        /* Vibrant Neon Pink / "S" Accent */
+  --c3-rgb: 255, 0, 127;
 }
 [data-theme="cyberpunkBlue"]{ --c1:#3fd0ff; --c1-rgb:63,208,255; --c2:#7b6cff; --c2-rgb:123,108,255; --c3:#ff5da2; --c3-rgb:255,93,162; }
 [data-theme="bioGreen"]{ --c1:#39ff9e; --c1-rgb:57,255,158; --c2:#0ee6c8; --c2-rgb:14,230,200; --c3:#c6ff4e; --c3-rgb:198,255,78; }
@@ -167,25 +176,34 @@ body:not(.mode-pomodoro) .ring-cluster {
   background:linear-gradient(to bottom, var(--text-0), rgba(255,255,255,.35));
   box-shadow:0 0 8px rgba(var(--c1-rgb),.5);
 }
-.hand-hour{width:3.4px; height:24%; margin-left:-1.7px;}
-.hand-minute{width:2.4px; height:34%; margin-left:-1.2px; background:linear-gradient(to bottom, var(--c1), rgba(255,255,255,.4));}
-.hand-second {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1.6px;
-  height: 44%;
-  margin-left: -0.8px;
-  transform-origin: 50% 0%;
-  border-radius: 2px;
-  background: var(--c3);
-  box-shadow: 0 0 8px var(--c3);
-  z-index: 4;
-  display: none;
+.hand-hour {
+  width: 3.8px;
+  height: 25%;
+  margin-left: -1.9px;
+  background: linear-gradient(to top, var(--c1), #f0abfc) !important;
+  box-shadow: 0 0 12px rgba(var(--c1-rgb), 0.9), 0 0 4px #ffffff !important;
 }
-.hand-cap{
-  position:absolute; top:50%; left:50%; width:8px; height:8px; margin:-4px 0 0 -4px;
-  border-radius:50%; background:var(--c1); box-shadow:0 0 10px rgba(var(--c1-rgb),.9); z-index:3;
+
+.hand-minute {
+  width: 2.6px;
+  height: 36%;
+  margin-left: -1.3px;
+  background: linear-gradient(to top, var(--c2), #a5f3fc) !important;
+  box-shadow: 0 0 14px rgba(var(--c2-rgb), 0.95), 0 0 4px #ffffff !important;
+}
+
+.hand-second {
+  background: var(--c3) !important;
+  box-shadow: 0 0 10px var(--c3), 0 0 4px #ffffff !important;
+}
+
+.hand-cap {
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  background: var(--c1) !important;
+  border: 2px solid var(--void-0);
+  box-shadow: 0 0 12px var(--c1) !important;
 }
 .avatar-ring{position:absolute; top:50%; left:50%; width:44%; height:44%; transform:translate(-50%,-50%);}
 .avatar-pulse{position:relative; width:100%; height:100%; transform-origin:50% 50%; animation:heartbeat var(--beat-duration) ease-in-out infinite;}
@@ -208,8 +226,12 @@ body:not(.mode-pomodoro) .ring-cluster {
   20%{opacity:0.7; transform:scale(1.03);}
   52%{opacity:0.55; transform:scale(1.01);}
 }
+/* Avatar ring styling: ensure pure dark background for Solar Flare */
+.avatar-circle {
+  background: #030308 !important;
+}
 .avatar-circle{
-  position:absolute; inset:0; border-radius:50%; overflow:hidden; background:var(--void-2);
+  position:absolute; inset:0; border-radius:50%; overflow:hidden;
   box-shadow:0 0 0 1px rgba(var(--c1-rgb),.4) inset;
 }
 .avatar-circle img{width:100%; height:100%; object-fit:cover; display:block;}
