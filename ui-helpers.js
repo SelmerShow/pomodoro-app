@@ -932,7 +932,10 @@ function saveSettingsToStorage(){
 function loadSettingsFromStorage(){
   try {
     const raw = localStorage.getItem('selmer_app_settings');
-    if(!raw) return;
+    if(!raw) {
+      applyMainPageCustomizations();
+      return;
+    }
     const s = JSON.parse(raw);
     if(s.volume !== undefined) {
       if(dom.volumeSlider) dom.volumeSlider.value = s.volume;

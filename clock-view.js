@@ -69,10 +69,12 @@ function buildTicks(){
 
   dom.ticksGroup.appendChild(frag);
 }
+
 function setupRings(){
   if(dom.secondsProgress) dom.secondsProgress.setAttribute('stroke-dasharray', SEC_C.toFixed(2));
   if(dom.pomodoroProgress) dom.pomodoroProgress.setAttribute('stroke-dasharray', PRING_C.toFixed(2));
 }
+
 function renderClock(){
   const now=getSyncedNow();
   const h=now.getHours()%12, m=now.getMinutes(), s=now.getSeconds(), ms=now.getMilliseconds();
