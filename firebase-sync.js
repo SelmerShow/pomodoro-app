@@ -349,12 +349,22 @@ function startUserRealtimeSync(uid){
     if(totals && typeof totals === 'object'){
       Object.keys(totals).forEach(key => {
         if(totals[key] !== null && totals[key] !== undefined){
-          localStorage.setItem(key, totals[key]);
+          const cloudVal = parseInt(totals[key], 10) || 0;
+          const localVal = parseInt(localStorage.getItem(key) || '0', 10);
+          const maxVal = Math.max(localVal, cloudVal);
+          localStorage.setItem(key, maxVal.toString());
+
+          if(localVal < cloudVal){
+            // Cloud had higher value, accept it
+          } else if(localVal > cloudVal){
+            // Local was higher, heal cloud
+            db.ref("users/" + uid + "/study_totals/" + key).set(localVal);
+          }
         }
       });
       const todayKey = getTodayStorageKey();
       if(totals[todayKey] !== undefined){
-        todayFocusMinutes = parseInt(totals[todayKey], 10) || 0;
+        todayFocusMinutes = Math.max(todayFocusMinutes, parseInt(totals[todayKey], 10) || 0);
       }
       renderDataPanel();
     }
@@ -366,9 +376,27 @@ function startUserRealtimeSync(uid){
     const records = snap.val();
     if(records && typeof records === 'object'){
       Object.keys(records).forEach(isoKey => {
-        if(records[isoKey] !== null && records[isoKey] !== undefined){
-          localStorage.setItem('selmer_record_' + isoKey, JSON.stringify(records[isoKey]));
+        const cloudRec = records[isoKey];
+        if(!cloudRec) return;
+
+        let localRec = null;
+        try { localRec = JSON.parse(localStorage.getItem('selmer_record_' + isoKey)); } catch(e){}
+
+        let bestRec = cloudRec;
+        if(localRec){
+          const localMins = localRec.totalMinutes || 0;
+          const cloudMins = cloudRec.totalMinutes || 0;
+          const localCount = (localRec.completedEtuts && localRec.completedEtuts.length) || localRec.sessionCount || 0;
+          const cloudCount = (cloudRec.completedEtuts && cloudRec.completedEtuts.length) || cloudRec.sessionCount || 0;
+
+          if(localCount > cloudCount || (localCount === cloudCount && localMins > cloudMins)){
+            bestRec = localRec;
+            // Heal cloud with superior local record
+            db.ref("users/" + uid + "/session_records/" + isoKey).set(localRec);
+          }
         }
+
+        localStorage.setItem('selmer_record_' + isoKey, JSON.stringify(bestRec));
       });
       renderDataPanel();
     }
@@ -380,13 +408,18 @@ function startUserRealtimeSync(uid){
   timelineRef.on("value", (snap) => {
     const cloudTimeline = snap.val();
     if(Array.isArray(cloudTimeline)){
-      const todayKey = getTodayStorageKey() + '_timeline';
-      localStorage.setItem(todayKey, JSON.stringify(cloudTimeline));
-      pomodoroTimeline = cloudTimeline;
-      const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed');
-      focusIndex = completed.length + 1;
-      renderPomodoroTimeline();
-      renderPomodoro();
+      const localCompleted = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed').length;
+      const cloudCompleted = cloudTimeline.filter(t => t.type === 'focus' && t.status === 'completed').length;
+
+      // Only adopt cloud timeline if it does not lose completed local sessions
+      if(cloudCompleted >= localCompleted){
+        const todayKey = getTodayStorageKey() + '_timeline';
+        localStorage.setItem(todayKey, JSON.stringify(cloudTimeline));
+        pomodoroTimeline = cloudTimeline;
+        focusIndex = cloudCompleted + 1;
+        renderPomodoroTimeline();
+        renderPomodoro();
+      }
     }
   });
   userListeners.push(timelineRef);
@@ -474,7 +507,9 @@ function setupLiveSessionSync(uid){
     renderPomodoroTimeline();
     renderPomodoro();
 
-    showToast('Sayaç başka bir cihazdan güncellendi');
+    if(wasRunning !== pomodoro.running){
+      showToast(pomodoro.running ? 'Sayaç diğer cihazdan başlatıldı' : 'Sayaç diğer cihazdan duraklatıldı');
+    }
 
     setTimeout(() => { isApplyingRemoteLiveSession = false; }, 300);
   });
