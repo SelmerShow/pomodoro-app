@@ -129,11 +129,12 @@ body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96
 .icon-btn:active{transform:translateY(0);}
 .icon-btn.is-on{border-color:rgba(var(--c1-rgb),.75); box-shadow:0 0 16px rgba(var(--c1-rgb),.45); background:rgba(var(--c1-rgb),.12);}
 
-.cockpit{
+.cockpit {
   width:100%; max-width:1280px; display:flex; flex-direction:column; align-items:center;
   justify-content: flex-start !important;
   padding-top: clamp(8px, 1.8vh, 20px) !important;
-  flex:1; perspective:1400px;
+  flex:1;
+  perspective: none !important;
 }
 
 /* Center cockpit contents vertically in Clock mode */
@@ -143,10 +144,10 @@ body:not(.mode-pomodoro) .cockpit {
   padding-bottom: clamp(24px, 6vh, 60px) !important;
 }
 
-.ring-cluster{
+.ring-cluster {
   position:relative; width:clamp(230px, 32vw, 372px); aspect-ratio:1/1;
-  transform-style:preserve-3d; transform:rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
-  transition:transform .1s linear; margin-bottom:clamp(14px,2.6vh,26px);
+  transform: none !important;
+  transition: transform .1s linear; margin-bottom:clamp(14px,2.6vh,26px);
 }
 
 /* Give the clock ring a majestic, balanced presence */
@@ -161,52 +162,84 @@ body:not(.mode-pomodoro) .ring-cluster {
 .tick-minute{stroke:rgba(255,255,255,.16); stroke-width:1;}
 .deco-arc{fill:none; stroke:rgba(var(--c2-rgb),.5); stroke-width:1; stroke-dasharray:2 14;}
 .deco-arc-2{fill:none; stroke:rgba(var(--c3-rgb),.4); stroke-width:.75; stroke-dasharray:1 9;}
-#decoGroup{transform-origin:100px 100px; animation:spinSlow 130s linear infinite;}
-#decoGroup2{transform-origin:100px 100px; animation:spinSlow 95s linear infinite reverse;}
-@keyframes spinSlow{ to{ transform:rotate(360deg); } }
-.sec-track{fill:none; stroke:rgba(255,255,255,.07); stroke-width:2;}
-.sec-progress{
-  fill:none; stroke:var(--c1); stroke-width:2.4; stroke-linecap:round;
-  transition:stroke .6s;
+
+/* Eliminate residual progress circle and floating dot on the clock */
+.sec-track,
+.sec-progress,
+.sec-dot,
+#decoGroup,
+#decoGroup2 {
+  display: none !important;
 }
-.sec-dot{fill:var(--c1);}
+
 .hands{position:absolute; inset:0;}
 .hand{
   position:absolute; top:50%; left:50%; transform-origin:50% 0%; border-radius:3px;
   background:linear-gradient(to bottom, var(--text-0), rgba(255,255,255,.35));
   box-shadow:0 0 8px rgba(var(--c1-rgb),.5);
 }
+
+/* Glowing Neon "S" Glyph */
+.neon-s-mark {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 21px;
+  font-weight: 700;
+  fill: #ff2a75;
+  filter: drop-shadow(0 0 6px #ff2a75) drop-shadow(0 0 14px rgba(255, 42, 117, 0.7));
+  user-select: none;
+}
+
+/* Neon Hands Matching the Logo */
 .hand-hour {
   width: 3.8px;
-  height: 25%;
+  height: 26%;
   margin-left: -1.9px;
-  background: linear-gradient(to top, var(--c1), #f0abfc) !important;
-  box-shadow: 0 0 12px rgba(var(--c1-rgb), 0.9), 0 0 4px #ffffff !important;
+  background: linear-gradient(to top, #d946ef, #f0abfc) !important;
+  box-shadow: 0 0 12px #d946ef, 0 0 4px #ffffff !important;
+  border-radius: 4px;
 }
 
 .hand-minute {
   width: 2.6px;
-  height: 36%;
+  height: 38%;
   margin-left: -1.3px;
-  background: linear-gradient(to top, var(--c2), #a5f3fc) !important;
-  box-shadow: 0 0 14px rgba(var(--c2-rgb), 0.95), 0 0 4px #ffffff !important;
+  background: linear-gradient(to top, #00e5ff, #e0f2fe) !important;
+  box-shadow: 0 0 14px #00e5ff, 0 0 4px #ffffff !important;
+  border-radius: 3px;
 }
 
+/* Sleek sweeping second hand */
 .hand-second {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.6px;
+  height: 42%;
+  margin-left: -0.8px;
+  transform-origin: 50% 0%;
+  border-radius: 2px;
   background: var(--c3) !important;
   box-shadow: 0 0 10px var(--c3), 0 0 4px #ffffff !important;
+  z-index: 4;
+  display: block !important;
 }
 
 .hand-cap {
   width: 10px;
   height: 10px;
   margin: -5px 0 0 -5px;
-  background: var(--c1) !important;
-  border: 2px solid var(--void-0);
-  box-shadow: 0 0 12px var(--c1) !important;
+  background: #d946ef !important;
+  border: 2px solid #030308 !important;
+  box-shadow: 0 0 10px #d946ef !important;
 }
+
+/* Hide center avatar / heart on clock face unless explicitly enabled */
+body.hide-center-logo .avatar-ring {
+  display: none !important;
+}
+
 .avatar-ring{position:absolute; top:50%; left:50%; width:44%; height:44%; transform:translate(-50%,-50%);}
-.avatar-pulse{position:relative; width:100%; height:100%; transform-origin:50% 50%; animation:heartbeat var(--beat-duration) ease-in-out infinite;}
+
 .avatar-pulse{position:relative; width:100%; height:100%; transform-origin:50% 50%; animation:heartbeat var(--beat-duration) cubic-bezier(0.4, 0, 0.2, 1) infinite;}
 @keyframes heartbeat{
   0%, 100%{transform:scale(1);}
@@ -226,10 +259,6 @@ body:not(.mode-pomodoro) .ring-cluster {
   20%{opacity:0.7; transform:scale(1.03);}
   52%{opacity:0.55; transform:scale(1.01);}
 }
-/* Avatar ring styling: ensure pure dark background for Solar Flare */
-.avatar-circle {
-  background: #030308 !important;
-}
 .avatar-circle{
   position:absolute; inset:0; border-radius:50%; overflow:hidden;
   box-shadow:0 0 0 1px rgba(var(--c1-rgb),.4) inset;
@@ -240,9 +269,6 @@ body:not(.mode-pomodoro) .ring-cluster {
   border:1px solid rgba(var(--c1-rgb),.5);
   box-shadow:0 0 22px rgba(var(--c1-rgb),calc(var(--glow-intensity) * 1.1)), inset 0 0 16px rgba(var(--c1-rgb),.22);
 }
-.avatar-ring-border::before, .avatar-ring-border::after{ content:''; position:absolute; border-radius:50%; border:1px solid rgba(var(--c2-rgb),.3); }
-.avatar-ring-border::before{inset:-13px;}
-.avatar-ring-border::after{inset:-13px; border-color:transparent; border-top-color:rgba(var(--c3-rgb),.55); border-right-color:rgba(var(--c3-rgb),.55); animation:spinSlow 12s linear infinite;}
 
 .digital-time{
   font-family:'Orbitron', sans-serif; font-weight:700; font-size:clamp(2.1rem, 6.4vw, 3.4rem);
@@ -250,20 +276,6 @@ body:not(.mode-pomodoro) .ring-cluster {
   text-shadow:0 0 26px rgba(var(--c1-rgb),.5), 0 0 4px rgba(255,255,255,.4);
   font-variant-numeric:tabular-nums; margin-bottom:6px;
 }
-.ekg-strip{
-  position:relative; width:min(100%, 560px); height:64px;
-  border:1px solid var(--hairline); border-radius:var(--radius-m);
-  background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01));
-  overflow:hidden; margin-bottom:clamp(18px,3vh,30px);
-}
-#ekgCanvas{position:absolute; inset:0; width:100%; height:100%;}
-.ekg-meta{
-  position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between;
-  padding:0 14px; pointer-events:none;
-  font-family:'JetBrains Mono', monospace; font-size:.66rem; letter-spacing:.08em; color:var(--text-dim);
-}
-.ekg-meta b{color:var(--c1); font-weight:600;}
-.ekg-meta .profile-caption{color:var(--text-dimmer); text-transform:uppercase; font-size:.6rem;}
 
 .mode-tabs{
   display:flex; gap:6px; padding:5px; border-radius:999px;
@@ -433,9 +445,6 @@ body.deep-focus-active .deep-focus-overlay{opacity:1; visibility:visible; pointe
 .range-row{margin-bottom:16px;}
 .range-row-head{display:flex; justify-content:space-between; font-size:.72rem; color:var(--text-dim); margin-bottom:8px; letter-spacing:.05em;}
 .range-row-head b{color:var(--text-0); font-family:'JetBrains Mono',monospace; font-weight:600;}
-.mode3d-row{display:flex; align-items:center; justify-content:space-between; padding:4px 2px;}
-.mode3d-row .lbl{font-size:.78rem; color:var(--text-dim);}
-.mode3d-row .lbl b{color:var(--text-0);}
 .donut-row{display:flex; align-items:center; gap:18px; margin-bottom:22px;}
 .donut-wrap{position:relative; width:92px; height:92px; flex-shrink:0;}
 .donut-wrap svg{width:100%; height:100%; transform:rotate(-90deg);}
@@ -483,8 +492,6 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible{ outline:2px
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
 }
-body[data-mode3d="off"] #decoGroup, body[data-mode3d="off"] #decoGroup2, body[data-mode3d="off"] .avatar-ring-border::after{ animation-play-state:paused; }
-body[data-mode3d="off"] .ring-cluster{ perspective:none; }
 
 /* Deep Focus Atmosphere & Scale CSS */
 .deep-focus-overlay[data-atmosphere="space"] {
@@ -724,14 +731,9 @@ body[data-mode3d="off"] .ring-cluster{ perspective:none; }
 }
 
 /* Customization & Transition Styles */
-.pulse-field, .avatar-pulse, .avatar-glow, .avatar-ring, .ekg-strip, .ring-cluster, .cockpit, #app {
+.pulse-field, .avatar-pulse, .avatar-glow, .avatar-ring, .ring-cluster, .cockpit, #app {
   transition: opacity 0.5s var(--ease), filter 0.5s var(--ease), transform 0.5s var(--ease);
 }
-body.no-heart-pulse .pulse-field { opacity: 0 !important; animation: none !important; }
-body.no-heart-pulse .avatar-pulse { animation: none !important; transform: scale(1) !important; }
-body.no-heart-pulse .avatar-glow { opacity: 0 !important; animation: none !important; }
-body.clock-only-mode .avatar-ring { opacity: 0 !important; pointer-events: none !important; transform: translate(-50%,-50%) scale(0.8) !important; }
-body.clock-only-mode .ekg-strip { opacity: 0 !important; pointer-events: none !important; max-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
 
 
 .df-customize-btn {
@@ -800,7 +802,6 @@ body.clock-only-mode .ekg-strip { opacity: 0 !important; pointer-events: none !i
 /* Collapse and remove phantom df-mount completely when icon is disabled or in clock-only mode */
 body:not(.mode-pomodoro).df-hide-icon .df-mount,
 body:not(.mode-pomodoro).df-digital-only .df-mount,
-body:not(.mode-pomodoro).clock-only-mode .df-mount,
 body:not(.mode-pomodoro) .df-mount:empty {
   display: none !important;
   width: 0 !important;
@@ -815,8 +816,7 @@ body.mode-pomodoro .df-mount {
 
 /* When mount is hidden, scale and center the digital clock cleanly */
 body.df-hide-icon .df-time,
-body.df-digital-only .df-time,
-body.clock-only-mode .df-time {
+body.df-digital-only .df-time {
   font-size: clamp(5rem, 15vw, 9.5rem) !important;
   margin: 0 !important;
   line-height: 1 !important;
