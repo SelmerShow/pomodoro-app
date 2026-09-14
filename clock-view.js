@@ -70,13 +70,13 @@ function updateDateCluster(){
 }
 
 function onMouseMove(e){ mouseNX=(e.clientX/window.innerWidth)*2-1; mouseNY=(e.clientY/window.innerHeight)*2-1; }
-function applyMode3D(on, opts){
+function applyMode3D(enabled, opts){
   opts = opts || {};
-  state.mode3D=on;
-  document.body.setAttribute('data-mode3d', on?'on':'off');
-  if(dom.mode3dValue) dom.mode3dValue.textContent=on?'3D':'2D';
-  if(dom.mode3dToggle) dom.mode3dToggle.checked=on;
-  if(!on){
+  state.mode3D = !!enabled;
+  document.body.setAttribute('data-mode3d', state.mode3D ? 'on' : 'off');
+  if(dom.mode3dToggle) dom.mode3dToggle.checked = state.mode3D;
+  if(dom.mode3dValue) dom.mode3dValue.textContent = state.mode3D ? '3D' : '2D';
+  if(!state.mode3D){
     if(dom.ringCluster) dom.ringCluster.style.transform = 'rotateX(0deg) rotateY(0deg)';
     if(dom.layerBack) dom.layerBack.style.transform = 'translate3d(0px, 0px, 0px)';
     if(dom.layerMid) dom.layerMid.style.transform = 'translate3d(0px, 0px, 0px)';

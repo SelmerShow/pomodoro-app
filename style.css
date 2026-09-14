@@ -705,11 +705,26 @@ body[data-mode3d="off"] .ring-cluster{ perspective:none; }
 .pulse-field, .avatar-pulse, .avatar-glow, .avatar-ring, .ekg-strip, .ring-cluster, .cockpit, #app {
   transition: opacity 0.5s var(--ease), filter 0.5s var(--ease), transform 0.5s var(--ease);
 }
-body.no-heart-pulse .pulse-field { opacity: 0 !important; animation: none !important; }
-body.no-heart-pulse .avatar-pulse { animation: none !important; transform: scale(1) !important; }
-body.no-heart-pulse .avatar-glow { opacity: 0 !important; animation: none !important; }
-body.clock-only-mode .avatar-ring { opacity: 0 !important; pointer-events: none !important; transform: translate(-50%,-50%) scale(0.8) !important; }
+body.clock-only-mode .avatar-ring,
+body.clock-only-mode #avatarRing,
+body.clock-only-mode .avatar-pulse,
+body.clock-only-mode .avatar-circle,
+body.clock-only-mode .avatar-glow,
+body.clock-only-mode .avatar-ring-border {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 body.clock-only-mode .ekg-strip { opacity: 0 !important; pointer-events: none !important; max-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
+
+body.no-heart-pulse .avatar-pulse,
+body.no-heart-pulse .pulse-field {
+  animation: none !important;
+  opacity: 0 !important;
+}
+body.no-heart-pulse .avatar-glow { opacity: 0 !important; animation: none !important; }
 
 
 .df-customize-btn {
