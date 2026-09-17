@@ -21,7 +21,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SelmerShow">
 </head>
-<body data-theme="cyberpunkBlue" data-profile="neon2" data-mode3d="on">
+<body data-theme="neonMagenta" data-profile="y2026" data-mode3d="off" data-clock-style="wall" class="clock-only-mode no-heart-pulse">
 
 <canvas id="bgCanvas"></canvas>
 <canvas id="celebrationCanvas"></canvas>
@@ -455,8 +455,8 @@
     <div class="settings-section">
       <div class="settings-section-title">Ders ve Mola Ayarları</div>
       <div class="range-row">
-        <div class="range-row-head"><span>Odak Süresi</span><b id="focusDurationValue">25 dk</b></div>
-        <input type="range" id="focusDurationRange" min="1" max="120" step="1" value="25">
+        <div class="range-row-head"><span>Odak Süresi</span><b id="focusDurationValue">90 dk</b></div>
+        <input type="range" id="focusDurationRange" min="1" max="180" step="1" value="90">
       </div>
       <div class="range-row">
         <div class="range-row-head"><span>Mola Süresi</span><b id="shortBreakValue">5 dk</b></div>
@@ -529,8 +529,8 @@
           <small style="font-size:0.65rem; color:var(--text-dimmer);">Saat sekmesindeki görünüm modeli</small>
         </div>
         <select id="clockStyleSelect" style="background:rgba(10,13,26,0.8); color:var(--text-0); border:1px solid var(--hairline-strong); border-radius:var(--radius-s); padding:4px 8px; font-size:0.75rem; outline:none;">
-          <option value="hybrid">Siber Biyometrik (Varsayılan)</option>
-          <option value="wall">Klasik Duvar Saati</option>
+          <option value="hybrid">Siber Biyometrik</option>
+          <option value="wall" selected>Klasik Duvar Saati</option>
           <option value="hud">Siber Radar & HUD</option>
           <option value="chrono">Kronograf Spor Kadran</option>
           <option value="digital">Monolit Dijital Konsol</option>
@@ -553,7 +553,7 @@
           <small style="font-size:0.65rem; color:var(--text-dimmer);">Nabız animasyonu ve ışık glow efekti</small>
         </div>
         <label class="switch">
-          <input type="checkbox" id="heartPulseToggle" checked>
+          <input type="checkbox" id="heartPulseToggle">
           <span class="switch-track"></span>
           <span class="switch-thumb"></span>
         </label>
@@ -564,7 +564,7 @@
           <small style="font-size:0.65rem; color:var(--text-dimmer);">Biyometrik ikonu ve EKG bandını gizle</small>
         </div>
         <label class="switch">
-          <input type="checkbox" id="clockOnlyToggle">
+          <input type="checkbox" id="clockOnlyToggle" checked>
           <span class="switch-track"></span>
           <span class="switch-thumb"></span>
         </label>
@@ -581,9 +581,9 @@
     <div class="settings-section">
       <div class="settings-section-title">Grafik Modu</div>
       <div class="mode3d-row">
-        <span class="lbl">Katman derinliği <b id="mode3dValue">3D</b></span>
+        <span class="lbl">Katman derinliği <b id="mode3dValue">2D</b></span>
         <label class="switch">
-          <input type="checkbox" id="mode3dToggle" checked>
+          <input type="checkbox" id="mode3dToggle">
           <span class="switch-track"></span>
           <span class="switch-thumb"></span>
         </label>
@@ -880,7 +880,7 @@
           <label for="pomoFocusInput">Ders Süresi (dk):</label>
           <div class="num-step-input">
             <button class="step-btn" id="pomoFocusMinus">-</button>
-            <input type="number" id="pomoFocusInput" min="1" max="180" value="25">
+            <input type="number" id="pomoFocusInput" min="1" max="180" value="90">
             <button class="step-btn" id="pomoFocusPlus">+</button>
           </div>
         </div>
