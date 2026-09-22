@@ -1997,8 +1997,8 @@ function init(){
   cacheDom();
   if(typeof TimerVisuals !== 'undefined') TimerVisuals.init();
   initFirebaseSync();
-  dom.profileThumbNeon2.src=ASSETS.neon2;
-  dom.profileThumbY2026.src=ASSETS.y2026;
+  if(dom.profileThumbNeon2) dom.profileThumbNeon2.src=ASSETS.neon2;
+  if(dom.profileThumbY2026) dom.profileThumbY2026.src=ASSETS.y2026;
   buildTicks();
   setupRings();
   loadSettingsFromStorage();
