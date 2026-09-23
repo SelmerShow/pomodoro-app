@@ -292,6 +292,59 @@ function openMigrationModal(uid, userData){
   if(useCloudBtn) useCloudBtn.addEventListener('click', onUseCloud);
 }
 
+function syncLocalToCloud(uid){
+  if(!db || !uid) return;
+  const userRef = db.ref("users/" + uid);
+
+  userRef.once("value", (snap) => {
+    const cloudData = snap.val() || {};
+    const cloudTotals = cloudData.study_totals || {};
+    const cloudRecords = cloudData.session_records || {};
+
+    // 1. Sync study_totals
+    for(let i = 0; i < localStorage.length; i++){
+      const key = localStorage.key(i);
+      if(!key) continue;
+      if(key.startsWith('selmer_focus_') && !key.endsWith('_timeline')){
+        const localVal = parseInt(localStorage.getItem(key) || '0', 10);
+        const cloudVal = parseInt(cloudTotals[key] || '0', 10);
+        const maxVal = Math.max(localVal, cloudVal);
+        if(maxVal > 0){
+          localStorage.setItem(key, maxVal.toString());
+          if(cloudVal < maxVal){
+            db.ref("users/" + uid + "/study_totals/" + key).set(maxVal);
+          }
+        }
+      } else if(key.startsWith('selmer_record_')){
+        const isoKey = key.replace('selmer_record_', '');
+        let localRec = null;
+        try { localRec = JSON.parse(localStorage.getItem(key)); } catch(e){}
+        const cloudRec = cloudRecords[isoKey];
+
+        let bestRec = localRec;
+        if(localRec && cloudRec){
+          const localCount = (localRec.completedEtuts && localRec.completedEtuts.length) || localRec.sessionCount || 0;
+          const cloudCount = (cloudRec.completedEtuts && cloudRec.completedEtuts.length) || cloudRec.sessionCount || 0;
+          const localMins = localRec.totalMinutes || 0;
+          const cloudMins = cloudRec.totalMinutes || 0;
+          if(cloudCount > localCount || (cloudCount === localCount && cloudMins > localMins)){
+            bestRec = cloudRec;
+          }
+        } else if(!localRec && cloudRec){
+          bestRec = cloudRec;
+        }
+
+        if(bestRec){
+          localStorage.setItem(key, JSON.stringify(bestRec));
+          db.ref("users/" + uid + "/session_records/" + isoKey).set(bestRec);
+        }
+      }
+    }
+
+    renderDataPanel();
+  });
+}
+
 function detachUserListeners(){
   userListeners.forEach(ref => {
     try { ref.off(); } catch(e){}
@@ -302,6 +355,9 @@ function detachUserListeners(){
 function setupUserListeners(uid){
   detachUserListeners();
   if(!db) return;
+
+  // Always perform bidirectional reconcile on auth
+  syncLocalToCloud(uid);
 
   const migrationKey = 'selmer_migrated_' + uid;
   const alreadyMigrated = localStorage.getItem(migrationKey) === 'true';

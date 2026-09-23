@@ -71,14 +71,26 @@ function checkDailyReset(){
       }
     }
 
-    // Reset current workspace for the new day
+    // Reset workspace for the new day
     pomodoroTimeline = [];
     focusIndex = 1;
     todayFocusMinutes = 0;
+    pomodoro.running = false;
+    pomodoro.isOvertime = false;
+    pomodoro.overtimeSec = 0;
+    pomodoro.sessionAccumulatedMs = 0;
+    pomodoro.sessionStartTs = 0;
+    pomodoro.remainingMs = pomodoroTotalMs();
+
     localStorage.setItem(getTodayStorageKey(), '0');
     localStorage.setItem('selmer_last_active_date', activeDateStr);
     localStorage.setItem('selmer_last_active_ts', nowMs.toString());
     localStorage.setItem(todayKey, JSON.stringify([]));
+
+    // Force instant update of timer badge and timeline
+    renderPomodoroTimeline();
+    renderPomodoro(null, true);
+    if(typeof renderDataPanel === 'function') renderDataPanel();
   } else if(pomodoroTimeline.length === 0) {
     try {
       const savedTimeline = localStorage.getItem(todayKey);
@@ -363,6 +375,7 @@ let lastPomoState = {};
 const PRING_BIG_C = 2 * Math.PI * 98;
 
 function renderPomodoro(ts, force){
+  checkDailyReset();
   const running = pomodoro.running;
   const currentTotal = pomodoroTotalMs();
   const elapsedMs = getCurrentSessionElapsedMs();
