@@ -4,8 +4,8 @@ function buildTicks(){
   dom.ticksGroup.innerHTML = '';
   const frag = document.createDocumentFragment();
 
-  function createArc(startAngle, endAngle, color, strokeWidth = 3.5){
-    const r = 78; // Exact alignment with outer clock track
+  function createArc(startAngle, endAngle, color, strokeWidth = 2.0){
+    const r = 78;
     const cx = 100, cy = 100;
     const rad = deg => (deg - 90) * Math.PI / 180.0;
     const pStart = { x: cx + r * Math.cos(rad(endAngle)), y: cy + r * Math.sin(rad(endAngle)) };
@@ -18,40 +18,43 @@ function buildTicks(){
     path.setAttribute('stroke', color);
     path.setAttribute('stroke-width', strokeWidth);
     path.setAttribute('stroke-linecap', 'round');
-    path.style.filter = `drop-shadow(0 0 5px ${color})`;
+    path.style.filter = `drop-shadow(0 0 3px ${color})`;
     return path;
   }
 
-  // 1. Four Segmented Neon Ring Tubes (Exact Color Bounds)
-  // Top-Left: Red (9:00 -> 12:00)
-  frag.appendChild(createArc(274, 356, '#ff2a55', 3.6));
-  // Top-Right: Cyan (12:00 -> ~1:55)
-  frag.appendChild(createArc(4, 56, '#00f0ff', 3.6));
-  // Mid-Right: Amber Gold (~2:05 -> ~4:25)
-  frag.appendChild(createArc(64, 130, '#ffb800', 3.6));
-  // Bottom Arc: Purple / Magenta (~4:35 -> ~8:55)
-  frag.appendChild(createArc(138, 266, '#d946ef', 3.6));
+  // 1. Sleek 2.0px Neon Ring Segments (9h -> 12h -> ~2h -> ~4:30h -> 9h)
+  frag.appendChild(createArc(271, 359, '#ff2a55', 2.0)); // Top-Left: Red
+  frag.appendChild(createArc(1, 59, '#00f0ff', 2.0));    // Top-Right: Cyan
+  frag.appendChild(createArc(61, 134, '#ffb800', 2.0));  // Mid-Right: Amber Gold
+  frag.appendChild(createArc(136, 269, '#d946ef', 2.0)); // Bottom: Magenta
 
-  // 2. 12 Subtle Inner Hour Ticks
+  // 2. Precisely Intersecting Hour Ticks (Crossing directly through r=78)
   for(let i = 0; i < 12; i++){
     const angle = i * 30 * Math.PI / 180;
-    const rOuter = 92;
-    const rInner = 84;
+    const isMajor = (i % 3 === 0);
+    const rOuter = isMajor ? 85 : 83;
+    const rInner = isMajor ? 68 : 71;
+
     const x1 = 100 + rOuter * Math.sin(angle);
     const y1 = 100 - rOuter * Math.cos(angle);
     const x2 = 100 + rInner * Math.sin(angle);
     const y2 = 100 - rInner * Math.cos(angle);
 
-    const isMajor = (i % 3 === 0);
-    const tickColor = isMajor ? 'rgba(217, 70, 239, 0.85)' : 'rgba(255, 255, 255, 0.22)';
+    // Harmonic tick colors matching the sector they slice through
+    let tickColor;
+    if(i === 0) tickColor = '#ffffff'; // 12h crystal white summit
+    else if(i === 1) tickColor = '#00f0ff';
+    else if(i >= 2 && i <= 4) tickColor = '#ffb800';
+    else if(i >= 5 && i <= 8) tickColor = '#d946ef';
+    else tickColor = '#ff2a55'; // 9, 10, 11h
 
     const line = document.createElementNS(ns, 'line');
     line.setAttribute('x1', x1.toFixed(2)); line.setAttribute('y1', y1.toFixed(2));
     line.setAttribute('x2', x2.toFixed(2)); line.setAttribute('y2', y2.toFixed(2));
     line.setAttribute('stroke', tickColor);
-    line.setAttribute('stroke-width', isMajor ? '2' : '1.2');
+    line.setAttribute('stroke-width', isMajor ? '1.8' : '1.1');
     line.setAttribute('stroke-linecap', 'round');
-    if(isMajor) line.style.filter = `drop-shadow(0 0 3px ${tickColor})`;
+    line.style.filter = isMajor ? `drop-shadow(0 0 2px ${tickColor})` : 'none';
     frag.appendChild(line);
   }
 
