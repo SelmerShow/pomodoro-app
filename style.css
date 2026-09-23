@@ -1791,56 +1791,6 @@ body.no-neon-glow .pulse-field {
   opacity: 0.1 !important;
 }
 
-/* Style 2: Klasik Duvar Saati */
-body[data-clock-style="wall"] .avatar-ring,
-body[data-clock-style="wall"] #decoGroup,
-body[data-clock-style="wall"] #decoGroup2,
-body[data-clock-style="wall"] .sec-progress,
-body[data-clock-style="wall"] .sec-dot {
-  display: none !important;
-}
-body[data-clock-style="wall"] .hand-second {
-  display: block !important;
-}
-body[data-clock-style="wall"] .sec-track {
-  stroke: rgba(255, 255, 255, 0.16) !important;
-}
-
-/* Style 3: Siber Radar HUD */
-body[data-clock-style="hud"] .sec-progress {
-  stroke-dasharray: 40 120 !important;
-  stroke-width: 4px !important;
-  animation: spinSlow 4s linear infinite;
-}
-body[data-clock-style="hud"] .ring-cluster::before {
-  content: 'HUD // 360° RADAR';
-  position: absolute;
-  top: -24px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.2em;
-  color: var(--c1);
-}
-
-/* Style 4: Kronograf Spor Kadran */
-body[data-clock-style="chrono"] .hand-second {
-  display: block !important;
-}
-body[data-clock-style="chrono"] .sec-track {
-  stroke-dasharray: 2 6 !important;
-  stroke-width: 3px !important;
-}
-
-/* Style 5: Monolit Dijital Konsol */
-body[data-clock-style="digital"]:not(.mode-pomodoro) #ringCluster {
-  display: none !important;
-}
-body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
-  font-size: clamp(4.5rem, 13vw, 8.5rem) !important;
-  margin-bottom: 24px !important;
-  text-shadow: 0 0 40px rgba(var(--c1-rgb), 0.7) !important;
-}
-
 /* Directional Slide Transition Animations */
 @keyframes slideInFromLeft {
   from {
@@ -1874,26 +1824,42 @@ body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
   will-change: transform, opacity;
 }
 
-/* Clock Hands Tri-Color Harmony */
+/* Permanently hide center biometric avatar and extra track circles on clock */
+.avatar-ring,
+#avatarRing,
+.pulse-field,
+.sec-progress,
+.sec-dot,
+#decoGroup,
+#decoGroup2 {
+  display: none !important;
+}
+
+.sec-track {
+  stroke: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Hands - Balanced Neon Glow */
 .hand-hour {
-  background: linear-gradient(to top, var(--c1), #ffffff) !important;
-  box-shadow: 0 0 14px var(--c1), 0 0 3px #ffffff !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8) !important;
 }
 
 .hand-minute {
-  background: linear-gradient(to top, var(--c2), #ffffff) !important;
-  box-shadow: 0 0 14px var(--c2), 0 0 3px #ffffff !important;
+  background: var(--c1) !important;
+  box-shadow: 0 0 8px var(--c1) !important;
 }
 
 .hand-second {
-  background: var(--c3) !important;
-  box-shadow: 0 0 12px var(--c3), 0 0 3px #ffffff !important;
+  display: block !important;
+  background: var(--c2) !important;
+  box-shadow: 0 0 8px var(--c2) !important;
 }
 
 .hand-cap {
   background: var(--c1) !important;
-  border: 2px solid var(--c3) !important;
-  box-shadow: 0 0 10px var(--c1) !important;
+  border: 2px solid #030308 !important;
+  box-shadow: 0 0 6px var(--c1) !important;
 }
 
 /* Finish Button uses Punchy Tertiary Accent (--c3) */

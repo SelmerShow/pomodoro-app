@@ -1,18 +1,60 @@
 function buildTicks(){
-  const ns='http://www.w3.org/2000/svg';
-  const frag=document.createDocumentFragment();
-  for(let i=0;i<60;i++){
-    const angle=i*6*Math.PI/180;
-    const isHour=i%5===0;
-    const rOuter=96, rInner=isHour?83:90;
-    const x1=100+rOuter*Math.sin(angle), y1=100-rOuter*Math.cos(angle);
-    const x2=100+rInner*Math.sin(angle), y2=100-rInner*Math.cos(angle);
-    const line=document.createElementNS(ns,'line');
-    line.setAttribute('x1',x1.toFixed(2)); line.setAttribute('y1',y1.toFixed(2));
-    line.setAttribute('x2',x2.toFixed(2)); line.setAttribute('y2',y2.toFixed(2));
-    line.setAttribute('class', isHour?'tick tick-hour':'tick tick-minute');
+  const ns = 'http://www.w3.org/2000/svg';
+  if(!dom.ticksGroup) return;
+  dom.ticksGroup.innerHTML = '';
+  const frag = document.createDocumentFragment();
+
+  function createArc(startAngle, endAngle, color, strokeWidth = 3.5){
+    const r = 78; // Exact alignment with outer clock track
+    const cx = 100, cy = 100;
+    const rad = deg => (deg - 90) * Math.PI / 180.0;
+    const pStart = { x: cx + r * Math.cos(rad(endAngle)), y: cy + r * Math.sin(rad(endAngle)) };
+    const pEnd = { x: cx + r * Math.cos(rad(startAngle)), y: cy + r * Math.sin(rad(startAngle)) };
+    const largeArc = (endAngle - startAngle) <= 180 ? '0' : '1';
+
+    const path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', `M ${pStart.x.toFixed(2)} ${pStart.y.toFixed(2)} A ${r} ${r} 0 ${largeArc} 0 ${pEnd.x.toFixed(2)} ${pEnd.y.toFixed(2)}`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', strokeWidth);
+    path.setAttribute('stroke-linecap', 'round');
+    path.style.filter = `drop-shadow(0 0 5px ${color})`;
+    return path;
+  }
+
+  // 1. Four Segmented Neon Ring Tubes (Exact Color Bounds)
+  // Top-Left: Red (9:00 -> 12:00)
+  frag.appendChild(createArc(274, 356, '#ff2a55', 3.6));
+  // Top-Right: Cyan (12:00 -> ~1:55)
+  frag.appendChild(createArc(4, 56, '#00f0ff', 3.6));
+  // Mid-Right: Amber Gold (~2:05 -> ~4:25)
+  frag.appendChild(createArc(64, 130, '#ffb800', 3.6));
+  // Bottom Arc: Purple / Magenta (~4:35 -> ~8:55)
+  frag.appendChild(createArc(138, 266, '#d946ef', 3.6));
+
+  // 2. 12 Subtle Inner Hour Ticks
+  for(let i = 0; i < 12; i++){
+    const angle = i * 30 * Math.PI / 180;
+    const rOuter = 92;
+    const rInner = 84;
+    const x1 = 100 + rOuter * Math.sin(angle);
+    const y1 = 100 - rOuter * Math.cos(angle);
+    const x2 = 100 + rInner * Math.sin(angle);
+    const y2 = 100 - rInner * Math.cos(angle);
+
+    const isMajor = (i % 3 === 0);
+    const tickColor = isMajor ? 'rgba(217, 70, 239, 0.85)' : 'rgba(255, 255, 255, 0.22)';
+
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('x1', x1.toFixed(2)); line.setAttribute('y1', y1.toFixed(2));
+    line.setAttribute('x2', x2.toFixed(2)); line.setAttribute('y2', y2.toFixed(2));
+    line.setAttribute('stroke', tickColor);
+    line.setAttribute('stroke-width', isMajor ? '2' : '1.2');
+    line.setAttribute('stroke-linecap', 'round');
+    if(isMajor) line.style.filter = `drop-shadow(0 0 3px ${tickColor})`;
     frag.appendChild(line);
   }
+
   dom.ticksGroup.appendChild(frag);
 }
 function setupRings(){

@@ -5,7 +5,7 @@ const ASSETS = {
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PROFILE_META = { neon2:{ name:'NEON PULSE', theme:'selmerNeon' }, y2026:{ name:'SOLAR FLARE', theme:'selmerNeon' } };
-const state = { profile:'y2026', theme:'selmerNeon', mode3D:false, mode:'clock', deepFocus:false, showHeartPulse:false, clockOnlyMode:true, clockStyle:'wall', neonGlow:true, uiScale:1.0, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', progressDirection:'fill', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#d946ef', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
+const state = { profile:'y2026', theme:'selmerNeon', mode3D:false, mode:'clock', deepFocus:false, neonGlow:true, uiScale:1.0, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', progressDirection:'fill', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#d946ef', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
 const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:90, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, isOvertime:false, overtimeSec:0, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:90*60*1000, intervalId:null, lastTickTs:0 };
 const SEC_R=78, SEC_C=2*Math.PI*SEC_R;
 const PRING_R=76, PRING_C=2*Math.PI*PRING_R;
@@ -22,7 +22,7 @@ const dom = {};
 function cacheDom(){
   ['bgCanvas','deepFocusBtn','settingsBtn','dateLocaleText','dateCycleText',
    'ringCluster','layerBack','layerMid','layerFront','ticksGroup',
-   'secondsProgress','secondsDot','handHour','handMinute','handSecond','clockStyleSelect',
+   'secondsProgress','secondsDot','handHour','handMinute','handSecond',
    'avatarRing','avatarPulse','avatarCircle','avatarImg','digitalTime','ekgCanvas',
    'bpmReadout','profileCaption','modeTabs','panels',
    'pomodoroPanel','pomodoroProgress','pomodoroSessionType','pomodoroTimeLabel',
@@ -33,7 +33,7 @@ function cacheDom(){
    'profileThumbNeon2','profileThumbY2026','themeSwatches','customColorInput',
    'focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
    'mode3dToggle','mode3dValue','todayMinutesLabel',
-   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','neonGlowToggle','uiScaleSlider','uiScaleValue','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect','pomoProgressDirectionSelect','dfPomoProgressDirectionSelect',
+   'weeklyBars','toastContainer','neonGlowToggle','uiScaleSlider','uiScaleValue','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect','pomoProgressDirectionSelect','dfPomoProgressDirectionSelect',
    'pomoLinearBarWrap','pomoLinearBarFill','pomoVisualsCanvas','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn','saveDayOpenBtn','saveDayModalBackdrop','saveDayModalClose','saveDayDateOptions','saveDayCancelBtn','saveDayConfirmBtn',
    'authBtn','authStatusDot','authModalBackdrop','authModal','authModalClose','authModalTitle','loggedInView','loggedOutView','userEmailDisplay','userSyncStatus','logoutBtn','authTabLogin','authTabRegister','authForm','authEmailInput','authPasswordInput','authErrorMsg','authSuccessMsg','authSubmitBtn','forgotPasswordBtn',
    'analyticsBtn','analyticsModalBackdrop','analyticsModal','analyticsModalClose','prevMonthBtn','nextMonthBtn','monthlyAnalyticsMonthName','monthlyAnalyticsGrid','analyticsDayDetailCard','detailPanelDate','closeDetailPanelBtn','detailPanelTotalTime','detailPanelSessionCount','detailPanelSessionsList','smartDayBoundaryToggle','dayBoundaryTimeSelect',
@@ -84,27 +84,8 @@ function refreshColorCache(){
 
 
 function applyMainPageCustomizations(){
-  document.body.classList.toggle('no-heart-pulse', !state.showHeartPulse);
-  document.body.classList.toggle('clock-only-mode', !!state.clockOnlyMode);
   document.body.classList.toggle('no-neon-glow', !state.neonGlow);
-  if(dom.heartPulseToggle) dom.heartPulseToggle.checked = !!state.showHeartPulse;
-  if(dom.clockOnlyToggle) dom.clockOnlyToggle.checked = !!state.clockOnlyMode;
   if(dom.neonGlowToggle) dom.neonGlowToggle.checked = !!state.neonGlow;
-}
-
-function applyClockStyle(styleName, opts){
-  opts = opts || {};
-  state.clockStyle = styleName;
-  document.body.setAttribute('data-clock-style', styleName);
-  if(dom.clockStyleSelect) dom.clockStyleSelect.value = styleName;
-
-  if(styleName === 'wall'){
-    state.clockOnlyMode = true;
-    if(dom.clockOnlyToggle) dom.clockOnlyToggle.checked = true;
-    applyMainPageCustomizations();
-  }
-
-  if(!opts.skipSave) saveSettingsToStorage();
 }
 
 function applyUiScale(scaleVal, opts){
@@ -858,9 +839,6 @@ function saveSettingsToStorage(){
       theme: state.theme || 'selmerNeon',
       profile: state.profile || 'y2026',
       mode3D: state.mode3D,
-      showHeartPulse: state.showHeartPulse,
-      clockOnlyMode: state.clockOnlyMode,
-      clockStyle: state.clockStyle || 'wall',
       neonGlow: state.neonGlow !== undefined ? state.neonGlow : true,
       uiScale: state.uiScale !== undefined ? state.uiScale : 1.0,
       dfShowIcon: state.dfShowIcon,
@@ -915,9 +893,6 @@ function loadSettingsFromStorage(){
     applyTheme(s.theme || 'selmerNeon', {skipSave: true, customHex: s.customHex});
     applyProfile(s.profile || 'y2026', {skipSave: true, skipTheme: true});
     applyMode3D(s.mode3D !== undefined ? !!s.mode3D : false, {skipSave: true});
-    state.showHeartPulse = s.showHeartPulse !== undefined ? !!s.showHeartPulse : false;
-    state.clockOnlyMode = s.clockOnlyMode !== undefined ? !!s.clockOnlyMode : true;
-    applyClockStyle(s.clockStyle || 'wall', {skipSave: true});
     if(s.neonGlow !== undefined) state.neonGlow = !!s.neonGlow;
     if(s.uiScale !== undefined) applyUiScale(parseFloat(s.uiScale), {skipSave: true});
     if(s.dfShowIcon !== undefined) state.dfShowIcon = !!s.dfShowIcon;
@@ -1922,11 +1897,6 @@ function wireEvents(){
     });
   }
 
-  if(dom.heartPulseToggle) dom.heartPulseToggle.addEventListener('change', ()=>{ state.showHeartPulse = dom.heartPulseToggle.checked; applyMainPageCustomizations();
-  applyDFCustomizations(); saveSettingsToStorage(); });
-  if(dom.clockOnlyToggle) dom.clockOnlyToggle.addEventListener('change', ()=>{ state.clockOnlyMode = dom.clockOnlyToggle.checked; applyMainPageCustomizations();
-  applyDFCustomizations(); saveSettingsToStorage(); });
-  if(dom.clockStyleSelect) dom.clockStyleSelect.addEventListener('change', ()=>{ applyClockStyle(dom.clockStyleSelect.value); });
 
   if(dom.neonGlowToggle){
     dom.neonGlowToggle.addEventListener('change', ()=>{
