@@ -4,8 +4,9 @@ function buildTicks(){
   dom.ticksGroup.innerHTML = '';
   const frag = document.createDocumentFragment();
 
-  function createArc(startAngle, endAngle, color, strokeWidth = 2.0){
-    const r = 78;
+  // 1. Subtle 1.2px Colored Track (Replacing the former dim grey circle)
+  function createThinArc(startAngle, endAngle, color){
+    const r = 74; // Exact radius of the original inner circle
     const cx = 100, cy = 100;
     const rad = deg => (deg - 90) * Math.PI / 180.0;
     const pStart = { x: cx + r * Math.cos(rad(endAngle)), y: cy + r * Math.sin(rad(endAngle)) };
@@ -16,45 +17,58 @@ function buildTicks(){
     path.setAttribute('d', `M ${pStart.x.toFixed(2)} ${pStart.y.toFixed(2)} A ${r} ${r} 0 ${largeArc} 0 ${pEnd.x.toFixed(2)} ${pEnd.y.toFixed(2)}`);
     path.setAttribute('fill', 'none');
     path.setAttribute('stroke', color);
-    path.setAttribute('stroke-width', strokeWidth);
+    path.setAttribute('stroke-width', '1.2');
     path.setAttribute('stroke-linecap', 'round');
-    path.style.filter = `drop-shadow(0 0 3px ${color})`;
+    path.style.filter = `drop-shadow(0 0 2.5px ${color})`;
     return path;
   }
 
-  // 1. Sleek 2.0px Neon Ring Segments (9h -> 12h -> ~2h -> ~4:30h -> 9h)
-  frag.appendChild(createArc(271, 359, '#ff2a55', 2.0)); // Top-Left: Red
-  frag.appendChild(createArc(1, 59, '#00f0ff', 2.0));    // Top-Right: Cyan
-  frag.appendChild(createArc(61, 134, '#ffb800', 2.0));  // Mid-Right: Amber Gold
-  frag.appendChild(createArc(136, 269, '#d946ef', 2.0)); // Bottom: Magenta
+  // Four delicate color segments directly on the circle path
+  frag.appendChild(createThinArc(271, 359, '#ff2a55')); // Top-Left: Red (9h -> 12h)
+  frag.appendChild(createThinArc(1, 59, '#00f0ff'));    // Top-Right: Cyan (12h -> ~2h)
+  frag.appendChild(createThinArc(61, 134, '#ffb800'));  // Mid-Right: Amber (~2h -> ~4:30h)
+  frag.appendChild(createThinArc(136, 269, '#d946ef')); // Bottom: Magenta (~4:30h -> 9h)
 
-  // 2. Precisely Intersecting Hour Ticks (Crossing directly through r=78)
-  for(let i = 0; i < 12; i++){
-    const angle = i * 30 * Math.PI / 180;
-    const isMajor = (i % 3 === 0);
-    const rOuter = isMajor ? 85 : 83;
-    const rInner = isMajor ? 68 : 71;
+  // 2. Original 60 Perimeter Watch Ticks (Restored)
+  for(let i = 0; i < 60; i++){
+    const angle = i * 6 * Math.PI / 180;
+    const isHour = (i % 5 === 0);
+    const hourIdx = i / 5;
+
+    const rOuter = isHour ? 92 : 88;
+    const rInner = isHour ? 80 : 83;
 
     const x1 = 100 + rOuter * Math.sin(angle);
     const y1 = 100 - rOuter * Math.cos(angle);
     const x2 = 100 + rInner * Math.sin(angle);
     const y2 = 100 - rInner * Math.cos(angle);
 
-    // Harmonic tick colors matching the sector they slice through
     let tickColor;
-    if(i === 0) tickColor = '#ffffff'; // 12h crystal white summit
-    else if(i === 1) tickColor = '#00f0ff';
-    else if(i >= 2 && i <= 4) tickColor = '#ffb800';
-    else if(i >= 5 && i <= 8) tickColor = '#d946ef';
-    else tickColor = '#ff2a55'; // 9, 10, 11h
+    let strokeWidth = '1';
+    let filter = 'none';
+
+    if(isHour){
+      // 12 Major Hour Ticks matching the sector color
+      strokeWidth = '1.6';
+      if(hourIdx >= 9) tickColor = '#ff2a55';
+      else if(hourIdx <= 1) tickColor = hourIdx === 0 ? '#ff2a55' : '#00f0ff';
+      else if(hourIdx <= 4) tickColor = '#ffb800';
+      else tickColor = '#d946ef';
+
+      filter = `drop-shadow(0 0 2px ${tickColor})`;
+    } else {
+      // 48 Subtle Minute Ticks (Original dim hairline grey)
+      tickColor = 'rgba(255, 255, 255, 0.16)';
+      strokeWidth = '0.8';
+    }
 
     const line = document.createElementNS(ns, 'line');
     line.setAttribute('x1', x1.toFixed(2)); line.setAttribute('y1', y1.toFixed(2));
     line.setAttribute('x2', x2.toFixed(2)); line.setAttribute('y2', y2.toFixed(2));
     line.setAttribute('stroke', tickColor);
-    line.setAttribute('stroke-width', isMajor ? '1.8' : '1.1');
+    line.setAttribute('stroke-width', strokeWidth);
     line.setAttribute('stroke-linecap', 'round');
-    line.style.filter = isMajor ? `drop-shadow(0 0 2px ${tickColor})` : 'none';
+    if(filter !== 'none') line.style.filter = filter;
     frag.appendChild(line);
   }
 
