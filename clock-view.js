@@ -87,11 +87,11 @@ function applyMode3D(enabled, opts){
   if(!opts.skipSave) saveSettingsToStorage();
 }
 function updateParallax(){
-  if(!state.mode3D || prefersReducedMotion) return;
+  if(!state.mode3D || prefersReducedMotion || window.innerWidth <= 768 || ('ontouchstart' in window)) return;
   if(Math.abs(mouseNX - curNX) < 0.001 && Math.abs(mouseNY - curNY) < 0.001) return;
 
-  curNX += (mouseNX-curNX)*0.06;
-  curNY += (mouseNY-curNY)*0.06;
+  curNX += (mouseNX - curNX) * 0.06;
+  curNY += (mouseNY - curNY) * 0.06;
 
   const tiltX = (-curNY*6).toFixed(2);
   const tiltY = (curNX*8).toFixed(2);
