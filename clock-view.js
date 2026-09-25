@@ -1,5 +1,7 @@
 function buildTicks(){
   const ns='http://www.w3.org/2000/svg';
+  if(!dom.ticksGroup) return;
+  dom.ticksGroup.innerHTML = '';
   const frag=document.createDocumentFragment();
   for(let i=0;i<60;i++){
     const angle=i*6*Math.PI/180;
