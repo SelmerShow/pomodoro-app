@@ -433,55 +433,60 @@
   <div class="drawer-body">
       <div class="settings-section">
         <div class="settings-section-title">Renk Paleti</div>
-        <div class="theme-swatches" id="themeSwatches">
+        <div class="theme-swatches-grid" id="themeSwatches">
           <div class="swatch-wrap">
-            <button class="theme-swatch" data-theme="selmerNeon" style="background:linear-gradient(135deg,#d946ef,#00f0ff);"></button>
-            <div class="theme-swatch-label">SELMER SPECTRUM</div>
+            <button class="theme-swatch selected" data-theme="selmerNeon" style="background:linear-gradient(135deg,#d946ef,#00f0ff);"></button>
+            <div class="theme-swatch-label">SELMER</div>
           </div>
           <div class="swatch-wrap">
             <button class="theme-swatch" data-theme="crimsonEclipse" style="background:linear-gradient(135deg,#ff1744,#ff9100);"></button>
-            <div class="theme-swatch-label">CRIMSON ECLIPSE</div>
+            <div class="theme-swatch-label">CRIMSON</div>
           </div>
           <div class="swatch-wrap">
             <button class="theme-swatch" data-theme="hyperDrive" style="background:linear-gradient(135deg,#ff007f,#4361ee);"></button>
-            <div class="theme-swatch-label">HYPER DRIVE</div>
+            <div class="theme-swatch-label">SYNTHWAVE</div>
           </div>
           <div class="swatch-wrap">
             <button class="theme-swatch" data-theme="abyssalFrost" style="background:linear-gradient(135deg,#00f0ff,#1e40af);"></button>
-            <div class="theme-swatch-label">ABYSSAL FROST</div>
+            <div class="theme-swatch-label">FROST</div>
           </div>
           <div class="swatch-wrap">
             <button class="theme-swatch" data-theme="toxicViper" style="background:linear-gradient(135deg,#ccff00,#00c853);"></button>
-            <div class="theme-swatch-label">TOXIC VIPER</div>
+            <div class="theme-swatch-label">VIPER</div>
           </div>
           <div class="swatch-wrap">
             <button class="theme-swatch" data-theme="nebulaDrift" style="background:linear-gradient(135deg,#a855f7,#ec4899);"></button>
-            <div class="theme-swatch-label">NEBULA DRIFT</div>
+            <div class="theme-swatch-label">NEBULA</div>
           </div>
           <div class="swatch-wrap">
             <button class="theme-swatch" data-theme="solarFlare" style="background:linear-gradient(135deg,#ffb703,#ff2a55);"></button>
-            <div class="theme-swatch-label">SOLAR FLARE</div>
+            <div class="theme-swatch-label">SOLAR</div>
           </div>
           <div class="swatch-wrap">
             <button class="theme-swatch" data-theme="ghostShell" style="background:linear-gradient(135deg,#f8fafc,#00f0ff);"></button>
-            <div class="theme-swatch-label">GHOST SHELL</div>
+            <div class="theme-swatch-label">GHOST</div>
           </div>
-          <div class="swatch-wrap">
-            <input type="color" id="customColorInput" value="#d946ef">
-            <div class="theme-swatch-label">ÖZEL KOR</div>
+        </div>
+
+        <!-- DUAL COLOR CUSTOM PICKER -->
+        <div class="custom-palette-row" style="margin-top:14px; padding-top:12px; border-top:1px solid var(--hairline); display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <span style="font-size:0.75rem; font-weight:700; color:var(--text-0);">ÖZEL ÇİFT GRADYAN</span>
+            <small style="font-size:0.62rem; color:var(--text-dim);">Ana Renk & İkincil Renk</small>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="color" id="customColor1Input" value="#d946ef" title="Ana Renk">
+            <input type="color" id="customColor2Input" value="#00f0ff" title="İkincil Renk">
+            <button class="theme-swatch" id="customGradientPreviewBtn" data-theme="custom" style="width:34px; height:34px; background:linear-gradient(135deg,#d946ef,#00f0ff);" title="Uygula"></button>
           </div>
         </div>
       </div>
 
     <div class="settings-section">
-      <div class="settings-section-title">Ders ve Mola Ayarları</div>
+      <div class="settings-section-title">Ders Süresi Ayarı</div>
       <div class="range-row">
         <div class="range-row-head"><span>Odak Süresi</span><b id="focusDurationValue">90 dk</b></div>
         <input type="range" id="focusDurationRange" min="1" max="180" step="1" value="90">
-      </div>
-      <div class="range-row">
-        <div class="range-row-head"><span>Mola Süresi</span><b id="shortBreakValue">5 dk</b></div>
-        <input type="range" id="shortBreakRange" min="1" max="45" step="1" value="5">
       </div>
     </div>
 
@@ -857,7 +862,7 @@
 <div class="pomo-modal-backdrop" id="pomoConfigModalBackdrop">
   <div class="pomo-modal" id="pomoConfigModal">
     <div class="pomo-modal-header">
-      <span>DERS & MOLA AYARLARI</span>
+      <span>DERS SÜRESİ AYARLARI</span>
       <button class="pomo-modal-close" id="pomoModalClose">&times;</button>
     </div>
     <div class="pomo-config-body" style="gap:20px;">
@@ -870,19 +875,6 @@
             <button class="step-btn" id="pomoFocusPlus">+</button>
           </div>
         </div>
-        <div class="pomo-input-row">
-          <label for="pomoBreakInput">Mola Süresi (dk):</label>
-          <div class="num-step-input">
-            <button class="step-btn" id="pomoBreakMinus">-</button>
-            <input type="number" id="pomoBreakInput" min="1" max="60" value="5">
-            <button class="step-btn" id="pomoBreakPlus">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="pomo-type-selector">
-        <button class="pomo-type-btn active" id="pomoTypeDers">DERS (ETÜT)</button>
-        <button class="pomo-type-btn" id="pomoTypeMola">MOLA</button>
       </div>
 
       <div class="pomo-alarm-select-row">

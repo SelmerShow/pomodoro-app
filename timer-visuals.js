@@ -151,8 +151,7 @@ const TimerVisuals = (() => {
     ctx.globalAlpha = 0.45;
     ctx.beginPath();
     ctx.moveTo(cx - radius, cy + radius);
-
-    for(let x = cx - radius; x <= cx + radius; x += 4){
+    for(let x = cx - radius; x <= cx + radius; x += 1){
       const dx = x - cx;
       const y = waterLevel + Math.sin(dx * 0.035 + ts * 0.0035) * 6;
       ctx.lineTo(x, y);
@@ -161,11 +160,12 @@ const TimerVisuals = (() => {
     ctx.closePath();
     ctx.fill();
 
+    // Second wave pass (Mid)
     ctx.fillStyle = CACHED_C2;
     ctx.globalAlpha = 0.3;
     ctx.beginPath();
     ctx.moveTo(cx - radius, cy + radius);
-    for(let x = cx - radius; x <= cx + radius; x += 4){
+    for(let x = cx - radius; x <= cx + radius; x += 1){
       const dx = x - cx;
       const y = waterLevel + Math.cos(dx * 0.045 + ts * 0.0028) * 5;
       ctx.lineTo(x, y);
@@ -174,13 +174,14 @@ const TimerVisuals = (() => {
     ctx.closePath();
     ctx.fill();
 
+    // Crest neon stroke (Front)
     ctx.strokeStyle = CACHED_C1;
     ctx.lineWidth = 2.4;
     ctx.shadowColor = CACHED_C1;
     ctx.shadowBlur = 10;
     ctx.globalAlpha = 0.95;
     ctx.beginPath();
-    for(let x = cx - radius; x <= cx + radius; x += 4){
+    for(let x = cx - radius; x <= cx + radius; x += 1){
       const dx = x - cx;
       const y = waterLevel + Math.sin(dx * 0.035 + ts * 0.0035) * 6;
       if(x === cx - radius) ctx.moveTo(x, y);

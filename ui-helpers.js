@@ -5,7 +5,7 @@ const ASSETS = {
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PROFILE_META = { neon2:{ name:'NEON PULSE', theme:'selmerNeon' }, y2026:{ name:'SOLAR FLARE', theme:'selmerNeon' } };
-const state = { profile:'y2026', theme:'selmerNeon', mode3D:false, mode:'clock', deepFocus:false, showHeartPulse:false, clockOnlyMode:true, clockStyle:'wall', neonGlow:true, uiScale:1.0, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', progressDirection:'fill', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#d946ef', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
+const state = { profile:'y2026', theme:'selmerNeon', mode3D:false, mode:'clock', deepFocus:false, showHeartPulse:false, clockOnlyMode:true, clockStyle:'wall', neonGlow:true, uiScale:1.0, dfShowIcon:true, dfOnlyTime:false, dfDigitalOnly:false, dfClockType:'24h', dfFont:"'Orbitron', sans-serif", dfPomoViewMode:'both', dfPomoShowIcon:true, dfPomoShowLabel:true, dfPomoShowRing:true, progressStyle:'ring', progressDirection:'fill', enableCelebration:true, celebrationStyle:'all', dfScale:1.0, dfAtmosphere:'void', customHex:'#d946ef', customHex1:'#d946ef', customHex2:'#00f0ff', useSmartDayBoundary:true, dayBoundaryTime:'06:00' };
 const pomodoro = { timerMode:'countdown', breakEnabled:true, focusMin:90, shortMin:5, longMin:15, sessionsBeforeLong:4, sessionType:'focus', sessionsCompleted:0, running:false, isOvertime:false, overtimeSec:0, startTime:0, elapsedTimeMs:0, endTime:0, remainingMs:90*60*1000, intervalId:null, lastTickTs:0 };
 const SEC_R=78, SEC_C=2*Math.PI*SEC_R;
 const PRING_R=76, PRING_C=2*Math.PI*PRING_R;
@@ -30,10 +30,10 @@ function cacheDom(){
    'soundPanel','soundPresets','waveCanvas','volumeSlider','alarmVolumeSlider',
    'deepFocusOverlay','exitDeepFocus','dfMount','dfTime','dfSessionLabel','dfFocus',
    'drawerBackdrop','settingsDrawer','closeSettings','profileOptions',
-   'profileThumbNeon2','profileThumbY2026','themeSwatches','customColorInput',
-   'focusDurationRange','focusDurationValue','shortBreakRange','shortBreakValue',
+   'profileThumbNeon2','profileThumbY2026','themeSwatches','customColor1Input','customColor2Input','customGradientPreviewBtn',
+   'focusDurationRange','focusDurationValue',
    'mode3dToggle','mode3dValue','todayMinutesLabel',
-   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','neonGlowToggle','uiScaleSlider','uiScaleValue','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoBreakInput','pomoBreakMinus','pomoBreakPlus','pomoTypeDers','pomoTypeMola','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect','pomoProgressDirectionSelect','dfPomoProgressDirectionSelect',
+   'weeklyBars','toastContainer','heartPulseToggle','clockOnlyToggle','neonGlowToggle','uiScaleSlider','uiScaleValue','dfCustomizeBtn','dfCustomPanel','dfCustomClose','dfClockTypeSelect','dfFontSelect','dfPomoFontSelect','dfShowIconToggle','dfOnlyTimeToggle','dfDigitalOnlyToggle','dfClockSettings','dfPomoSettings','dfPomoViewModeSelect','dfPomoShowRingToggle','dfPomoShowIconToggle','dfPomoShowLabelToggle','dfAlarmSelect','dfAlarmTestBtn','dfVolumeSlider','dfAlarmVolumeSlider','dfTotalWorkSub','pomodoroWorkspace','pomoTotalWorkTime','pomoBigProgress','pomoSessionBadge','pomoBigTimeLabel','pomoStatusSub','pomoFocusInput','pomoFocusMinus','pomoFocusPlus','pomoMainStartPause','pomoMainReset','pomoAlarmSelect','pomoAlarmTestBtn','pomoTimelineTrack','pomoCompletedCount','pomoBigRingWrap','mainProgressStyleSelect','dfPomoProgressStyleSelect','pomoProgressDirectionSelect','dfPomoProgressDirectionSelect',
    'pomoLinearBarWrap','pomoLinearBarFill','pomoVisualsCanvas','pomoOpenConfigBtn','pomoConfigModalBackdrop','pomoConfigModal','pomoModalClose','pomoFinishBtn','dfFinishBtn','celebrationCanvas','dfCelebrationToggle','dfCelebrationStyleSelect','mainCelebrationToggle','mainCelebrationStyleSelect','dfScaleSlider','dfAtmosphereSelect','dfScaleWrapper','resetTodayTimelineBtn','saveDayOpenBtn','saveDayModalBackdrop','saveDayModalClose','saveDayDateOptions','saveDayCancelBtn','saveDayConfirmBtn',
    'authBtn','authStatusDot','authModalBackdrop','authModal','authModalClose','authModalTitle','loggedInView','loggedOutView','userEmailDisplay','userSyncStatus','logoutBtn','authTabLogin','authTabRegister','authForm','authEmailInput','authPasswordInput','authErrorMsg','authSuccessMsg','authSubmitBtn','forgotPasswordBtn',
    'analyticsBtn','analyticsModalBackdrop','analyticsModal','analyticsModalClose','prevMonthBtn','nextMonthBtn','monthlyAnalyticsMonthName','monthlyAnalyticsGrid','analyticsDayDetailCard','detailPanelDate','closeDetailPanelBtn','detailPanelTotalTime','detailPanelSessionCount','detailPanelSessionsList','smartDayBoundaryToggle','dayBoundaryTimeSelect',
@@ -116,28 +116,31 @@ function applyUiScale(scaleVal, opts){
   if(!opts.skipSave) saveSettingsToStorage();
 }
 
-function applyTheme(themeName, opts){
-
-  opts = opts||{};
-  state.theme = themeName;
-  if(opts.customHex) state.customHex = opts.customHex;
-  if(themeName==='custom'){
-    document.body.setAttribute('data-theme','custom');
-    setCustomPalette(opts.customHex || state.customHex || (dom.customColorInput ? dom.customColorInput.value : '#3fd0ff'));
-  } else {
-    document.body.setAttribute('data-theme', themeName);
-    ['--c1','--c1-rgb','--c2','--c2-rgb','--c3','--c3-rgb'].forEach(v=>document.documentElement.style.removeProperty(v));
-  }
-  document.querySelectorAll('.theme-swatch').forEach(btn=>{ btn.classList.toggle('selected', btn.dataset.theme===themeName); });
-  refreshColorCache();
-  if(!opts.skipSave) saveSettingsToStorage();
-}
-function setCustomPalette(hex){
-  const {c1,c2,c3} = deriveCustomPalette(hex);
+function setCustomPalette(c1, c2){
   const root = document.documentElement.style;
   root.setProperty('--c1', c1); root.setProperty('--c1-rgb', hexToRgbString(c1));
   root.setProperty('--c2', c2); root.setProperty('--c2-rgb', hexToRgbString(c2));
-  root.setProperty('--c3', c3); root.setProperty('--c3-rgb', hexToRgbString(c3));
+  root.setProperty('--c3', '#ff2a55'); root.setProperty('--c3-rgb', hexToRgbString('#ff2a55'));
+  refreshColorCache();
+}
+
+function applyTheme(themeName, opts){
+  opts = opts||{};
+  state.theme = themeName;
+  if(themeName === 'custom'){
+    document.body.setAttribute('data-theme', 'custom');
+    const c1 = state.customHex1 || '#d946ef';
+    const c2 = state.customHex2 || '#00f0ff';
+    setCustomPalette(c1, c2);
+    const previewBtn = document.getElementById('customGradientPreviewBtn');
+    if(previewBtn) previewBtn.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+  } else {
+    document.body.setAttribute('data-theme', themeName);
+    ['--c1','--c1-rgb','--c2','--c2-rgb','--c3','--c3-rgb'].forEach(v=>document.documentElement.style.removeProperty(v));
+    refreshColorCache();
+  }
+  document.querySelectorAll('.theme-swatch').forEach(btn=>{ btn.classList.toggle('selected', btn.dataset.theme===themeName); });
+  if(!opts.skipSave) saveSettingsToStorage();
 }
 
 function applyProfile(profileKey, opts){
@@ -908,11 +911,13 @@ function loadSettingsFromStorage(){
       if(dom.dfAlarmVolumeSlider) dom.dfAlarmVolumeSlider.value = s.alarmVolume;
       if(alarmGain) alarmGain.gain.value = parseFloat(s.alarmVolume);
     }
-    if(s.customHex) {
-      state.customHex = s.customHex;
-      if(dom.customColorInput) dom.customColorInput.value = s.customHex;
-    }
-    applyTheme(s.theme || 'selmerNeon', {skipSave: true, customHex: s.customHex});
+    if(s.customHex1) state.customHex1 = s.customHex1;
+    if(s.customHex2) state.customHex2 = s.customHex2;
+    if(dom.customColor1Input) dom.customColor1Input.value = state.customHex1 || '#d946ef';
+    if(dom.customColor2Input) dom.customColor2Input.value = state.customHex2 || '#00f0ff';
+    const previewBtn = document.getElementById('customGradientPreviewBtn');
+    if(previewBtn) previewBtn.style.background = `linear-gradient(135deg, ${state.customHex1 || '#d946ef'}, ${state.customHex2 || '#00f0ff'})`;
+    applyTheme(s.theme || 'selmerNeon', {skipSave: true});
     applyProfile(s.profile || 'y2026', {skipSave: true, skipTheme: true});
     applyMode3D(s.mode3D !== undefined ? !!s.mode3D : false, {skipSave: true});
     state.showHeartPulse = s.showHeartPulse !== undefined ? !!s.showHeartPulse : false;
@@ -962,21 +967,8 @@ function loadSettingsFromStorage(){
     if(dom.focusDurationValue) dom.focusDurationValue.textContent = pomodoro.focusMin + ' dk';
 
     pomodoro.shortMin = s.shortMin ? parseInt(s.shortMin, 10) : 5;
-    if(dom.pomoBreakInput) dom.pomoBreakInput.value = pomodoro.shortMin;
-    if(dom.shortBreakRange) dom.shortBreakRange.value = pomodoro.shortMin;
-    if(dom.shortBreakValue) dom.shortBreakValue.textContent = pomodoro.shortMin + ' dk';
-
     if(s.sessionType) {
       pomodoro.sessionType = s.sessionType;
-      if(dom.pomoTypeDers && dom.pomoTypeMola) {
-        if(s.sessionType === 'short' || s.sessionType === 'long') {
-          dom.pomoTypeMola.classList.add('active');
-          dom.pomoTypeDers.classList.remove('active');
-        } else {
-          dom.pomoTypeDers.classList.add('active');
-          dom.pomoTypeMola.classList.remove('active');
-        }
-      }
     }
     if(s.pomoAlarm) {
       if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.value = s.pomoAlarm;
@@ -1032,9 +1024,16 @@ function seedTodayMinutes(){
 function recordWorkMinutes(mins){
   if(mins <= 0) return;
   todayFocusMinutes += mins;
+  const todayKey = getTodayStorageKey();
   try{
-    localStorage.setItem(getTodayStorageKey(), todayFocusMinutes);
+    localStorage.setItem(todayKey, todayFocusMinutes.toString());
   } catch(e){}
+
+  const isoKey = todayKey.replace('selmer_focus_', '');
+  if(typeof pushStudyTotalToCloud === 'function'){
+    pushStudyTotalToCloud(isoKey, todayFocusMinutes);
+  }
+
   renderDataPanel();
 }
 function getDailyTargetMinutes(){
@@ -1744,47 +1743,6 @@ function wireEvents(){
     });
   }
 
-  if(dom.pomoBreakInput){
-    dom.pomoBreakInput.addEventListener('change', ()=>{
-      const val = Math.max(1, parseInt(dom.pomoBreakInput.value, 10) || 5);
-      pomodoro.shortMin = val;
-      if(dom.shortBreakRange) dom.shortBreakRange.value = val;
-      if(dom.shortBreakValue) dom.shortBreakValue.textContent = val + ' dk';
-      if(pomodoro.sessionType === 'short' && !pomodoro.running) pomodoroReset();
-      saveSettingsToStorage();
-    });
-  }
-  if(dom.pomoBreakMinus){
-    dom.pomoBreakMinus.addEventListener('click', ()=>{
-      dom.pomoBreakInput.value = Math.max(1, (parseInt(dom.pomoBreakInput.value,10)||5) - 1);
-      dom.pomoBreakInput.dispatchEvent(new Event('change'));
-    });
-  }
-  if(dom.pomoBreakPlus){
-    dom.pomoBreakPlus.addEventListener('click', ()=>{
-      dom.pomoBreakInput.value = (parseInt(dom.pomoBreakInput.value,10)||5) + 1;
-      dom.pomoBreakInput.dispatchEvent(new Event('change'));
-    });
-  }
-
-  if(dom.pomoTypeDers){
-    dom.pomoTypeDers.addEventListener('click', ()=>{
-      dom.pomoTypeDers.classList.add('active');
-      dom.pomoTypeMola.classList.remove('active');
-      pomodoro.sessionType = 'focus';
-      pomodoroReset();
-      saveSettingsToStorage();
-    });
-  }
-  if(dom.pomoTypeMola){
-    dom.pomoTypeMola.addEventListener('click', ()=>{
-      dom.pomoTypeMola.classList.add('active');
-      dom.pomoTypeDers.classList.remove('active');
-      pomodoro.sessionType = 'short';
-      pomodoroReset();
-      saveSettingsToStorage();
-    });
-  }
 
   const handleAlarmSelect = (val) => {
     if(dom.pomoAlarmSelect) dom.pomoAlarmSelect.value = val;
@@ -1901,22 +1859,29 @@ function wireEvents(){
 
   document.querySelectorAll('.preset-btn').forEach(btn=>{ btn.addEventListener('click', ()=>selectPreset(btn.dataset.preset)); });
   document.querySelectorAll('.theme-swatch').forEach(btn=>{ btn.addEventListener('click', ()=>applyTheme(btn.dataset.theme)); });
-  dom.customColorInput.addEventListener('input', ()=>applyTheme('custom',{customHex:dom.customColorInput.value}));
+
+  const c1Input = dom.customColor1Input;
+  const c2Input = dom.customColor2Input;
+  const previewBtn = dom.customGradientPreviewBtn;
+
+  function updateCustomTheme(){
+    if(!c1Input || !c2Input) return;
+    state.customHex1 = c1Input.value;
+    state.customHex2 = c2Input.value;
+    if(previewBtn) previewBtn.style.background = `linear-gradient(135deg, ${c1Input.value}, ${c2Input.value})`;
+    applyTheme('custom');
+  }
+
+  if(c1Input) c1Input.addEventListener('input', updateCustomTheme);
+  if(c2Input) c2Input.addEventListener('input', updateCustomTheme);
+  if(previewBtn) previewBtn.addEventListener('click', () => applyTheme('custom'));
+
   if(dom.focusDurationRange){
     dom.focusDurationRange.addEventListener('input', ()=>{
       pomodoro.focusMin=parseInt(dom.focusDurationRange.value,10);
       dom.focusDurationValue.textContent=pomodoro.focusMin+' dk';
       if(dom.pomoFocusInput) dom.pomoFocusInput.value = pomodoro.focusMin;
       if(pomodoro.sessionType==='focus' && !pomodoro.running) pomodoroReset();
-      saveSettingsToStorage();
-    });
-  }
-  if(dom.shortBreakRange){
-    dom.shortBreakRange.addEventListener('input', ()=>{
-      pomodoro.shortMin=parseInt(dom.shortBreakRange.value,10);
-      dom.shortBreakValue.textContent=pomodoro.shortMin+' dk';
-      if(dom.pomoBreakInput) dom.pomoBreakInput.value = pomodoro.shortMin;
-      if(pomodoro.sessionType==='short' && !pomodoro.running) pomodoroReset();
       saveSettingsToStorage();
     });
   }
