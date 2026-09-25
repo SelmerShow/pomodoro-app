@@ -147,13 +147,19 @@ body.screen-shake {
 }
 @keyframes pulseField{ 0%{opacity:.5;} 14%{opacity:1;} 30%{opacity:.4;} 45%{opacity:.75;} 100%{opacity:.5;} }
 
-#app{
-  position:relative; z-index:2; min-height:100vh;
-  display:flex; flex-direction:column; align-items:center;
-  padding:22px 12px 40px;
-  transition:opacity .6s var(--ease), transform .6s var(--ease), filter .6s var(--ease);
+#app {
+  position: relative; z-index: 2; min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 22px 12px 40px;
+  transition: opacity .35s var(--ease), transform .35s var(--ease) !important;
 }
-body.deep-focus-active #app{ opacity:0; pointer-events:none; transform:scale(.96); filter:blur(6px); }
+
+body.deep-focus-active #app {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: scale(0.98) !important;
+  filter: none !important; /* Removed filter: blur(6px) to avoid GPU lag */
+}
 
 .topbar{
   width:100%; max-width:1280px;
@@ -207,16 +213,20 @@ body:not(.mode-pomodoro) .cockpit {
   padding-bottom: clamp(24px, 6vh, 60px) !important;
 }
 
-.ring-cluster{
-  position:relative; width:clamp(230px, 32vw, 372px); aspect-ratio:1/1;
-  transform-style:preserve-3d; transform:rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
-  transition:transform .1s linear; margin-bottom:clamp(14px,2.6vh,26px);
+/* Slightly enlarged, majestic clock dial presence */
+.ring-cluster {
+  position: relative;
+  width: clamp(250px, 35vw, 400px);
+  aspect-ratio: 1/1;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition: transform .1s linear;
+  margin-bottom: clamp(14px, 2.6vh, 26px);
 }
 
-/* Give the clock ring a majestic, balanced presence */
 body:not(.mode-pomodoro) .ring-cluster {
-  width: clamp(260px, 34vw, 400px);
-  margin-bottom: clamp(14px, 2.8vh, 28px);
+  width: clamp(290px, 38vw, 440px) !important;
+  margin-bottom: clamp(14px, 2.6vh, 28px) !important;
 }
 .parallax-layer{position:absolute; inset:0; transform:translate3d(var(--px,0),var(--py,0),0);}
 .ring-svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible;}
@@ -452,12 +462,29 @@ input[type="color"]::-webkit-color-swatch{border:none; border-radius:50%;}
 .switch input:checked ~ .switch-thumb{transform:translateX(26px); background:var(--void-0);}
 .switch input:checked ~ .switch-track{background:rgba(var(--c1-rgb),.55);}
 
-.deep-focus-overlay{
-  position:fixed; inset:0; z-index:40; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  background:rgba(3, 4, 10, 0.94); backdrop-filter:blur(16px);
-  opacity:0; visibility:hidden; pointer-events:none; transition:opacity .7s var(--ease);
+.deep-focus-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 6, 13, 0.97) !important;
+  backdrop-filter: none !important; /* Removed heavy backdrop blur */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.98);
+  transition: opacity .35s var(--ease), transform .35s var(--ease), visibility .35s var(--ease) !important;
 }
-body.deep-focus-active .deep-focus-overlay{opacity:1; visibility:visible; pointer-events:auto;}
+
+body.deep-focus-active .deep-focus-overlay {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: scale(1) !important;
+}
 .df-mount{position:relative; width:min(56vw,56vh,420px); aspect-ratio:1/1; margin-bottom:28px;}
 .df-mount .avatar-ring{width:100%; height:100%;}
 .deep-focus-overlay .avatar-pulse{animation:none !important; transform:scale(1) !important;}
