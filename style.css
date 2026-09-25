@@ -1839,62 +1839,26 @@ body.no-neon-glow .pulse-field {
   stroke: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Restore Original Sleek Analog Hands */
+/* Hands - Balanced Neon Glow */
 .hand-hour {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 3.2px;
-  height: 25%;
-  margin-left: -1.6px;
-  transform-origin: 50% 0%;
-  border-radius: 3px;
-  background: linear-gradient(to top, #ff2a55, #ff758c) !important;
-  box-shadow: 0 0 10px rgba(255, 42, 85, 0.75), 0 0 2px #ffffff !important;
-  z-index: 2;
+  background: #ffffff !important;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8) !important;
 }
 
 .hand-minute {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 2.2px;
-  height: 38%;
-  margin-left: -1.1px;
-  transform-origin: 50% 0%;
-  border-radius: 2px;
-  background: linear-gradient(to top, #a855f7, #d946ef) !important;
-  box-shadow: 0 0 12px rgba(168, 85, 247, 0.8), 0 0 2px #ffffff !important;
-  z-index: 3;
+  background: var(--c1) !important;
+  box-shadow: 0 0 8px var(--c1) !important;
 }
 
 .hand-second {
-  display: block !important;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1.4px;
-  height: 42%;
-  margin-left: -0.7px;
-  transform-origin: 50% 0%;
-  border-radius: 2px;
-  background: #ffb703 !important;
-  box-shadow: 0 0 8px #ffb703, 0 0 2px #ffffff !important;
-  z-index: 4;
+  background: var(--c2) !important;
+  box-shadow: 0 0 8px var(--c2) !important;
 }
 
 .hand-cap {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 8px;
-  height: 8px;
-  margin: -4px 0 0 -4px;
-  border-radius: 50%;
-  background: #a855f7 !important;
-  border: 1.5px solid #070913 !important;
-  box-shadow: 0 0 8px #a855f7 !important;
-  z-index: 5;
+  background: var(--c1) !important;
+  border: 2px solid #030308 !important;
+  box-shadow: 0 0 6px var(--c1) !important;
 }
 
 /* Finish Button uses Punchy Tertiary Accent (--c3) */
