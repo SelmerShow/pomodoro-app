@@ -220,9 +220,16 @@ body:not(.mode-pomodoro) .ring-cluster {
 }
 .parallax-layer{position:absolute; inset:0; transform:translate3d(var(--px,0),var(--py,0),0);}
 .ring-svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible;}
-.tick{stroke:var(--text-dimmer);}
-.tick-hour{stroke:rgba(var(--c1-rgb),.75); stroke-width:1.6;}
-.tick-minute{stroke:rgba(255,255,255,.16); stroke-width:1;}
+.tick { stroke: var(--text-dimmer); }
+.tick-hour {
+  stroke: #ff2a55 !important;
+  stroke-width: 1.5px !important;
+  filter: drop-shadow(0 0 2px #ff2a55);
+}
+.tick-minute {
+  stroke: rgba(255, 255, 255, 0.16) !important;
+  stroke-width: 0.8px !important;
+}
 .deco-arc{fill:none; stroke:rgba(var(--c2-rgb),.5); stroke-width:1; stroke-dasharray:2 14;}
 .deco-arc-2{fill:none; stroke:rgba(var(--c3-rgb),.4); stroke-width:.75; stroke-dasharray:1 9;}
 #decoGroup{transform-origin:100px 100px; animation:spinSlow 130s linear infinite;}
@@ -234,31 +241,71 @@ body:not(.mode-pomodoro) .ring-cluster {
   transition:stroke .6s;
 }
 .sec-dot{fill:var(--c1);}
-.hands{position:absolute; inset:0;}
-.hand{
-  position:absolute; top:50%; left:50%; transform-origin:50% 0%; border-radius:3px;
-  background:linear-gradient(to bottom, var(--text-0), rgba(255,255,255,.35));
-  box-shadow:0 0 8px rgba(var(--c1-rgb),.5);
+.sec-track-gradient {
+  opacity: 0.45;
+  filter: drop-shadow(0 0 2.5px rgba(255, 42, 85, 0.3));
 }
-.hand-hour{width:3.4px; height:24%; margin-left:-1.7px;}
-.hand-minute{width:2.4px; height:34%; margin-left:-1.2px; background:linear-gradient(to bottom, var(--c1), rgba(255,255,255,.4));}
+.hands{position:absolute; inset:0;}
+.hand-hour {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3.2px;
+  height: 25%;
+  margin-left: -1.6px;
+  transform-origin: 50% 0%;
+  border-radius: 3px;
+  background: linear-gradient(to top, #ff2a55 0%, #ff758c 70%, #ffe3e8 100%) !important;
+  box-shadow: 0 0 10px rgba(255, 42, 85, 0.75), 0 0 2px #ffffff !important;
+  z-index: 2;
+}
+.hand-minute {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.2px;
+  height: 38%;
+  margin-left: -1.1px;
+  transform-origin: 50% 0%;
+  border-radius: 2px;
+  background: linear-gradient(to top, #9d4edd 0%, #c77dff 80%, #ffffff 100%) !important;
+  box-shadow: 0 0 10px rgba(157, 78, 221, 0.75), 0 0 2px #ffffff !important;
+  z-index: 3;
+}
 .hand-second {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 1.6px;
-  height: 44%;
-  margin-left: -0.8px;
+  width: 1.4px;
+  height: 42%;
+  margin-left: -0.7px;
   transform-origin: 50% 0%;
   border-radius: 2px;
-  background: var(--c3);
-  box-shadow: 0 0 8px var(--c3);
+  background: #ffb703 !important;
+  box-shadow: 0 0 8px #ffb703 !important;
   z-index: 4;
-  display: none;
+  display: block !important;
 }
-.hand-cap{
-  position:absolute; top:50%; left:50%; width:8px; height:8px; margin:-4px 0 0 -4px;
-  border-radius:50%; background:var(--c1); box-shadow:0 0 10px rgba(var(--c1-rgb),.9); z-index:3;
+.hand-cap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: #c77dff !important;
+  border: 1.5px solid #070913 !important;
+  box-shadow: 0 0 8px #c77dff !important;
+  z-index: 5;
+}
+.sec-track,
+.sec-progress,
+.sec-dot,
+.avatar-ring,
+#avatarRing,
+.pulse-field {
+  display: none !important;
 }
 .avatar-ring{position:absolute; top:50%; left:50%; width:44%; height:44%; transform:translate(-50%,-50%);}
 .avatar-pulse{position:relative; width:100%; height:100%; transform-origin:50% 50%; animation:heartbeat var(--beat-duration) ease-in-out infinite;}
@@ -1874,27 +1921,6 @@ body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
   will-change: transform, opacity;
 }
 
-/* Clock Hands Tri-Color Harmony */
-.hand-hour {
-  background: linear-gradient(to top, var(--c1), #ffffff) !important;
-  box-shadow: 0 0 14px var(--c1), 0 0 3px #ffffff !important;
-}
-
-.hand-minute {
-  background: linear-gradient(to top, var(--c2), #ffffff) !important;
-  box-shadow: 0 0 14px var(--c2), 0 0 3px #ffffff !important;
-}
-
-.hand-second {
-  background: var(--c3) !important;
-  box-shadow: 0 0 12px var(--c3), 0 0 3px #ffffff !important;
-}
-
-.hand-cap {
-  background: var(--c1) !important;
-  border: 2px solid var(--c3) !important;
-  box-shadow: 0 0 10px var(--c1) !important;
-}
 
 /* Finish Button uses Punchy Tertiary Accent (--c3) */
 .pbtn-finish,

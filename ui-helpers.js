@@ -84,11 +84,11 @@ function refreshColorCache(){
 
 
 function applyMainPageCustomizations(){
-  document.body.classList.toggle('no-heart-pulse', !state.showHeartPulse);
-  document.body.classList.toggle('clock-only-mode', !!state.clockOnlyMode);
+  state.showHeartPulse = false;
+  state.clockOnlyMode = true;
+  document.body.classList.toggle('no-heart-pulse', true);
+  document.body.classList.toggle('clock-only-mode', true);
   document.body.classList.toggle('no-neon-glow', !state.neonGlow);
-  if(dom.heartPulseToggle) dom.heartPulseToggle.checked = !!state.showHeartPulse;
-  if(dom.clockOnlyToggle) dom.clockOnlyToggle.checked = !!state.clockOnlyMode;
   if(dom.neonGlowToggle) dom.neonGlowToggle.checked = !!state.neonGlow;
 }
 
@@ -1900,7 +1900,6 @@ function wireEvents(){
   }
 
   document.querySelectorAll('.preset-btn').forEach(btn=>{ btn.addEventListener('click', ()=>selectPreset(btn.dataset.preset)); });
-  document.querySelectorAll('.profile-option').forEach(btn=>{ btn.addEventListener('click', ()=>applyProfile(btn.dataset.profile)); });
   document.querySelectorAll('.theme-swatch').forEach(btn=>{ btn.addEventListener('click', ()=>applyTheme(btn.dataset.theme)); });
   dom.customColorInput.addEventListener('input', ()=>applyTheme('custom',{customHex:dom.customColorInput.value}));
   if(dom.focusDurationRange){
@@ -1921,12 +1920,6 @@ function wireEvents(){
       saveSettingsToStorage();
     });
   }
-
-  if(dom.heartPulseToggle) dom.heartPulseToggle.addEventListener('change', ()=>{ state.showHeartPulse = dom.heartPulseToggle.checked; applyMainPageCustomizations();
-  applyDFCustomizations(); saveSettingsToStorage(); });
-  if(dom.clockOnlyToggle) dom.clockOnlyToggle.addEventListener('change', ()=>{ state.clockOnlyMode = dom.clockOnlyToggle.checked; applyMainPageCustomizations();
-  applyDFCustomizations(); saveSettingsToStorage(); });
-  if(dom.clockStyleSelect) dom.clockStyleSelect.addEventListener('change', ()=>{ applyClockStyle(dom.clockStyleSelect.value); });
 
   if(dom.neonGlowToggle){
     dom.neonGlowToggle.addEventListener('change', ()=>{
@@ -1997,8 +1990,6 @@ function init(){
   cacheDom();
   if(typeof TimerVisuals !== 'undefined') TimerVisuals.init();
   initFirebaseSync();
-  if(dom.profileThumbNeon2) dom.profileThumbNeon2.src=ASSETS.neon2;
-  if(dom.profileThumbY2026) dom.profileThumbY2026.src=ASSETS.y2026;
   buildTicks();
   setupRings();
   loadSettingsFromStorage();
