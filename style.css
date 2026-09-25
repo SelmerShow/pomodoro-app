@@ -241,9 +241,10 @@ body:not(.mode-pomodoro) .ring-cluster {
   transition:stroke .6s;
 }
 .sec-dot{fill:var(--c1);}
+/* Vivid, Sleek & Seamless Inner Ring */
 .sec-track-gradient {
-  opacity: 0.45;
-  filter: drop-shadow(0 0 2.5px rgba(255, 42, 85, 0.3));
+  opacity: 0.85 !important;
+  filter: drop-shadow(0 0 3px rgba(255, 42, 85, 0.45));
 }
 .hands{position:absolute; inset:0;}
 .hand-hour {
