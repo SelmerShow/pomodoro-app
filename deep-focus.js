@@ -60,9 +60,6 @@ function updateFocusLevel(){
 }
 
 function enterDeepFocus(){
-  state.deepFocus=true;
-  document.body.classList.add('deep-focus-active');
-  dom.deepFocusBtn.classList.add('is-on');
   if(state.mode === 'pomodoro'){
     if(dom.pomoBigRingWrap && dom.dfMount){
       dom.dfMount.appendChild(dom.pomoBigRingWrap);
@@ -76,8 +73,13 @@ function enterDeepFocus(){
       }
     }
   }
+
+  state.deepFocus = true;
+  document.body.classList.add('deep-focus-active');
+  if(dom.deepFocusBtn) dom.deepFocusBtn.classList.add('is-on');
+
   if(typeof TimerVisuals !== 'undefined') TimerVisuals.resize();
-  deepFocusStart=Date.now();
+  deepFocusStart = Date.now();
   closeSettingsDrawer();
   renderDeepFocus();
   showToast('DERİN ODAK AKTİF');

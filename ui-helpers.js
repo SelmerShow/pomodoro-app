@@ -1860,21 +1860,49 @@ function wireEvents(){
   document.querySelectorAll('.preset-btn').forEach(btn=>{ btn.addEventListener('click', ()=>selectPreset(btn.dataset.preset)); });
   document.querySelectorAll('.theme-swatch').forEach(btn=>{ btn.addEventListener('click', ()=>applyTheme(btn.dataset.theme)); });
 
-  const c1Input = dom.customColor1Input;
-  const c2Input = dom.customColor2Input;
-  const previewBtn = dom.customGradientPreviewBtn;
+  const c1Input = document.getElementById('customColor1Input');
+  const c2Input = document.getElementById('customColor2Input');
+  const previewBtn = document.getElementById('customGradientPreviewBtn');
 
-  function updateCustomTheme(){
+  // Fast path: Live update CSS variables on mouse drag (0ms lag, no storage/network writes)
+  function handleLiveColorInput(){
     if(!c1Input || !c2Input) return;
-    state.customHex1 = c1Input.value;
-    state.customHex2 = c2Input.value;
-    if(previewBtn) previewBtn.style.background = `linear-gradient(135deg, ${c1Input.value}, ${c2Input.value})`;
-    applyTheme('custom');
+    const c1 = c1Input.value;
+    const c2 = c2Input.value;
+    state.customHex1 = c1;
+    state.customHex2 = c2;
+
+    const root = document.documentElement.style;
+    root.setProperty('--c1', c1);
+    root.setProperty('--c1-rgb', hexToRgbString(c1));
+    root.setProperty('--c2', c2);
+    root.setProperty('--c2-rgb', hexToRgbString(c2));
+    CACHED_C1 = c1;
+    CACHED_C2 = c2;
+
+    if(previewBtn) previewBtn.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+    if(state.theme !== 'custom') applyTheme('custom', { skipSave: true });
   }
 
-  if(c1Input) c1Input.addEventListener('input', updateCustomTheme);
-  if(c2Input) c2Input.addEventListener('input', updateCustomTheme);
-  if(previewBtn) previewBtn.addEventListener('click', () => applyTheme('custom'));
+  // Slow path: Save to localStorage and Firebase ONLY when mouse/picker is released
+  function handleColorCommit(){
+    saveSettingsToStorage();
+  }
+
+  if(c1Input){
+    c1Input.addEventListener('input', handleLiveColorInput);
+    c1Input.addEventListener('change', handleColorCommit);
+  }
+  if(c2Input){
+    c2Input.addEventListener('input', handleLiveColorInput);
+    c2Input.addEventListener('change', handleColorCommit);
+  }
+  if(previewBtn){
+    previewBtn.addEventListener('click', () => {
+      applyTheme('custom');
+      saveSettingsToStorage();
+    });
+  }
 
   if(dom.focusDurationRange){
     dom.focusDurationRange.addEventListener('input', ()=>{
