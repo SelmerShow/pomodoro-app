@@ -1,6 +1,35 @@
 let pomodoroTimeline = [];
 let focusIndex = 1;
 
+// Screen Wake Lock API for Mobile Devices
+let wakeLockSentinel = null;
+
+async function requestScreenWakeLock(){
+  try {
+    if('wakeLock' in navigator && !wakeLockSentinel){
+      wakeLockSentinel = await navigator.wakeLock.request('screen');
+      wakeLockSentinel.addEventListener('release', () => {
+        wakeLockSentinel = null;
+      });
+    }
+  } catch(e){}
+}
+
+function releaseScreenWakeLock(){
+  try {
+    if(wakeLockSentinel){
+      wakeLockSentinel.release();
+      wakeLockSentinel = null;
+    }
+  } catch(e){}
+}
+
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && pomodoro.running){
+    requestScreenWakeLock();
+  }
+});
+
 function getCurrentSessionElapsedMs(){
   if(pomodoro.sessionType !== 'focus') return 0;
   let currentRunMs = 0;
@@ -492,6 +521,7 @@ function pomodoroStart(){
   if(pomodoro.running) return;
   ensureAudio();
   playUiSound('start');
+  requestScreenWakeLock();
 
   const nowMs = Date.now();
   const now = new Date(nowMs);
@@ -545,6 +575,7 @@ function pomodoroStart(){
 function pomodoroPause(){
   pomoNeedsRender = true;
   if(!pomodoro.running) return;
+  releaseScreenWakeLock();
   const nowMs = Date.now();
   if(pomodoro.sessionStartTs > 0){
     pomodoro.sessionAccumulatedMs = (pomodoro.sessionAccumulatedMs || 0) + (nowMs - pomodoro.sessionStartTs);
@@ -563,6 +594,7 @@ function pomodoroPause(){
 function pomodoroReset(){
   pomoNeedsRender = true;
   playUiSound('reset');
+  releaseScreenWakeLock();
   if(pomodoro.intervalId) clearInterval(pomodoro.intervalId);
   pomodoro.running = false;
   pomodoro.isOvertime = false;
@@ -611,6 +643,7 @@ function pomodoroTick(){
 
 function handleFinishClick(){
   pomoNeedsRender = true;
+  releaseScreenWakeLock();
   const wasDeepFocus = state.deepFocus;
 
   // 1. Calculate final elapsed seconds for this session

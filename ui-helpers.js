@@ -273,19 +273,33 @@ function drawCelebrations(dt){
 
 let bgCtx, particles=[], bgWidth=0, bgHeight=0;
 function setupBg(){
-  const canvas=dom.bgCanvas;
-  const dpr=Math.min(window.devicePixelRatio||1,1.75);
-  bgWidth=window.innerWidth; bgHeight=window.innerHeight;
-  canvas.width=bgWidth*dpr; canvas.height=bgHeight*dpr;
-  canvas.style.width=bgWidth+'px'; canvas.style.height=bgHeight+'px';
-  bgCtx=canvas.getContext('2d');
-  bgCtx.setTransform(dpr,0,0,dpr,0,0);
-  const count=prefersReducedMotion?0:Math.round((bgWidth*bgHeight)/16000);
-  particles=[];
-  for(let i=0;i<count;i++){
-    particles.push({ x:Math.random()*bgWidth, y:Math.random()*bgHeight, r:Math.random()*1.4+0.4,
-      vy:Math.random()*0.06+0.015, phase:Math.random()*Math.PI*2, speed:Math.random()*0.6+0.3,
-      useC2: Math.random() < 0.5 });
+  const canvas = dom.bgCanvas;
+  if(!canvas) return;
+  const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window);
+  const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 1.75);
+  bgWidth = window.innerWidth;
+  bgHeight = window.innerHeight;
+  canvas.width = bgWidth * dpr;
+  canvas.height = bgHeight * dpr;
+  canvas.style.width = bgWidth + 'px';
+  canvas.style.height = bgHeight + 'px';
+  bgCtx = canvas.getContext('2d');
+  bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // Reduce particle overhead by 70% on mobile devices
+  const divisor = isMobile ? 48000 : 16000;
+  const count = prefersReducedMotion ? 0 : Math.round((bgWidth * bgHeight) / divisor);
+  particles = [];
+  for(let i = 0; i < count; i++){
+    particles.push({
+      x: Math.random() * bgWidth,
+      y: Math.random() * bgHeight,
+      r: Math.random() * 1.2 + 0.4,
+      vy: Math.random() * 0.05 + 0.015,
+      phase: Math.random() * Math.PI * 2,
+      speed: Math.random() * 0.5 + 0.2,
+      useC2: Math.random() < 0.5
+    });
   }
 }
 let streakTimer=3+Math.random()*6, streak=null;
