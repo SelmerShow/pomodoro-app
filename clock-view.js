@@ -57,18 +57,36 @@ function getISOWeek(date){
   return Math.ceil((((d-yearStart)/86400000)+1)/7);
 }
 function updateDateCluster(){
-  const now=getSyncedNow();
-  const loc=LOCALE_CYCLE[localeIdx];
+  const now = getSyncedNow();
+  const loc = LOCALE_CYCLE[localeIdx];
   let text;
-  if(loc==='iso'){ text=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0'); }
-  else { text=now.toLocaleDateString(loc,{weekday:'long', day:'2-digit', month:'long', year:'numeric'}); }
-  dom.dateLocaleText.style.opacity=0;
-  setTimeout(()=>{ dom.dateLocaleText.textContent=text.toUpperCase(); dom.dateLocaleText.style.opacity=1; },260);
-  localeIdx=(localeIdx+1)%LOCALE_CYCLE.length;
+
+  if(loc === 'iso'){
+    text = now.getFullYear() + '.' + String(now.getMonth() + 1).padStart(2, '0') + '.' + String(now.getDate()).padStart(2, '0');
+  } else if(loc === 'en-US'){
+    // Short weekday and month to prevent mobile overflow
+    text = now.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+  } else {
+    // tr-TR: "26 Eylül 2026 Cumartesi"
+    text = now.toLocaleDateString('tr-TR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+  }
+
+  if(dom.dateLocaleText){
+    dom.dateLocaleText.style.opacity = '0';
+    setTimeout(() => {
+      dom.dateLocaleText.textContent = text.toUpperCase();
+      dom.dateLocaleText.style.opacity = '1';
+    }, 200);
+  }
+
+  localeIdx = (localeIdx + 1) % LOCALE_CYCLE.length;
+
   const yks2027Target = new Date('2027-06-19T00:00:00');
   const diffMs = yks2027Target - now;
   const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-  if(dom.dateCycleText) dom.dateCycleText.textContent = 'YKS 2027 · ' + daysLeft + ' GÜN KALDI';
+  if(dom.dateCycleText){
+    dom.dateCycleText.textContent = 'YKS 2027 · ' + daysLeft + ' GÜN KALDI';
+  }
 }
 
 function onMouseMove(e){ mouseNX=(e.clientX/window.innerWidth)*2-1; mouseNY=(e.clientY/window.innerHeight)*2-1; }

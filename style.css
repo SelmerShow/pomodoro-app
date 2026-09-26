@@ -178,7 +178,7 @@ body.deep-focus-active #app {
 .topbar{
   width:100%; max-width:1280px;
   display:flex; align-items:center; justify-content:space-between; gap:8px;
-  margin-bottom: 14px !important;
+  margin-bottom: 8px !important;
 }
 .brand-block{display:flex; flex-direction:column; gap:2px; flex-shrink:0;}
 .brand{
@@ -391,7 +391,7 @@ body:not(.mode-pomodoro) .ring-cluster {
 .mode-tabs{
   display:flex; gap:6px; padding:5px; border-radius:999px;
   border:1px solid var(--hairline); background:rgba(255,255,255,.02);
-  margin: 0 auto 16px !important;
+  margin: 0 auto 10px !important;
   flex-shrink: 0 !important;
   position: relative;
   z-index: 10;
@@ -1061,14 +1061,14 @@ body.mode-pomodoro .avatar-ring {
   background: rgba(10, 14, 28, 0.94);
   border: 1px solid var(--hairline-strong);
   border-radius: var(--radius-l);
-  padding: 18px 28px;
+  padding: 12px 24px !important;
   text-align: center;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 30px rgba(var(--c1-rgb), 0.28);
+  box-shadow: 0 6px 28px rgba(0,0,0,0.5), 0 0 20px rgba(var(--c1-rgb), 0.2) !important;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 3px !important;
   position: relative;
 }
 .save-day-selector {
@@ -1144,14 +1144,14 @@ body.mode-pomodoro .avatar-ring {
 }
 
 .save-day-btn {
-  margin-top: 10px;
+  margin-top: 2px !important;
   background: rgba(var(--c1-rgb), 0.2);
   border: 1px solid var(--c1);
   color: #fff;
-  padding: 8px 18px;
-  border-radius: var(--radius-m);
+  padding: 5px 14px !important;
+  border-radius: var(--radius-s) !important;
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: 0.75rem !important;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -1182,8 +1182,8 @@ body.mode-pomodoro .avatar-ring {
 }
 .pomo-top-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.82rem;
-  letter-spacing: 0.26em;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.22em !important;
   color: var(--c1);
   font-weight: 700;
   text-transform: uppercase;
@@ -1191,10 +1191,10 @@ body.mode-pomodoro .avatar-ring {
 .pomo-top-time {
   font-family: 'Orbitron', sans-serif;
   font-weight: 900;
-  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-size: clamp(1.8rem, 3.4vw, 2.5rem) !important;
   letter-spacing: 0.08em;
   color: var(--text-0);
-  text-shadow: 0 0 28px rgba(var(--c1-rgb), 0.75), 0 0 8px rgba(255,255,255,0.4);
+  text-shadow: 0 0 20px rgba(var(--c1-rgb), 0.65) !important;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1816,16 +1816,16 @@ body.df-pomo-hide-ring .pomo-linear-bar-wrap { display: none !important; }
   max-width: 1240px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 14px !important;
   align-items: center;
   transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
-  margin-bottom: 40px;
+  margin-bottom: 16px !important;
 }
 .pomo-ring-card {
   border: 1px solid var(--hairline-strong);
   border-radius: var(--radius-l);
   background: rgba(10, 14, 28, 0.94);
-  padding: 32px 26px;
+  padding: 22px 20px !important;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1850,7 +1850,7 @@ body.df-pomo-hide-ring .pomo-linear-bar-wrap { display: none !important; }
   border: 1px solid var(--hairline-strong);
   border-radius: var(--radius-l);
   background: rgba(10, 14, 28, 0.94);
-  padding: 26px 28px;
+  padding: 20px 22px !important;
 }
 .pomo-node {
   min-width: 190px;
@@ -2055,22 +2055,77 @@ body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
 /* Minimum 44px Touch Targets & Responsive Rules for Mobile Accessibility */
 @media (max-width: 768px) {
   .topbar {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .top-actions {
-    gap: 5px;
-  }
-  .date-cluster {
-    order: 3;
-    width: 100%;
-    margin-top: 2px;
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-areas:
+      "brand actions"
+      "date date" !important;
+    row-gap: 6px !important;
+    column-gap: 8px !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-bottom: 10px !important;
   }
 
+  .brand-block {
+    grid-area: brand !important;
+  }
+  .brand {
+    font-size: 1rem !important;
+    letter-spacing: 0.16em !important;
+  }
+
+  .top-actions {
+    grid-area: actions !important;
+    display: flex !important;
+    gap: 5px !important;
+  }
   .icon-btn {
-    width: 44px;
-    height: 44px;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+  }
+  .icon-btn svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .date-cluster {
+    grid-area: date !important;
+    width: 100% !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    margin: 0 auto !important;
+  }
+
+  #dateLocaleText {
+    font-size: clamp(0.68rem, 3.2vw, 0.8rem) !important;
+    letter-spacing: 0.1em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.2 !important;
+    height: 17px !important;
+    max-width: 95vw !important;
+  }
+
+  #dateCycleText {
+    font-size: clamp(0.62rem, 2.8vw, 0.72rem) !important;
+    letter-spacing: 0.12em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.2 !important;
+    height: 15px !important;
+    display: block !important;
+    margin-top: 1px !important;
   }
 
   .mode-tabs {
