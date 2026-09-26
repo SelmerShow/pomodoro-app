@@ -157,7 +157,7 @@ body.screen-shake {
 #app {
   position: relative; z-index: 2; min-height: 100vh; min-height: 100dvh;
   display: flex; flex-direction: column; align-items: center;
-  padding: 24px 20px 28px;
+  padding: 24px 20px 36px;
   box-sizing: border-box;
   transition: opacity .35s var(--ease), transform .35s var(--ease) !important;
 }
@@ -1061,14 +1061,14 @@ body.mode-pomodoro .avatar-ring {
   background: rgba(10, 14, 28, 0.94);
   border: 1px solid var(--hairline-strong);
   border-radius: var(--radius-l);
-  padding: 12px 24px !important;
+  padding: 18px 24px !important;
   text-align: center;
-  box-shadow: 0 6px 28px rgba(0,0,0,0.5), 0 0 20px rgba(var(--c1-rgb), 0.2) !important;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 30px rgba(var(--c1-rgb), 0.28);
   position: relative;
 }
 .save-day-selector {
@@ -1144,14 +1144,14 @@ body.mode-pomodoro .avatar-ring {
 }
 
 .save-day-btn {
-  margin-top: 2px !important;
+  margin-top: 6px !important;
   background: rgba(var(--c1-rgb), 0.2);
   border: 1px solid var(--c1);
   color: #fff;
-  padding: 5px 14px !important;
-  border-radius: var(--radius-s) !important;
+  padding: 8px 20px !important;
+  border-radius: var(--radius-m);
   font-family: inherit;
-  font-size: 0.75rem !important;
+  font-size: 0.85rem !important;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -1182,8 +1182,8 @@ body.mode-pomodoro .avatar-ring {
 }
 .pomo-top-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem !important;
-  letter-spacing: 0.22em !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.24em !important;
   color: var(--c1);
   font-weight: 700;
   text-transform: uppercase;
@@ -1191,11 +1191,12 @@ body.mode-pomodoro .avatar-ring {
 .pomo-top-time {
   font-family: 'Orbitron', sans-serif;
   font-weight: 900;
-  font-size: clamp(1.8rem, 3.4vw, 2.5rem) !important;
+  font-size: clamp(2.2rem, 5vw, 3.2rem) !important;
   letter-spacing: 0.08em;
   color: var(--text-0);
-  text-shadow: 0 0 20px rgba(var(--c1-rgb), 0.65) !important;
+  text-shadow: 0 0 28px rgba(var(--c1-rgb), 0.75), 0 0 8px rgba(255,255,255,0.4);
   font-variant-numeric: tabular-nums;
+  line-height: 1.1 !important;
 }
 
 .pomo-open-config-btn {
@@ -1203,8 +1204,8 @@ body.mode-pomodoro .avatar-ring {
   top: 16px !important;
   right: 16px !important;
   bottom: auto !important;
-  width: 34px !important;
-  height: 34px !important;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1px solid rgba(var(--c1-rgb), 0.4);
   background: rgba(10, 14, 28, 0.94);
@@ -1213,8 +1214,6 @@ body.mode-pomodoro .avatar-ring {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.25s var(--ease);
-  box-shadow: 0 0 12px rgba(0,0,0,0.5);
   z-index: 6;
 }
 .pomo-open-config-btn svg {
@@ -2053,59 +2052,24 @@ body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
   box-shadow: 0 0 12px var(--c1) !important;
 }
 
-/* --- Desktop Compact Pomodoro Layout (Zero Vertical Scroll) --- */
-@media (min-width: 769px) {
-  .pomodoro-workspace {
-    max-width: 1100px;
-    gap: 14px !important;
-    margin-bottom: 20px !important;
-  }
-
-  /* Horizontal sleek banner recovers 70px vertical height */
-  .pomo-top-panel {
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 12px 28px !important;
-    gap: 16px !important;
-  }
-
-  .pomo-top-label {
-    margin: 0 !important;
-    font-size: 0.72rem !important;
-  }
-
-  .pomo-top-time {
-    font-size: 2.1rem !important;
-    line-height: 1 !important;
-  }
-
-  .save-day-btn {
-    margin: 0 !important;
-    padding: 7px 16px !important;
-    font-size: 0.78rem !important;
-  }
-
-  .pomo-ring-card {
-    padding: 24px 20px !important;
-  }
-
-  .pomo-big-ring-wrap {
-    width: clamp(220px, 24vw, 260px) !important;
-  }
-
-  .pomo-timeline-card {
-    padding: 20px 22px !important;
-    max-height: 420px !important;
-  }
-}
-
-/* --- Mobile Viewport, 5-Icon Fit & Anti-Jitter Header --- */
+/* --- Mobile Fixes (Eliminate Gap & Proportional 38px Icons) --- */
 @media (max-width: 768px) {
   #app {
     padding: max(14px, env(safe-area-inset-top, 14px)) 12px max(24px, env(safe-area-inset-bottom, 24px)) !important;
   }
 
+  /* Fix Mobile Clock Gap: Lift clock up directly under tabs */
+  body:not(.mode-pomodoro) .cockpit {
+    justify-content: flex-start !important;
+    padding-top: 10px !important;
+    padding-bottom: 24px !important;
+  }
+  body:not(.mode-pomodoro) .ring-cluster {
+    width: min(80vw, 320px) !important;
+    margin-bottom: 18px !important;
+  }
+
+  /* Balanced 38px Touch Targets for Top Actions */
   .topbar {
     display: grid !important;
     grid-template-columns: 1fr auto !important;
@@ -2121,33 +2085,29 @@ body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
 
   .brand-block {
     grid-area: brand !important;
-    min-width: 0;
   }
   .brand {
-    font-size: 0.92rem !important;
-    letter-spacing: 0.12em !important;
-    white-space: nowrap !important;
+    font-size: 0.95rem !important;
+    letter-spacing: 0.14em !important;
   }
 
-  /* 5 Icons fit comfortably within mobile width */
   .top-actions {
     grid-area: actions !important;
     display: flex !important;
-    gap: 4px !important;
-    flex-shrink: 0 !important;
+    gap: 6px !important;
   }
   .icon-btn {
-    width: 32px !important;
-    height: 32px !important;
+    width: 38px !important;
+    height: 38px !important;
     padding: 0 !important;
     border-radius: 50% !important;
   }
   .icon-btn svg {
-    width: 15px !important;
-    height: 15px !important;
+    width: 16px !important;
+    height: 16px !important;
   }
 
-  /* Fixed 32px height date row prevents any jumping */
+  /* Fixed 32px Single-Line Date Row */
   .date-cluster {
     grid-area: date !important;
     width: 100% !important;
@@ -2164,7 +2124,7 @@ body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
   }
 
   #dateLocaleText {
-    font-size: 0.72rem !important;
+    font-size: 0.74rem !important;
     letter-spacing: 0.08em !important;
     white-space: nowrap !important;
     overflow: hidden !important;
@@ -2174,7 +2134,7 @@ body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
   }
 
   #dateCycleText {
-    font-size: 0.65rem !important;
+    font-size: 0.66rem !important;
     letter-spacing: 0.1em !important;
     white-space: nowrap !important;
     overflow: hidden !important;
@@ -2182,7 +2142,7 @@ body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
     line-height: 1.2 !important;
     max-width: 92vw !important;
     display: block !important;
-    margin-top: 1px !important;
+    margin-top: 2px !important;
   }
 
   .mode-tabs {
@@ -2196,11 +2156,6 @@ body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
     min-height: 38px !important;
   }
 
-  /* Clock view on phone screens */
-  body:not(.mode-pomodoro) .ring-cluster {
-    width: min(78vw, 310px) !important;
-    margin-bottom: 16px !important;
-  }
   .digital-time {
     font-size: clamp(2rem, 9vw, 2.75rem) !important;
   }
