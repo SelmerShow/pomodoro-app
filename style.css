@@ -2145,15 +2145,27 @@ body[data-clock-style="digital"]:not(.mode-pomodoro) .digital-time {
     margin-top: 2px !important;
   }
 
+  /* Mobile Centered Equal-Width Mode Tabs (Zero Empty Space) */
   .mode-tabs {
-    width: 100% !important;
-    max-width: 290px !important;
-    margin: 0 auto 14px !important;
+    width: min(100%, 260px) !important;
+    max-width: 260px !important;
+    margin: 0 auto 16px !important;
+    display: flex !important;
+    padding: 4px !important;
+    box-sizing: border-box !important;
   }
+
   .mode-tabs button {
-    padding: 8px 14px !important;
-    font-size: 0.76rem !important;
-    min-height: 38px !important;
+    flex: 1 1 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 8px 12px !important;
+    font-size: 0.78rem !important;
+    letter-spacing: 0.12em !important;
+    min-height: 40px !important;
+    box-sizing: border-box !important;
   }
 
   .digital-time {
