@@ -120,6 +120,7 @@ function checkDailyReset(){
     renderPomodoroTimeline();
     renderPomodoro(null, true);
     if(typeof renderDataPanel === 'function') renderDataPanel();
+    if(typeof pushLiveSessionToCloud === 'function') pushLiveSessionToCloud();
   } else if(pomodoroTimeline.length === 0) {
     try {
       const savedTimeline = localStorage.getItem(todayKey);
@@ -403,6 +404,14 @@ let pomoNeedsRender = true;
 let lastPomoState = {};
 const PRING_BIG_C = 2 * Math.PI * 98;
 
+function getSyncedFocusIndex(){
+  if(Array.isArray(pomodoroTimeline) && pomodoroTimeline.length > 0){
+    const completed = pomodoroTimeline.filter(t => t.type === 'focus' && t.status === 'completed').length;
+    return completed + 1;
+  }
+  return 1;
+}
+
 function renderPomodoro(ts, force){
   checkDailyReset();
   const running = pomodoro.running;
@@ -422,6 +431,8 @@ function renderPomodoro(ts, force){
 
   const elapsedFrac = pomodoro.isOvertime ? 1 : (1 - frac);
   const totalWorkSec = getTotalWorkSeconds();
+
+  focusIndex = getSyncedFocusIndex();
 
   if(!running && !force && !pomoNeedsRender){
     if(

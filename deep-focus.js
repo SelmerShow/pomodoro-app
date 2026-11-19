@@ -109,7 +109,8 @@ function renderDeepFocus(){
     if(dom.dfTotalWorkSub) dom.dfTotalWorkSub.textContent = totalStr;
 
     const dfSessionElapsed = getCurrentSessionElapsedMs();
-    const sessionLabel = (focusIndex + '. ETÜT') + (pomodoro.running ? ' (ÇALIŞIYOR)' : (dfSessionElapsed > 0 ? ' (DURAKLATILDI)' : ' (HAZIR)'));
+    const activeIdx = typeof getSyncedFocusIndex === 'function' ? getSyncedFocusIndex() : focusIndex;
+    const sessionLabel = (activeIdx + '. ETÜT') + (pomodoro.running ? ' (ÇALIŞIYOR)' : (dfSessionElapsed > 0 ? ' (DURAKLATILDI)' : ' (HAZIR)'));
     if(dom.dfSessionLabel) dom.dfSessionLabel.textContent = sessionLabel;
 
     let timeDisplayStr = '';

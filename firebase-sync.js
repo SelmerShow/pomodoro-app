@@ -528,7 +528,7 @@ function setupLiveSessionSync(uid){
     pomodoro.shortMin = remote.shortMin || 5;
     pomodoro.isOvertime = !!remote.isOvertime;
     pomodoro.overtimeSec = remote.overtimeSec || 0;
-    if(remote.focusIndex) focusIndex = remote.focusIndex;
+    focusIndex = typeof getSyncedFocusIndex === 'function' ? getSyncedFocusIndex() : (remote.focusIndex || 1);
 
     const totalMs = remote.totalMs || pomodoroTotalMs();
     let computedElapsed = remote.sessionAccumulatedMs || 0;
